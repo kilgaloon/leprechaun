@@ -8,11 +8,8 @@ import (
 
 // Config values
 type Config struct {
-	host string
-	port string
 	errorLog string
 	recipesPath string
-	commandsPath string
 }
 
 func readConfig(path string) (*Config) {
@@ -23,11 +20,8 @@ func readConfig(path string) (*Config) {
 	}
 
 	c := &Config{};
-	c.host = cfg.Section("").Key("host").String()
-	c.port = cfg.Section("").Key("port").String()
 	c.errorLog = cfg.Section("").Key("error_log").String()
 	c.recipesPath = cfg.Section("").Key("recipes_path").String()
-	c.commandsPath = cfg.Section("").Key("commands_path").String()
 
 	variables := cfg.Section("variables").Keys()
 	for _, variable := range variables {
