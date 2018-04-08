@@ -1,0 +1,5 @@
+name: job1
+startin: 1
+workevery: 10
+steps:
+    - rainbow:transfer $host "./test.txt"
