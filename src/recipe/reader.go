@@ -1,21 +1,21 @@
 package recipe
 
 import (
-	"log"
-	"io/ioutil"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"log"
 )
 
 // Recipe struct
 type Recipe struct {
-	Name string
-	StartIn int
+	Name      string
+	StartIn   int
 	WorkEvery int
-	Steps []string
+	Steps     []string
 }
 
 // Build recipe for use
-func Build(file string) (Recipe) {
+func Build(file string) Recipe {
 	r := Recipe{}
 
 	data, err := ioutil.ReadFile(file)

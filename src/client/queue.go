@@ -1,12 +1,12 @@
 package client
 
 import (
+	"../recipe"
 	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
-	"../recipe"
 )
 
 // Queue stack for pulling out recipes
@@ -67,7 +67,7 @@ func ProcessQueue(queue *Queue, client *Client) {
 						if err != nil {
 							fmt.Printf("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
 						}
-						
+
 					}
 
 					fmt.Printf("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))

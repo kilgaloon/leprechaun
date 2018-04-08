@@ -1,15 +1,15 @@
 package client
 
 import (
-	"time"
 	"../log"
 	"io/ioutil"
+	"time"
 )
 
 // Client settings and configurations
 type Client struct {
 	Config *Config
-	Logs log.Logs
+	Logs   log.Logs
 }
 
 // Start runs server
@@ -20,8 +20,8 @@ func Start(iniPath *string) {
 	client.Logs = log.CreateLogs(client.Config.errorLog)
 
 	files, err := ioutil.ReadDir(client.Config.recipesPath)
-    if err != nil {
-        client.Logs.Error("%s", err)
+	if err != nil {
+		client.Logs.Error("%s", err)
 	}
 
 	q := BuildQueue(client.Config.recipesPath, files)
@@ -31,5 +31,5 @@ func Start(iniPath *string) {
 
 		time.Sleep(60 * time.Second)
 	}
-	
+
 }

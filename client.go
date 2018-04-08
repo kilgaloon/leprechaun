@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"./src/client"
+	"flag"
 )
 
 // VERSION of application

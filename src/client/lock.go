@@ -5,7 +5,7 @@ import (
 )
 
 // LockProcess recipe on process
-func LockProcess(name string, client *Client) (bool) {
+func LockProcess(name string, client *Client) bool {
 	file := client.Config.recipesPath + "/" + name + ".lock"
 	_, err := os.OpenFile(file, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -14,8 +14,9 @@ func LockProcess(name string, client *Client) (bool) {
 
 	return true
 }
+
 // IsLocked check does lock exists
-func IsLocked(name string, client *Client) (bool) {
+func IsLocked(name string, client *Client) bool {
 	file := client.Config.recipesPath + "/" + name + ".lock"
 	if _, err := os.Stat(file); err == nil {
 		return true
@@ -23,8 +24,9 @@ func IsLocked(name string, client *Client) (bool) {
 
 	return false
 }
+
 // RemoveLock recipe on process
-func RemoveLock(name string, client *Client) (bool) {
+func RemoveLock(name string, client *Client) bool {
 	file := client.Config.recipesPath + "/" + name + ".lock"
 	// delete file
 	var err = os.Remove(file)
