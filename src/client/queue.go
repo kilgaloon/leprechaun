@@ -48,7 +48,7 @@ func ProcessQueue(queue *Queue, client *Client) {
 
 					parts := strings.Fields(step)
 					head := parts[0]
-					parts = parts[1:len(parts)]
+					parts = parts[1:]
 					// if is internal command of Rainbow
 					if len(head) >= 7 && head[0:7] == "rainbow" {
 						err := Resolve(head, parts)
