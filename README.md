@@ -3,7 +3,7 @@
 Current Version: **0.1.0**
 Current Release: **Calimero**
 
-Rainbow client is tool where you can schedule your recurring tasks to be performed over and over. 
+**Leprechaun** is tool where you can schedule your recurring tasks to be performed over and over. 
 
 In **Leprechaun** tasks are **recipes**, lets observe simple recipe file which is written using **YAML** syntax.
 
