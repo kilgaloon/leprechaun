@@ -9,6 +9,7 @@ import (
 // Config values
 type Config struct {
 	errorLog    string
+	infoLog     string
 	recipesPath string
 }
 
@@ -21,6 +22,7 @@ func readConfig(path string) *Config {
 
 	c := &Config{}
 	c.errorLog = cfg.Section("").Key("error_log").String()
+	c.infoLog = cfg.Section("").Key("info_log").String()
 	c.recipesPath = cfg.Section("").Key("recipes_path").String()
 
 	variables := cfg.Section("variables").Keys()
