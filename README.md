@@ -1,5 +1,7 @@
 # Leprechaun
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun)
+
 Current Version: **0.1.1** <br />
 Current Release: **Calimero**
 
