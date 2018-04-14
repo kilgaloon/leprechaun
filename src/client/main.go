@@ -17,7 +17,6 @@ func Start(iniPath *string) {
 	var client = &Client{}
 	// load configurations for server
 	client.Config = readConfig(*iniPath)
-	client.Logs = log.Logs{client.Config.errorLog, client.Config.infoLog}
 
 	files, err := ioutil.ReadDir(client.Config.recipesPath)
 	if err != nil {

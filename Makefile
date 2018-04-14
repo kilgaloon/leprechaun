@@ -2,7 +2,8 @@ install:
 	mkdir /etc/leprechaun
 	mkdir /var/log/leprechaun/
 	mkdir /var/run/leprechaun/
-	touch /var/log/leprechaun
+	touch /var/log/leprechaun/info-client.log
+	touch /var/log/leprechaun/error-client.log
 	go build
 
 uninstall:
