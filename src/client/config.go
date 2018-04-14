@@ -1,8 +1,8 @@
 package client
 
 import (
+	"../log"
 	"gopkg.in/ini.v1"
-	"log"
 	"os"
 )
 
@@ -16,7 +16,7 @@ type Config struct {
 func readConfig(path string) *Config {
 	cfg, err := ini.Load(path)
 	if err != nil {
-		log.Print("Failed to load ini file")
+		panic("Failed to load ini file")
 		os.Exit(1)
 	}
 
@@ -29,6 +29,9 @@ func readConfig(path string) *Config {
 	for _, variable := range variables {
 		CurrentContext.DefineVar(variable.Name(), variable.String())
 	}
+
+	log.Logger.ErrorLog = c.errorLog
+	log.Logger.InfoLog = c.infoLog
 
 	return c
 }

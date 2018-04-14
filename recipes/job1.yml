@@ -1,5 +1,7 @@
-name: job1
-startin: 1
-workevery: 10
-steps:
-    - rainbow:transfer $host "./test.txt"
+name: job1 # name of recipe
+startin: 1 # when client is started it will start in X minutes
+workevery: 10 # task will start every X minutes
+steps: # steps are done from first to last
+    - touch $testFile
+    - echo "Is this working?" > $testFile
+    - mv $testFile ./imwondering.txt

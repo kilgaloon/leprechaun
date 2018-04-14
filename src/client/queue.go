@@ -1,6 +1,7 @@
 package client
 
 import (
+	"../log"
 	"../recipe"
 	"bytes"
 	"os"
@@ -38,10 +39,10 @@ func ProcessQueue(queue *Queue, client *Client) {
 
 		if recipe.StartIn == 0 {
 			if LockProcess(r.Name, client) {
-				client.Logs.Info("%s file is in progress... \n", r.Name)
+				log.Logger.Info("%s file is in progress... \n", r.Name)
 
-				for index, step := range r.Steps {
-					client.Logs.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
+				for _, step := range r.Steps {
+					log.Logger.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
 					// replace variables
 					step = CurrentContext.Transpile(step)
 
@@ -52,10 +53,11 @@ func ProcessQueue(queue *Queue, client *Client) {
 					if len(head) >= 7 && head[0:7] == "rainbow" {
 						err := Resolve(head, parts)
 						if err != nil {
-							client.Logs.Info("Recipe %s failed on step %d. Reason: %s \n", r.Name, (index + 1), err)
+							RemoveLock(r.Name, client)
+							log.Logger.Info("Recipe %s failed on step %d. Reason: %s \n", r.Name, (index + 1), err)
 						}
 					} else {
-						cmd := exec.Command(head, parts...)
+						cmd := exec.Command("bash", "-c", step)
 
 						var out bytes.Buffer
 						var stderr bytes.Buffer
@@ -64,21 +66,24 @@ func ProcessQueue(queue *Queue, client *Client) {
 
 						err := cmd.Run()
 						if err != nil {
-							client.Logs.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
+							RemoveLock(r.Name, client)
+							log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
+							panic(err)
 						}
 
 					}
 
-					client.Logs.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
+					log.Logger.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
 					RemoveLock(r.Name, client)
 				}
 
 				recipe.StartIn = r.WorkEvery
 			} else {
-				client.Logs.Info("Failed to set lock on %s recipe", r.Name)
+				log.Logger.Info("Failed to set lock on %s recipe", r.Name)
+				panic("Failed to set lock")
 			}
 		} else {
-			client.Logs.Info("%s recipe will run in %d minutes \n\n", r.Name, recipe.StartIn)
+			log.Logger.Info("%s recipe will run in %d minutes \n\n", r.Name, recipe.StartIn)
 
 			recipe.StartIn--
 		}
