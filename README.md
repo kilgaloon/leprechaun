@@ -1,8 +1,10 @@
 # Leprechaun
 
+<<<<<<< HEAD
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun)
 
-Current Version: **0.2.0** <br />
+Current Version: **0.2.1** <br />
 Current Release: **Calimero**
 
 **Leprechaun** is tool where you can schedule your recurring tasks to be performed over and over. 
