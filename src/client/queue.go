@@ -49,8 +49,8 @@ func ProcessQueue(queue *Queue, client *Client) {
 					parts := strings.Fields(step)
 					head := parts[0]
 					parts = parts[1:]
-					// if is internal command of Rainbow
-					if len(head) >= 7 && head[0:7] == "rainbow" {
+					// if is internal command of Leprechaun
+					if len(head) >= 7 && head[0:7] == "internal" {
 						err := Resolve(head, parts)
 						if err != nil {
 							RemoveLock(r.Name, client)

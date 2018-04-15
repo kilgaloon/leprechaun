@@ -3,7 +3,6 @@ package client
 import (
 	"../log"
 	"gopkg.in/ini.v1"
-	"os"
 )
 
 // Config values
@@ -17,7 +16,6 @@ func readConfig(path string) *Config {
 	cfg, err := ini.Load(path)
 	if err != nil {
 		panic("Failed to load ini file")
-		os.Exit(1)
 	}
 
 	c := &Config{}
