@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"path/filepath"
 )
 
 // Queue stack for pulling out recipes
@@ -26,6 +27,13 @@ func BuildQueue(path string, files []os.FileInfo) Queue {
 	}
 
 	return q
+}
+
+// AddToQueue takes freshly created recipes and add them to queue
+func AddToQueue(stack *[]recipe.Recipe, path string) {
+	if filepath.Ext(path) == ".yml" {
+		*stack = append(*stack, recipe.Build(path))
+	}
 }
 
 // ProcessQueue queue
