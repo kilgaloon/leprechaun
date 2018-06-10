@@ -1,9 +1,11 @@
 package client
 
 import (
-	"../log"
+	"fmt"
 	"io/ioutil"
 	"time"
+	"../log"
+	"github.com/fsnotify/fsnotify"
 )
 
 // Client settings and configurations
@@ -25,7 +27,34 @@ func Start(iniPath *string) {
 
 	q := BuildQueue(client.Config.recipesPath, files)
 
+	// watch for new recipes
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		client.Logs.Error("Failed to create watcher")
+	}
+
+	defer watcher.Close()
+
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					AddToQueue(&q.Stack, event.Name)
+				}
+			case err := <-watcher.Errors:
+				fmt.Println("error:", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(client.Config.recipesPath)
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	for {
+
 		go ProcessQueue(&q, client)
 
 		time.Sleep(60 * time.Second)

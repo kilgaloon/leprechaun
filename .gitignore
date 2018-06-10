@@ -1,2 +1,4 @@
 .vscode
-debug
+/bin/debug
+/bin/leprechaun
+
