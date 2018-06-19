@@ -1,17 +1,19 @@
 package recipe
 
 import (
+	"./schedule"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
+	"time"
 )
 
 // Recipe struct
 type Recipe struct {
-	Name      string
-	StartIn   int
-	WorkEvery int
-	Steps     []string
+	Name     string
+	StartAt  time.Time
+	Schedule map[string]int
+	Steps    []string
 }
 
 // Build recipe for use
@@ -27,6 +29,8 @@ func Build(file string) Recipe {
 	if error != nil {
 		log.Fatalf("Unable to unmarshal yaml: %s", error)
 	}
+
+	r.StartAt = recipe.ScheduleToTime(r.Schedule)
 
 	return r
 }

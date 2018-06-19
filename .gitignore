@@ -1,4 +1,4 @@
 .vscode
 /bin/debug
 /bin/leprechaun
-
+/logs

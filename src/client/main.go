@@ -1,11 +1,11 @@
 package client
 
 import (
+	"../log"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"io/ioutil"
 	"time"
-	"../log"
-	"github.com/fsnotify/fsnotify"
 )
 
 // Client settings and configurations

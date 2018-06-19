@@ -18,4 +18,9 @@ format:
 	gofmt -s -w src/
 
 test:
-	go vet
+	cd bin && go vet
+	cd src/client && go vet
+	cd src/cmd && go vet
+	cd src/log && go vet
+	cd src/recipe && go vet
+	cd src/recipe/schedule && go vet
