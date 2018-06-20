@@ -42,13 +42,11 @@ func (c *Context) GetVar(name string) Variable {
 
 // Transpile text change variables from context
 func (c *Context) Transpile(toCompile string) string {
-	var str string
-
 	for _, variable := range c.variables {
-		str = strings.Replace(toCompile, "$"+variable.name, variable.value, -1)
+		toCompile = strings.Replace(toCompile, "$"+variable.name, variable.value, -1)
 	}
 
-	return str
+	return toCompile
 }
 
 // CurrentContext of client

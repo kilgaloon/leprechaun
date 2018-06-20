@@ -3,6 +3,8 @@ package client
 import (
 	"../log"
 	"gopkg.in/ini.v1"
+	"os"
+	"strings"
 )
 
 // Config values
@@ -26,6 +28,11 @@ func readConfig(path string) *Config {
 	variables := cfg.Section("variables").Keys()
 	for _, variable := range variables {
 		CurrentContext.DefineVar(variable.Name(), variable.String())
+	}
+	// insert environment variables in our context
+	for _, e := range os.Environ() {
+        pair := strings.Split(e, "=")
+		CurrentContext.DefineVar(pair[0], pair[1])
 	}
 
 	log.Logger.ErrorLog = c.errorLog
