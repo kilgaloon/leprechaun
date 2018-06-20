@@ -36,6 +36,8 @@ Dedicated section is named `[variables]`, anything defined in this section can a
 
     [variables]
     testFile = ./test.txt
+
+Also all environment variables are available in steps ex: `$LOGNAME`
    
    and in our steps it will be available as `$testFile`. We can now rewrite our job file and it will look like something like this:
 
