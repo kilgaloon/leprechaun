@@ -1,9 +1,9 @@
 package client
 
 import (
-	"../log"
-	"../recipe"
-	schedule "../recipe/schedule"
+	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
+	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 	"bytes"
 	"os"
 	"os/exec"

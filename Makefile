@@ -12,15 +12,15 @@ uninstall:
 	rm -rf /var/run/leprechaun
 
 build:
-	cd bin/ && go build -o leprechaun
+	cd bin/ && go build
 
 format:
-	gofmt -s -w src/
+	gofmt -s -w .
 
 test:
-	cd bin && go vet
-	cd src/client && go vet
-	cd src/cmd && go vet
-	cd src/log && go vet
-	cd src/recipe && go vet
-	cd src/recipe/schedule && go vet
+	go vet
+	cd client && go vet
+	cd cmd && go vet
+	cd log && go vet
+	cd recipe && go vet
+	cd recipe/schedule && go vet

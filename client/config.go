@@ -1,7 +1,7 @@
 package client
 
 import (
-	"../log"
+	"github.com/kilgaloon/leprechaun/log"
 	"gopkg.in/ini.v1"
 	"os"
 	"strings"
@@ -17,7 +17,7 @@ type Config struct {
 func readConfig(path string) *Config {
 	cfg, err := ini.Load(path)
 	if err != nil {
-		panic("Failed to load ini file")
+		panic(err)
 	}
 
 	c := &Config{}
@@ -31,7 +31,7 @@ func readConfig(path string) *Config {
 	}
 	// insert environment variables in our context
 	for _, e := range os.Environ() {
-        pair := strings.Split(e, "=")
+		pair := strings.Split(e, "=")
 		CurrentContext.DefineVar(pair[0], pair[1])
 	}
 
