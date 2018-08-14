@@ -1,7 +1,7 @@
 package client
 
 import (
-	"../log"
+	"github.com/kilgaloon/leprechaun/log"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"io/ioutil"

@@ -1,7 +1,7 @@
 package recipe
 
 import (
-	"./schedule"
+	"github.com/kilgaloon/leprechaun/recipe/schedule"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
