@@ -1,10 +1,11 @@
 package client
 
 import (
-	"github.com/kilgaloon/leprechaun/log"
-	"gopkg.in/ini.v1"
 	"os"
 	"strings"
+
+	"github.com/kilgaloon/leprechaun/log"
+	"gopkg.in/ini.v1"
 )
 
 // Config values
@@ -12,6 +13,7 @@ type Config struct {
 	errorLog    string
 	infoLog     string
 	recipesPath string
+	PIDFile string
 }
 
 func readConfig(path string) *Config {
@@ -24,6 +26,7 @@ func readConfig(path string) *Config {
 	c.errorLog = cfg.Section("").Key("error_log").String()
 	c.infoLog = cfg.Section("").Key("info_log").String()
 	c.recipesPath = cfg.Section("").Key("recipes_path").String()
+	c.PIDFile = cfg.Section("").Key("pid_file").String()
 
 	variables := cfg.Section("variables").Keys()
 	for _, variable := range variables {

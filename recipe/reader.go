@@ -1,11 +1,12 @@
 package recipe
 
 import (
-	"github.com/kilgaloon/leprechaun/recipe/schedule"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"time"
+
+	"github.com/kilgaloon/leprechaun/recipe/schedule"
+	"gopkg.in/yaml.v2"
 )
 
 // Recipe struct

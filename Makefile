@@ -2,9 +2,10 @@ install:
 	mkdir /etc/leprechaun
 	mkdir /var/log/leprechaun/
 	mkdir /var/run/leprechaun/
-	touch /var/log/leprechaun/info-client.log
-	touch /var/log/leprechaun/error-client.log
-	cd bin/ && go build -u leprechaun
+	touch /var/log/leprechaun/info.log
+	touch /var/log/leprechaun/error.log
+	touch /var/run/leprechaun/.pid
+	go build
 
 uninstall:
 	rm -rf /etc/leprechaun
@@ -20,7 +21,7 @@ format:
 test:
 	go vet
 	cd client && go vet
-	cd cmd && go vet
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
+	go test
