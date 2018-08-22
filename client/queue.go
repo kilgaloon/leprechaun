@@ -1,15 +1,16 @@
 package client
 
 import (
-	"github.com/kilgaloon/leprechaun/log"
-	"github.com/kilgaloon/leprechaun/recipe"
-	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 	"bytes"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
+	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 )
 
 // Queue stack for pulling out recipes
@@ -60,30 +61,20 @@ func ProcessQueue(queue *Queue, client *Client) {
 					step = CurrentContext.Transpile(step)
 
 					parts := strings.Fields(step)
-					head := parts[0]
 					parts = parts[1:]
-					// if is internal command of Leprechaun
-					if len(head) >= 7 && head[0:7] == "internal" {
-						err := Resolve(head, parts)
-						if err != nil {
-							RemoveLock(r.Name, client)
-							log.Logger.Info("Recipe %s failed on step %d. Reason: %s \n", r.Name, (index + 1), err)
-						}
-					} else {
-						cmd := exec.Command("bash", "-c", step)
 
-						var out bytes.Buffer
-						var stderr bytes.Buffer
-						cmd.Stdout = &out
-						cmd.Stderr = &stderr
+					cmd := exec.Command("bash", "-c", step)
 
-						err := cmd.Run()
-						if err != nil {
-							RemoveLock(r.Name, client)
-							log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
-							panic(err)
-						}
+					var out bytes.Buffer
+					var stderr bytes.Buffer
+					cmd.Stdout = &out
+					cmd.Stderr = &stderr
 
+					err := cmd.Run()
+					if err != nil {
+						RemoveLock(r.Name, client)
+						log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
+						panic(err)
 					}
 
 					log.Logger.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))

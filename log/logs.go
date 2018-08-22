@@ -13,27 +13,33 @@ type Logs struct {
 
 // Error logs everything bad that happens in application
 func (l *Logs) Error(message string, v ...interface{}) {
-	file, err := os.OpenFile(l.ErrorLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+	if len(l.ErrorLog) > 0 {
+		file, err := os.OpenFile(l.ErrorLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("error opening file: %v", err)
+		}
+
+		defer file.Close()
+
+		log.SetOutput(file)
 	}
 
-	defer file.Close()
-
-	log.SetOutput(file)
 	log.Fatalf(message, v...)
 }
 
 // Info logs everything that happens in application
 func (l *Logs) Info(message string, v ...interface{}) {
-	file, err := os.OpenFile(l.InfoLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
+	if len(l.InfoLog) > 0 {
+		file, err := os.OpenFile(l.InfoLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("error opening file: %v", err)
+		}
+
+		defer file.Close()
+
+		log.SetOutput(file)
 	}
 
-	defer file.Close()
-
-	log.SetOutput(file)
 	log.Printf(message, v...)
 }
 
