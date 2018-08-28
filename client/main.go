@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -13,22 +14,31 @@ import (
 )
 
 // Client settings and configurations
+// Status
+// - 0: idle
+// - 1: working
 type Client struct {
 	Config *Config
 	Logs   log.Logs
+	Queue
+	LockChannel chan string
 }
 
 // Create new client
 func Create(iniPath *string) *Client {
-	var client = &Client{}
+	client := &Client{}
 	// load configurations for server
 	client.Config = readConfig(*iniPath)
+	client.LockChannel = make(chan string)
 
 	return client
 }
 
 // Start client
-func (client *Client) Start() {
+func (client Client) Start() {
+	// remove hanging .lock file
+	client.Unlock()
+
 	f, err := os.OpenFile(client.Config.PIDFile, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to start client, can't save PID")
@@ -40,12 +50,8 @@ func (client *Client) Start() {
 		panic("Failed to start client, can't save PID")
 	}
 
-	files, err := ioutil.ReadDir(client.Config.recipesPath)
-	if err != nil {
-		client.Logs.Error("%s", err)
-	}
-
-	q := BuildQueue(client.Config.recipesPath, files)
+	// build queue
+	client.BuildQueue()
 
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
@@ -54,13 +60,19 @@ func (client *Client) Start() {
 	}
 
 	defer watcher.Close()
-
 	go func() {
 		for {
 			select {
+			case lockChannel := <-client.LockChannel:
+				if lockChannel == "lock" {
+					client.Lock()
+				} else {
+					client.Unlock()
+				}
+
 			case event := <-watcher.Events:
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					AddToQueue(&q.Stack, event.Name)
+					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
 				fmt.Println("error:", err)
@@ -74,7 +86,7 @@ func (client *Client) Start() {
 	}
 
 	for {
-		go ProcessQueue(&q, client)
+		go client.ProcessQueue()
 
 		time.Sleep(60 * time.Second)
 	}
@@ -82,7 +94,7 @@ func (client *Client) Start() {
 }
 
 // GetPID gets current PID of client
-func (client *Client) GetPID() int {
+func (client Client) GetPID() int {
 	PIDFile := client.Config.PIDFile
 
 	data, err := ioutil.ReadFile(PIDFile)
@@ -98,31 +110,83 @@ func (client *Client) GetPID() int {
 	return pid
 }
 
+// Check does client is working on something
+// decide this in which status client resides
+func (client Client) isWorking() bool {
+	// check does .lock file exists
+	if _, err := os.Stat(client.Config.LockFile); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+// Lock client to busy state
+func (client Client) Lock() {
+	_, err := os.OpenFile(client.Config.LockFile, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		panic("Failed to lock client in busy state")
+	}
+}
+
+// Unlock client to busy state
+func (client Client) Unlock() {
+	os.Remove(client.Config.LockFile)
+}
+
 // Stop client
-func (client *Client) Stop() (os.Signal, bool) {
+func (client Client) Stop() os.Signal {
+	var answer string
+	forceQuit := false
+	quit := false
+
+	fmt.Print("Are you sure?(y/N): ")
+	fmt.Scanf("%s", &answer)
+
+	if client.isWorking() && strings.ToUpper(answer) == "Y" {
+		answer = ""
+		// if user doesn't choose to force quit we will wait for process, otherwise KILL IT
+		fmt.Print("Client is working on something in the background. Force quit? (y/N)")
+		fmt.Scanf("%s", &answer)
+
+		if strings.ToUpper(answer) == "Y" {
+			forceQuit = true
+		}
+	} else if !client.isWorking() && strings.ToUpper(answer) == "Y" {
+		quit = true
+	}
+
 	pid := client.GetPID()
 	process, err := os.FindProcess(pid)
 	if err != nil {
 		log.Logger.Error("Can't find process with that PID. %s", err)
 	}
 
-	state, err := process.Wait()
-	log.Logger.Info("Stopping Leprechaun, please wait...")
+	// shutdown gracefully
+	if quit {
+		state, err := process.Wait()
+		log.Logger.Info("Stopping Leprechaun, please wait...")
 
-	var killed error
-	if err != nil {
-		killed = process.Kill()
-		if killed != nil {
-			log.Logger.Error("Can't kill process with that PID. %s", err)
-			os.Exit(3)
+		if err == nil {
+			if state.Exited() {
+				client.Unlock()
+				return syscall.SIGTERM
+			}
 		} else {
-			return syscall.SIGTERM, true
-		}
-	} else {
-		if state.Exited() {
-			return syscall.SIGTERM, true
+			forceQuit = true
 		}
 	}
 
-	return os.Interrupt, false
+	// force quite and terminate everything
+	if forceQuit {
+		killed := process.Kill()
+		if killed != nil {
+			log.Logger.Error("Can't kill process with that PID. %s", err)
+		} else {
+			client.Unlock()
+			return syscall.SIGTERM
+		}
+	}
+
+	return os.Interrupt
 }
