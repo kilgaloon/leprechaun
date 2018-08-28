@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -18,6 +17,7 @@ import (
 // - 0: idle
 // - 1: working
 type Client struct {
+	PID    int
 	Config *Config
 	Logs   log.Logs
 	Queue
@@ -38,18 +38,8 @@ func Create(iniPath *string) *Client {
 func (client Client) Start() {
 	// remove hanging .lock file
 	client.Unlock()
-
-	f, err := os.OpenFile(client.Config.PIDFile, os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to start client, can't save PID")
-	}
-
-	pid := strconv.Itoa(os.Getpid())
-	_, err = f.WriteString(pid)
-	if err != nil {
-		panic("Failed to start client, can't save PID")
-	}
-
+	// SetPID of client
+	client.SetPID()
 	// build queue
 	client.BuildQueue()
 
@@ -93,21 +83,24 @@ func (client Client) Start() {
 
 }
 
+// SetPID sets current PID of client
+func (client *Client) SetPID() {
+	f, err := os.OpenFile(client.Config.PIDFile, os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		panic("Failed to start client, can't save PID")
+	}
+
+	client.PID = os.Getpid()
+	pid := strconv.Itoa(client.PID)
+	_, err = f.WriteString(pid)
+	if err != nil {
+		panic("Failed to start client, can't save PID")
+	}
+}
+
 // GetPID gets current PID of client
 func (client Client) GetPID() int {
-	PIDFile := client.Config.PIDFile
-
-	data, err := ioutil.ReadFile(PIDFile)
-	if err != nil {
-		log.Logger.Error("Failed to read pid from .pid file. %s", err)
-	}
-
-	pid, err := strconv.Atoi(string(data))
-	if err != nil {
-		log.Logger.Error("Failed to parse pid from .pid file. %s", err)
-	}
-
-	return pid
+	return client.PID
 }
 
 // Check does client is working on something
