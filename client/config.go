@@ -14,6 +14,7 @@ type Config struct {
 	infoLog     string
 	recipesPath string
 	PIDFile string
+	LockFile string
 }
 
 func readConfig(path string) *Config {
@@ -27,6 +28,7 @@ func readConfig(path string) *Config {
 	c.infoLog = cfg.Section("").Key("info_log").String()
 	c.recipesPath = cfg.Section("").Key("recipes_path").String()
 	c.PIDFile = cfg.Section("").Key("pid_file").String()
+	c.LockFile = cfg.Section("").Key("lock_file").String()
 
 	variables := cfg.Section("variables").Keys()
 	for _, variable := range variables {

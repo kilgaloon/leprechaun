@@ -53,3 +53,9 @@ Also all environment variables are available in steps ex: `$LOGNAME`
         - mv $testFile ./imwondering.txt
    
 Usage is very straightforward, you just need to start client and it will run recipes you defined previously.
+
+
+## Starting/Stopping service
+
+To start leprechaun just simply run it in background like this : `leprechaun &`
+and you can stop leprechaun simple as this: `leprechaun stop`

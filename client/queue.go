@@ -2,7 +2,7 @@ package client
 
 import (
 	"bytes"
-	"os"
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -19,33 +19,38 @@ type Queue struct {
 }
 
 // BuildQueue takes all recipes and put them in queue
-func BuildQueue(path string, files []os.FileInfo) Queue {
+func (client *Client) BuildQueue() {
 	q := Queue{}
 
+	files, err := ioutil.ReadDir(client.Config.recipesPath)
+	if err != nil {
+		client.Logs.Error("%s", err)
+	}
+
 	for _, file := range files {
-		fullFilepath := path + "/" + file.Name()
+		fullFilepath := client.Config.recipesPath + "/" + file.Name()
 		recipe := recipe.Build(fullFilepath)
 
 		q.Stack = append(q.Stack, recipe)
 	}
 
-	return q
+	client.Queue = q
 }
 
 // AddToQueue takes freshly created recipes and add them to queue
-func AddToQueue(stack *[]recipe.Recipe, path string) {
+func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		*stack = append(*stack, recipe.Build(path))
 	}
 }
 
 // ProcessQueue queue
-func ProcessQueue(queue *Queue, client *Client) {
+func (client *Client) ProcessQueue() {
 	now := time.Now()
 	compare := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), 0, 0, time.UTC)
 
-	for index, r := range queue.Stack {
-		recipe := &queue.Stack[index]
+	for index, r := range client.Queue.Stack {
+		recipe := &client.Queue.Stack[index]
 
 		if IsLocked(r.Name, client) {
 			continue
@@ -54,6 +59,8 @@ func ProcessQueue(queue *Queue, client *Client) {
 		if compare.Equal(recipe.StartAt) {
 			if LockProcess(r.Name, client) {
 				log.Logger.Info("%s file is in progress... \n", r.Name)
+
+				client.LockChannel <- "lock"
 
 				for index, step := range r.Steps {
 					log.Logger.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
@@ -72,20 +79,19 @@ func ProcessQueue(queue *Queue, client *Client) {
 
 					err := cmd.Run()
 					if err != nil {
-						RemoveLock(r.Name, client)
 						log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
-						panic(err)
 					}
 
 					log.Logger.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
 					RemoveLock(r.Name, client)
+
+					client.LockChannel <- "unlock"
 				}
 
 				recipe.StartAt = schedule.ScheduleToTime(recipe.Schedule)
 
 			} else {
 				log.Logger.Info("Failed to set lock on %s recipe", r.Name)
-				panic("Failed to set lock")
 			}
 		}
 	}

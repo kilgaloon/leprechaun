@@ -30,12 +30,7 @@ func main() {
 
 	switch command {
 	case "stop":
-		signal, stopped := client.Stop()
-
-		if stopped {
-			shutdownSignal <- signal
-		}
-
+		shutdownSignal <- client.Stop()
 	default:
 		client.Start()
 	}
@@ -48,8 +43,6 @@ func main() {
 		syscall.SIGTERM)
 
 	<-shutdownSignal
-
-	client.Logs.Info("Shutting down...")
 
 	os.Exit(0)
 }
