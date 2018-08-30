@@ -26,10 +26,12 @@ func (handler *Handler) Dispatch(event string) {
 // Listen listens for events
 func (handler *Handler) listen() {
 	go func() {
-		select {
-		case event := <-handler.eventChannel:
-			handler.events[event]()
-			log.Logger.Info("Event %s dispatched", event)
+		for {
+			select {
+			case event := <-handler.eventChannel:
+				handler.events[event]()
+				log.Logger.Info("Event %s dispatched", event)
+			}
 		}
 	}()
 }
