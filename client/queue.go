@@ -1,6 +1,7 @@
 package client
 
 import (
+	"github.com/kilgaloon/leprechaun/event"
 	"bytes"
 	"io/ioutil"
 	"os/exec"
@@ -60,7 +61,7 @@ func (client *Client) ProcessQueue() {
 			if LockProcess(r.Name, client) {
 				log.Logger.Info("%s file is in progress... \n", r.Name)
 
-				client.LockChannel <- "lock"
+				event.EventHandler.Dispatch("client:lock")
 
 				for index, step := range r.Steps {
 					log.Logger.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
@@ -85,7 +86,7 @@ func (client *Client) ProcessQueue() {
 					log.Logger.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
 					RemoveLock(r.Name, client)
 
-					client.LockChannel <- "unlock"
+					event.EventHandler.Dispatch("client:unlock")
 				}
 
 				recipe.StartAt = schedule.ScheduleToTime(recipe.Schedule)

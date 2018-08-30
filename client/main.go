@@ -8,30 +8,32 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kilgaloon/leprechaun/event"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/kilgaloon/leprechaun/log"
 )
 
+// Agent holds instance of Client
+var Agent *Client
+
 // Client settings and configurations
-// Status
-// - 0: idle
-// - 1: working
 type Client struct {
 	PID    int
 	Config *Config
 	Logs   log.Logs
 	Queue
-	LockChannel chan string
 }
 
-// Create new client
-func Create(iniPath *string) *Client {
+// CreateAgent new client
+// Creating new agent will enable usage of Agent variable globally for packages
+// that use this package
+func CreateAgent(iniPath *string) {
 	client := &Client{}
 	// load configurations for server
 	client.Config = readConfig(*iniPath)
-	client.LockChannel = make(chan string)
 
-	return client
+	Agent = client
 }
 
 // Start client
@@ -46,26 +48,19 @@ func (client Client) Start() {
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		client.Logs.Error("Failed to create watcher")
+		panic("Failed to create watcher")
 	}
 
 	defer watcher.Close()
 	go func() {
 		for {
 			select {
-			case lockChannel := <-client.LockChannel:
-				if lockChannel == "lock" {
-					client.Lock()
-				} else {
-					client.Unlock()
-				}
-
 			case event := <-watcher.Events:
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				fmt.Println("error:", err)
+				client.Logs.Error("error:", err)
 			}
 		}
 	}()
@@ -123,7 +118,7 @@ func (client Client) Lock() {
 }
 
 // Unlock client to busy state
-func (client Client) Unlock() {
+func (client *Client) Unlock() {
 	os.Remove(client.Config.LockFile)
 }
 
@@ -182,4 +177,16 @@ func (client Client) Stop() os.Signal {
 	}
 
 	return os.Interrupt
+}
+
+func init() {
+	// subscribe to events for this package
+	
+	event.EventHandler.Subscribe("client:lock", func() {
+		Agent.Lock()
+	})
+
+	event.EventHandler.Subscribe("client:unlock", func() {
+		Agent.Unlock()
+	})
 }
