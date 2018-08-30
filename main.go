@@ -26,13 +26,13 @@ func main() {
 	iniPath := flag.String("ini_path", "configs/client.ini", "Path to client .ini configuration")
 	flag.Parse()
 
-	client := client.Create(iniPath)
+	client.CreateAgent(iniPath)
 
 	switch command {
 	case "stop":
-		shutdownSignal <- client.Stop()
+		shutdownSignal <- client.Agent.Stop()
 	default:
-		client.Start()
+		client.Agent.Start()
 	}
 
 	signal.Notify(shutdownSignal,
