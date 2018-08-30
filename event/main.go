@@ -1,5 +1,7 @@
 package event
 
+import "github.com/kilgaloon/leprechaun/log"
+
 // EventHandler Create new struct of handler for global usage
 var EventHandler *Handler
 
@@ -24,11 +26,10 @@ func (handler *Handler) Dispatch(event string) {
 // Listen listens for events
 func (handler *Handler) listen() {
 	go func() {
-		for {
-			select {
-			case event := <-handler.eventChannel:
-				handler.events[event]()
-			}
+		select {
+		case event := <-handler.eventChannel:
+			handler.events[event]()
+			log.Logger.Info("Event %s dispatched", event)
 		}
 	}()
 }
