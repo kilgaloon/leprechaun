@@ -8,9 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/event"
-
 	"github.com/fsnotify/fsnotify"
+	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
 )
 
@@ -28,12 +27,14 @@ type Client struct {
 // CreateAgent new client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(iniPath *string) {
+func CreateAgent(iniPath *string) *Client {
 	client := &Client{}
 	// load configurations for server
 	client.Config = readConfig(*iniPath)
 
 	Agent = client
+
+	return Agent
 }
 
 // Start client
@@ -181,7 +182,7 @@ func (client Client) Stop() os.Signal {
 
 func init() {
 	// subscribe to events for this package
-	
+
 	event.EventHandler.Subscribe("client:lock", func() {
 		Agent.Lock()
 	})
