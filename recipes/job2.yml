@@ -1,0 +1,5 @@
+name: job2
+definition: hook
+id: 45DE2239F
+steps:
+  - echo "Hooked!" > ./hook.txt

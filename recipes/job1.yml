@@ -1,4 +1,5 @@
 name: job1 # name of recipe
+definition: schedule
 schedule: 
     min: 1
     hour: 0

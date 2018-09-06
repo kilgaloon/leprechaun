@@ -11,10 +11,12 @@ import (
 
 // Recipe struct
 type Recipe struct {
-	Name     string
-	StartAt  time.Time
-	Schedule map[string]int
-	Steps    []string
+	ID         string
+	Name       string
+	Definition string
+	StartAt    time.Time
+	Schedule   map[string]int
+	Steps      []string
 }
 
 // Build recipe for use
@@ -31,7 +33,10 @@ func Build(file string) Recipe {
 		log.Fatalf("Unable to unmarshal yaml: %s", error)
 	}
 
-	r.StartAt = recipe.ScheduleToTime(r.Schedule)
+	switch r.Definition {
+	case "schedule":
+		r.StartAt = recipe.ScheduleToTime(r.Schedule)
+	}
 
 	return r
 }

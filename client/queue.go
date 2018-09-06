@@ -1,7 +1,6 @@
 package client
 
 import (
-	"github.com/kilgaloon/leprechaun/event"
 	"bytes"
 	"io/ioutil"
 	"os/exec"
@@ -9,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/event"
+
 	"github.com/kilgaloon/leprechaun/recipe"
 	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 )
@@ -32,7 +32,12 @@ func (client *Client) BuildQueue() {
 		fullFilepath := client.Config.recipesPath + "/" + file.Name()
 		recipe := recipe.Build(fullFilepath)
 
-		q.Stack = append(q.Stack, recipe)
+		// recipes that needs to be pushed to queue
+		// needs to be schedule by definition
+		if recipe.Definition == "schedule" {
+			q.Stack = append(q.Stack, recipe)
+		}
+
 	}
 
 	client.Queue = q
@@ -59,12 +64,12 @@ func (client *Client) ProcessQueue() {
 
 		if compare.Equal(recipe.StartAt) {
 			if LockProcess(r.Name, client) {
-				log.Logger.Info("%s file is in progress... \n", r.Name)
+				client.Logs.Info("%s file is in progress... \n", r.Name)
 
 				event.EventHandler.Dispatch("client:lock")
 
 				for index, step := range r.Steps {
-					log.Logger.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
+					client.Logs.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
 					// replace variables
 					step = CurrentContext.Transpile(step)
 
@@ -80,10 +85,10 @@ func (client *Client) ProcessQueue() {
 
 					err := cmd.Run()
 					if err != nil {
-						log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
+						client.Logs.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
 					}
 
-					log.Logger.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
+					client.Logs.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
 					RemoveLock(r.Name, client)
 
 					event.EventHandler.Dispatch("client:unlock")
@@ -92,7 +97,7 @@ func (client *Client) ProcessQueue() {
 				recipe.StartAt = schedule.ScheduleToTime(recipe.Schedule)
 
 			} else {
-				log.Logger.Info("Failed to set lock on %s recipe", r.Name)
+				client.Logs.Info("Failed to set lock on %s recipe", r.Name)
 			}
 		}
 	}
