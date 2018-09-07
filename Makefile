@@ -33,4 +33,5 @@ test:
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
+	go test ./client
 	go test
