@@ -40,3 +40,5 @@
 [prune]
   go-tests = true
   unused-packages = true
+
+required = ["github.com/golangci/golangci-lint/cmd/golangci-lint"]

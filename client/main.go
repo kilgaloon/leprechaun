@@ -71,6 +71,8 @@ func (client Client) Start() {
 		fmt.Println(err)
 	}
 
+	event.EventHandler.Dispatch("client:ready")
+
 	for {
 		go client.ProcessQueue()
 
@@ -170,7 +172,7 @@ func (client Client) Stop() os.Signal {
 	if forceQuit {
 		killed := process.Kill()
 		if killed != nil {
-			log.Logger.Error("Can't kill process with that PID. %s", err)
+			log.Logger.Error("Can't kill process with that PID. %s", killed)
 		} else {
 			client.Unlock()
 			return syscall.SIGTERM
@@ -182,7 +184,6 @@ func (client Client) Stop() os.Signal {
 
 func init() {
 	// subscribe to events for this package
-
 	event.EventHandler.Subscribe("client:lock", func() {
 		Agent.Lock()
 	})

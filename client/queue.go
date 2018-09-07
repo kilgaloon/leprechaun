@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/kilgaloon/leprechaun/event"
@@ -25,7 +24,7 @@ func (client *Client) BuildQueue() {
 
 	files, err := ioutil.ReadDir(client.Config.recipesPath)
 	if err != nil {
-		client.Logs.Error("%s", err)
+		panic(err)
 	}
 
 	for _, file := range files {
@@ -46,7 +45,11 @@ func (client *Client) BuildQueue() {
 // AddToQueue takes freshly created recipes and add them to queue
 func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
-		*stack = append(*stack, recipe.Build(path))
+		r := recipe.Build(path)
+
+		if r.Definition == "schedule" {
+			*stack = append(*stack, recipe.Build(path))
+		}
 	}
 }
 
@@ -72,9 +75,6 @@ func (client *Client) ProcessQueue() {
 					client.Logs.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
 					// replace variables
 					step = CurrentContext.Transpile(step)
-
-					parts := strings.Fields(step)
-					parts = parts[1:]
 
 					cmd := exec.Command("bash", "-c", step)
 
