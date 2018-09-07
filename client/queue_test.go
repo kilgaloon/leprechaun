@@ -43,10 +43,10 @@ func TestProcessQueue(t *testing.T) {
 
 		if compare.Equal(recipe.StartAt) {
 			if LockProcess(r.Name, fakeClient) {
-				for _, step := range r.Steps {
-					// replace variables
-					RemoveLock(r.Name, fakeClient)
-				}
+				// for _, step := range r.Steps {
+				// 	// replace variables
+				// 	RemoveLock(r.Name, fakeClient)
+				// }
 
 				recipe.StartAt = schedule.ScheduleToTime(recipe.Schedule)
 
