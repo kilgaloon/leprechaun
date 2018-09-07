@@ -21,7 +21,7 @@ func TestStart(t *testing.T) {
 
 	// Fail because clien't isn't working anything on start
 	if fakeClient.isWorking() {
-		t.Fail()
+		t.Error("Client should not be working anything here")
 	}
 
 	b, err := ioutil.ReadFile(fakeClient.Config.PIDFile)
@@ -32,11 +32,11 @@ func TestStart(t *testing.T) {
 	str := string(b)
 	pid, err := strconv.Atoi(str)
 	if err != nil {
-		t.Fail()
+		t.Error(err)
 	}
-	
+
 	if fakeClient.GetPID() != pid {
-		t.Fail()
+		t.Errorf("PID expected to be %d but got %d", pid, fakeClient.GetPID())
 	}
 
 }
