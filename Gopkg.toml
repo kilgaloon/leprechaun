@@ -40,7 +40,3 @@
 [prune]
   go-tests = true
   unused-packages = true
-
-[[constraint]]
-  name = "github.com/golangci/golangci-lint"
-  version = "1.10.2"

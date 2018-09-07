@@ -34,11 +34,9 @@ before_install:
 #   required = ["github.com/golangci/golangci-lint/cmd/golangci-lint"]
 before_script:
   - dep ensure
-  - go install ./vendor/github.com/golangci/golangci-lint/cmd/golangci-lint
 
 # script always runs to completion (set +e). If we have linter issues AND a
 # failing test, we want to see both. Configure golangci-lint with a
 # .golangci.yml file at the top level of your repo.
 script:
-  - golangci-lint run       # run a bunch of code checkers/linters in parallel
   - make test
