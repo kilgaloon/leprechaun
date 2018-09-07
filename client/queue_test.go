@@ -45,7 +45,6 @@ func TestProcessQueue(t *testing.T) {
 			if LockProcess(r.Name, fakeClient) {
 				for _, step := range r.Steps {
 					// replace variables
-					step = CurrentContext.Transpile(step)
 					RemoveLock(r.Name, fakeClient)
 				}
 

@@ -3,7 +3,6 @@ package client
 import (
 	"io/ioutil"
 	"strconv"
-	"sync"
 	"testing"
 )
 
@@ -11,7 +10,6 @@ var (
 	iniFile    = "../tests/configs/client.ini"
 	path       = &iniFile
 	fakeClient = CreateAgent(path)
-	wg         sync.WaitGroup
 )
 
 func TestStart(t *testing.T) {
@@ -33,6 +31,10 @@ func TestStart(t *testing.T) {
 
 	str := string(b)
 	pid, err := strconv.Atoi(str)
+	if err != nil {
+		t.Fail()
+	}
+	
 	if fakeClient.GetPID() != pid {
 		t.Fail()
 	}
