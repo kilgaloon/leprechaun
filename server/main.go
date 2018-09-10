@@ -14,7 +14,7 @@ var Agent *Server
 type Server struct {
 	Config *Config
 	Logs   log.Logs
-	Queue
+	Pool
 	HTTP *http.Server
 }
 
@@ -35,7 +35,7 @@ func CreateAgent(iniPath *string) *Server {
 // Start server that will receive webhooks
 func (server *Server) Start() {
 	// build queue for server
-	server.BuildQueue()
+	server.BuildPool()
 	// register all routes
 	server.registerHandles()
 	// listen for port
