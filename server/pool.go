@@ -11,14 +11,14 @@ import (
 	"github.com/kilgaloon/leprechaun/recipe"
 )
 
-// Queue stack for pulling out recipes
-type Queue struct {
+// Pool stack for pulling out recipes
+type Pool struct {
 	Stack map[string]recipe.Recipe
 }
 
-// BuildQueue takes all recipes and put them in queue
-func (server *Server) BuildQueue() {
-	q := Queue{}
+// BuildPool takes all recipes and put them in pool
+func (server *Server) BuildPool() {
+	q := Pool{}
 	q.Stack = make(map[string]recipe.Recipe)
 
 	files, err := ioutil.ReadDir(server.Config.recipesPath)
@@ -30,7 +30,7 @@ func (server *Server) BuildQueue() {
 		fullFilepath := server.Config.recipesPath + "/" + file.Name()
 		recipe := recipe.Build(fullFilepath)
 
-		// recipes that needs to be pushed to queue
+		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
 		if recipe.Definition == "hook" {
 			q.Stack[recipe.ID] = recipe
@@ -38,12 +38,12 @@ func (server *Server) BuildQueue() {
 
 	}
 
-	server.Queue = q
+	server.Pool = q
 }
 
-// ProcessQueue queue
-func (server *Server) ProcessQueue(id string) {
-	recipe := server.Queue.Stack[id]
+// FindInPool Find recipe in pool and run it
+func (server *Server) FindInPool(id string) {
+	recipe := server.Pool.Stack[id]
 
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
