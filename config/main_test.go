@@ -51,7 +51,7 @@ func TestBuildWithSettings(t *testing.T) {
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
-	cfg := BuildConfig(ConfigWithoutDefaultSettings)
+	cfg := BuildConfig(ConfigWithInvalidValues)
 
 	clientCfg := cfg.GetClientConfig()
 	assert.Equal(t, clientErrorLog, clientCfg.ErrorLog)
