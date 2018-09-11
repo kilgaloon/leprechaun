@@ -8,7 +8,7 @@ const (
 	// WebhookEndpoint defines endpoint where webhook is
 	WebhookEndpoint = "/hook"
 	// PingEndpoint defines endpoints for healthcheck
-	PingEndpoint    = "/ping"
+	PingEndpoint = "/ping"
 )
 
 func (server Server) webhook(w http.ResponseWriter, r *http.Request) {
@@ -19,5 +19,9 @@ func (server Server) webhook(w http.ResponseWriter, r *http.Request) {
 
 func (server Server) ping(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("PONG"))
+	
+	_, err := w.Write([]byte("PONG"))
+	if err != nil {
+		server.Logs.Error("%s", err)
+	}
 }
