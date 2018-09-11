@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
 )
@@ -19,18 +21,20 @@ var Agent *Client
 // Client settings and configurations
 type Client struct {
 	PID    int
-	Config *Config
+	Config *config.ClientConfig
 	Logs   log.Logs
 	Queue
+	Context *context.Context
 }
 
 // CreateAgent new client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(iniPath *string) *Client {
+func CreateAgent(cfg *config.ClientConfig) *Client {
 	client := &Client{}
 	// load configurations for server
-	client.Config = readConfig(*iniPath)
+	client.Config = cfg
+	client.Context = context.BuildContext()
 
 	Agent = client
 
@@ -66,7 +70,7 @@ func (client Client) Start() {
 		}
 	}()
 
-	err = watcher.Add(client.Config.recipesPath)
+	err = watcher.Add(client.Config.RecipesPath)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -150,13 +154,13 @@ func (client Client) Stop() os.Signal {
 	pid := client.GetPID()
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		log.Logger.Error("Can't find process with that PID. %s", err)
+		client.Logs.Error("Can't find process with that PID. %s", err)
 	}
 
 	// shutdown gracefully
 	if quit {
 		state, err := process.Wait()
-		log.Logger.Info("Stopping Leprechaun, please wait...")
+		client.Logs.Info("Stopping Leprechaun, please wait...")
 
 		if err == nil {
 			if state.Exited() {
@@ -172,7 +176,7 @@ func (client Client) Stop() os.Signal {
 	if forceQuit {
 		killed := process.Kill()
 		if killed != nil {
-			log.Logger.Error("Can't kill process with that PID. %s", killed)
+			client.Logs.Error("Can't kill process with that PID. %s", killed)
 		} else {
 			client.Unlock()
 			return syscall.SIGTERM

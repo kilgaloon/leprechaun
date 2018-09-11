@@ -19,12 +19,12 @@ func TestBuildQueue(t *testing.T) {
 }
 
 func TestAddToQueue(t *testing.T) {
-	fakeClient.AddToQueue(&fakeClient.Queue.Stack, fakeClient.Config.recipesPath+"/schedule.yml")
+	fakeClient.AddToQueue(&fakeClient.Queue.Stack, fakeClient.Config.RecipesPath+"/schedule.yml")
 	if len(fakeClient.Queue.Stack) != 1 {
 		t.Errorf("Queue stack length expected to be 1, got %d", len(fakeClient.Queue.Stack))
 	}
 
-	fakeClient.AddToQueue(&fakeClient.Queue.Stack, fakeClient.Config.recipesPath+"/hook.yml")
+	fakeClient.AddToQueue(&fakeClient.Queue.Stack, fakeClient.Config.RecipesPath+"/hook.yml")
 	if len(fakeClient.Queue.Stack) != 1 {
 		t.Errorf("Queue stack length expected to be 0, got %d", len(fakeClient.Queue.Stack))
 	}

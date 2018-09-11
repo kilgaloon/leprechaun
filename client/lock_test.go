@@ -8,7 +8,7 @@ import (
 func TestLockProcess(t *testing.T) {
 	LockProcess("recipe", fakeClient)
 
-	file := fakeClient.Config.recipesPath + "/recipe.lock"
+	file := fakeClient.Config.RecipesPath + "/recipe.lock"
 	if _, err := os.Stat(file); err != nil {
 		t.Fail()
 	}

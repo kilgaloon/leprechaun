@@ -4,12 +4,15 @@ import (
 	"io/ioutil"
 	"strconv"
 	"testing"
+
+	"github.com/kilgaloon/leprechaun/config"
 )
 
 var (
-	iniFile    = "../tests/configs/client.ini"
+	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
-	fakeClient = CreateAgent(path)
+	cfg        = config.BuildConfig(*path)
+	fakeClient = CreateAgent(cfg.GetClientConfig())
 )
 
 func TestStart(t *testing.T) {
@@ -38,7 +41,6 @@ func TestStart(t *testing.T) {
 	if fakeClient.GetPID() != pid {
 		t.Errorf("PID expected to be %d but got %d", pid, fakeClient.GetPID())
 	}
-
 }
 
 func TestLock(t *testing.T) {
