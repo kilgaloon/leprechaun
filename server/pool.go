@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/kilgaloon/leprechaun/client"
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
@@ -21,13 +20,13 @@ func (server *Server) BuildPool() {
 	q := Pool{}
 	q.Stack = make(map[string]recipe.Recipe)
 
-	files, err := ioutil.ReadDir(server.Config.recipesPath)
+	files, err := ioutil.ReadDir(server.Config.RecipesPath)
 	if err != nil {
 		server.Logs.Error("%s", err)
 	}
 
 	for _, file := range files {
-		fullFilepath := server.Config.recipesPath + "/" + file.Name()
+		fullFilepath := server.Config.RecipesPath + "/" + file.Name()
 		recipe := recipe.Build(fullFilepath)
 
 		// recipes that needs to be pushed to pool
@@ -50,7 +49,7 @@ func (server *Server) FindInPool(id string) {
 	for index, step := range recipe.Steps {
 		log.Logger.Info("Recipe %s Step %d is in progress... \n", recipe.Name, (index + 1))
 		// replace variables
-		step = client.CurrentContext.Transpile(step)
+		step = server.Context.Transpile(step)
 
 		parts := strings.Fields(step)
 		parts = parts[1:]

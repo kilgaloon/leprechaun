@@ -22,13 +22,13 @@ type Queue struct {
 func (client *Client) BuildQueue() {
 	q := Queue{}
 
-	files, err := ioutil.ReadDir(client.Config.recipesPath)
+	files, err := ioutil.ReadDir(client.Config.RecipesPath)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, file := range files {
-		fullFilepath := client.Config.recipesPath + "/" + file.Name()
+		fullFilepath := client.Config.RecipesPath + "/" + file.Name()
 		recipe := recipe.Build(fullFilepath)
 
 		// recipes that needs to be pushed to queue
@@ -74,7 +74,7 @@ func (client *Client) ProcessQueue() {
 				for index, step := range r.Steps {
 					client.Logs.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
 					// replace variables
-					step = CurrentContext.Transpile(step)
+					step = client.Context.Transpile(step)
 
 					cmd := exec.Command("bash", "-c", step)
 

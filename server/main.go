@@ -3,7 +3,10 @@ package server
 import (
 	"net/http"
 	"os"
+	"strconv"
 
+	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
 )
 
@@ -12,20 +15,22 @@ var Agent *Server
 
 // Server instance
 type Server struct {
-	Config *Config
+	Config *config.ServerConfig
 	Logs   log.Logs
 	Pool
-	HTTP *http.Server
+	HTTP    *http.Server
+	Context *context.Context
 }
 
 // CreateAgent new server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(iniPath *string) *Server {
+func CreateAgent(cfg *config.ServerConfig) *Server {
 	server := &Server{}
 	// load configurations for server
-	server.Config = readConfig(*iniPath)
-	server.HTTP = &http.Server{Addr: ":" + server.Config.port}
+	server.Config = cfg
+	server.Context = context.BuildContext()
+	server.HTTP = &http.Server{Addr: ":" + strconv.Itoa(server.Config.Port)}
 
 	Agent = server
 
@@ -48,6 +53,7 @@ func (server *Server) Start() {
 
 func (server *Server) registerHandles() {
 	http.HandleFunc(WebhookEndpoint, server.webhook)
+	http.HandleFunc(PingEndpoint, server.ping)
 }
 
 // Stop http server

@@ -1,6 +1,7 @@
-package client
+package context
 
 import (
+	"os"
 	"strings"
 )
 
@@ -49,5 +50,14 @@ func (c *Context) Transpile(toCompile string) string {
 	return toCompile
 }
 
-// CurrentContext of client
-var CurrentContext = new(Context)
+// BuildContext Create context
+func BuildContext() *Context {
+	context := &Context{}
+	// insert environment variables in our context
+	for _, e := range os.Environ() {
+		pair := strings.Split(e, "=")
+		context.DefineVar(pair[0], pair[1])
+	}
+
+	return context
+}

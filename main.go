@@ -7,6 +7,7 @@ import (
 	"syscall"
 
 	"github.com/kilgaloon/leprechaun/client"
+	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/server"
 )
 
@@ -24,12 +25,13 @@ func main() {
 
 	shutdownSignal := make(chan os.Signal, 1)
 
-	clientIniPath := flag.String("client_ini_path", "/etc/leprechaun/configs/client.ini", "Path to client .ini configuration")
-	serverIniPath := flag.String("server_ini_path", "/etc/leprechaun/configs/server.ini", "Path to server .ini configuration")
+	iniPath := flag.String("ini_path", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
 	flag.Parse()
 
-	client.CreateAgent(clientIniPath)
-	server.CreateAgent(serverIniPath)
+	cfg := config.BuildConfig(*iniPath)
+
+	client.CreateAgent(cfg.GetClientConfig())
+	server.CreateAgent(cfg.GetServerConfig())
 
 	switch command {
 	case "client:stop":

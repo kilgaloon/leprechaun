@@ -29,8 +29,11 @@ func (handler *Handler) listen() {
 		for {
 			select {
 			case event := <-handler.eventChannel:
-				handler.events[event]()
-				log.Logger.Info("Event %s dispatched", event)
+				if trigger, subscribed := handler.events[event]; subscribed {
+					trigger()
+					log.Logger.Info("Event %s dispatched", event)
+				}
+
 			}
 		}
 	}()

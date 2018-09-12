@@ -1,7 +1,7 @@
 install:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
-	cp -r configs /etc/leprechaun/configs
+	cp -r dist/configs /etc/leprechaun/configs
 	mkdir /var/log/leprechaun/
 	mkdir /var/log/leprechaun/server
 	mkdir /var/run/leprechaun/
@@ -34,3 +34,7 @@ test:
 	cd recipe && go vet
 	cd recipe/schedule && go vet
 	go test ./client
+	go test ./config
+	go test ./context
+	go test ./event
+	go test ./log
