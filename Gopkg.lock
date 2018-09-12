@@ -26,22 +26,9 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:ac83cf90d08b63ad5f7e020ef480d319ae890c208f8524622a2f3136e2686b02"
-  name = "github.com/stretchr/objx"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "477a77ecc69700c7cdeb1fa9e129548e1c1c393c"
-  version = "v0.1.1"
-
-[[projects]]
-  digest = "1:160984c58aab3af94b0a2a43b2ef7e2f3b16d5802cd35436819627fa259f3ffa"
+  digest = "1:18752d0b95816a1b777505a97f71c7467a8445b8ffb55631a7bf779f6ba4fa83"
   name = "github.com/stretchr/testify"
-  packages = [
-    ".",
-    "assert",
-    "http",
-    "mock",
-  ]
+  packages = ["assert"]
   pruneopts = "UT"
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
@@ -75,7 +62,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/fsnotify/fsnotify",
-    "github.com/stretchr/testify",
+    "github.com/stretchr/testify/assert",
     "gopkg.in/ini.v1",
     "gopkg.in/yaml.v2",
   ]
