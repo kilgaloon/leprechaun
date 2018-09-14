@@ -7,19 +7,23 @@ import (
 // Default paths
 const (
 	// Client
-	clientErrorLog    = "/var/log/leprechaun/error.log"
-	clientInfoLog     = "/var/log/leprechaun/info.log"
-	clientRecipesPath = "/etc/leprechaun/recipes"
-	clientPIDFile     = "/var/run/leprechaun/client.pid"
-	clientLockFile    = "/var/run/leprechaun/client.lock"
+	clientErrorLog          = "/var/log/leprechaun/error.log"
+	clientInfoLog           = "/var/log/leprechaun/info.log"
+	clientRecipesPath       = "/etc/leprechaun/recipes"
+	clientPIDFile           = "/var/run/leprechaun/client.pid"
+	clientLockFile          = "/var/run/leprechaun/client.lock"
+	clientMaxAllowedWorkers = 5
+	clientRetryRecipeAfter  = 10
 
 	// Server
-	serverErrorLog    = "/var/log/leprechaun/server/error.log"
-	serverInfoLog     = "/var/log/leprechaun/server/info.log"
-	serverRecipesPath = "/etc/leprechaun/recipes"
-	serverPIDFile     = "/var/run/leprechaun/server.pid"
-	serverLockFile    = "/var/run/leprechaun/server.lock"
-	serverPort        = 11400
+	serverErrorLog          = "/var/log/leprechaun/server/error.log"
+	serverInfoLog           = "/var/log/leprechaun/server/info.log"
+	serverRecipesPath       = "/etc/leprechaun/recipes"
+	serverPIDFile           = "/var/run/leprechaun/server.pid"
+	serverLockFile          = "/var/run/leprechaun/server.lock"
+	serverPort              = 11400
+	serverMaxAllowedWorkers = 5
+	serverRetryRecipeAfter  = 10
 )
 
 // Config values
@@ -30,21 +34,25 @@ type Config struct {
 
 // ClientConfig holds config for client
 type ClientConfig struct {
-	ErrorLog    string
-	InfoLog     string
-	RecipesPath string
-	PIDFile     string
-	LockFile    string
+	ErrorLog          string
+	InfoLog           string
+	RecipesPath       string
+	PIDFile           string
+	LockFile          string
+	MaxAllowedWorkers int
+	RetryRecipeAfter  int
 }
 
 // ServerConfig holds config for server
 type ServerConfig struct {
-	ErrorLog    string
-	InfoLog     string
-	RecipesPath string
-	PIDFile     string
-	LockFile    string
-	Port        int
+	ErrorLog          string
+	InfoLog           string
+	RecipesPath       string
+	PIDFile           string
+	LockFile          string
+	Port              int
+	MaxAllowedWorkers int
+	RetryRecipeAfter  int
 }
 
 // BuildConfig Create client config
@@ -80,6 +88,11 @@ func BuildConfig(path string) *Config {
 		c.ClientConfig.LockFile = clientLockFile
 	}
 
+	c.ClientConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(clientMaxAllowedWorkers)
+	c.ClientConfig.RetryRecipeAfter = cfg.Section("").Key("client.retry_recipe_after").MustInt(clientRetryRecipeAfter)
+
+	c.ServerConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(serverMaxAllowedWorkers)
+	c.ServerConfig.RetryRecipeAfter = cfg.Section("").Key("server.retry_recipe_after").MustInt(serverRetryRecipeAfter)
 	c.ServerConfig.Port = cfg.Section("").Key("server.port").MustInt(serverPort)
 	c.ServerConfig.ErrorLog = cfg.Section("").Key("server.error_log").MustString(serverErrorLog)
 	if !IsFileValid(c.ServerConfig.ErrorLog, ".log") {

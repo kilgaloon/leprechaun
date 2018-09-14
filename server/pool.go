@@ -1,10 +1,8 @@
 package server
 
 import (
-	"bytes"
 	"io/ioutil"
-	"os/exec"
-	"strings"
+	"time"
 
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/recipe"
@@ -46,27 +44,40 @@ func (server *Server) FindInPool(id string) {
 
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
-	for index, step := range recipe.Steps {
-		log.Logger.Info("Recipe %s Step %d is in progress... \n", recipe.Name, (index + 1))
-		// replace variables
-		step = server.Context.Transpile(step)
-
-		parts := strings.Fields(step)
-		parts = parts[1:]
-
-		cmd := exec.Command("bash", "-c", step)
-
-		var out bytes.Buffer
-		var stderr bytes.Buffer
-		cmd.Stdout = &out
-		cmd.Stderr = &stderr
-
-		err := cmd.Run()
-		if err != nil {
-			log.Logger.Info("Recipe %s Step %d failed to start. Reason: %s \n", recipe.Name, (index + 1), stderr.String())
-		}
-
-		log.Logger.Info("Recipe %s Step %d finished... \n\n", recipe.Name, (index + 1))
-
+	// lock mutex
+	server.mu.Lock()
+	// create worker
+	worker, err := server.Workers.CreateWorker(recipe.Name)
+	// unlock mutex
+	server.mu.Unlock()
+	if err != nil {
+		// move this worker to queue and retry to work on it
+		go server.ProcessRecipe(recipe)
+		server.Logs.Info("%s", err)
+		return
 	}
+
+	worker.Run(recipe.Steps)
+}
+
+// ProcessRecipe takes specific recipe and process it
+func (server *Server) ProcessRecipe(r recipe.Recipe) {
+	recipe := r
+
+	server.Logs.Info("%s file is in progress... \n", recipe.Name)
+	// lock mutex
+	server.mu.Lock()
+	// create worker
+	worker, err := server.Workers.CreateWorker(recipe.Name)
+	// unlock mutex
+	server.mu.Unlock()
+	if err != nil {
+		time.Sleep(time.Duration(server.Config.RetryRecipeAfter) * time.Second)
+		server.Logs.Info("%s, retrying in %d s...", err, server.Config.RetryRecipeAfter)
+		// move this worker to queue and work on it when next worker space is available
+		go server.ProcessRecipe(recipe)
+		return
+	}
+
+	worker.Run(recipe.Steps)
 }

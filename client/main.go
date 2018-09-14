@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent holds instance of Client
@@ -25,6 +27,8 @@ type Client struct {
 	Logs   log.Logs
 	Queue
 	Context *context.Context
+	mu      *sync.Mutex
+	Workers *workers.Workers
 }
 
 // CreateAgent new client
@@ -34,7 +38,14 @@ func CreateAgent(cfg *config.ClientConfig) *Client {
 	client := &Client{}
 	// load configurations for server
 	client.Config = cfg
-	client.Context = context.BuildContext()
+	// be carefull BuildContext might use Config, so set it before us it
+	client.Context = context.BuildContext(client)
+	client.mu = new(sync.Mutex)
+	client.Logs = log.Logs{
+		ErrorLog: client.Config.ErrorLog,
+		InfoLog:  client.Config.InfoLog,
+	}
+	client.Workers = workers.BuildWorkers(client.Context, cfg.MaxAllowedWorkers, client.Logs)
 
 	Agent = client
 
@@ -44,7 +55,7 @@ func CreateAgent(cfg *config.ClientConfig) *Client {
 // Start client
 func (client Client) Start() {
 	// remove hanging .lock file
-	client.Unlock()
+	os.Remove(client.Config.LockFile)
 	// SetPID of client
 	client.SetPID()
 	// build queue
@@ -79,7 +90,6 @@ func (client Client) Start() {
 
 	for {
 		go client.ProcessQueue()
-
 		time.Sleep(60 * time.Second)
 	}
 
@@ -184,6 +194,11 @@ func (client Client) Stop() os.Signal {
 	}
 
 	return os.Interrupt
+}
+
+// GetConfig Gets config for server
+func (client Client) GetConfig() *config.ClientConfig {
+	return client.Config
 }
 
 func init() {

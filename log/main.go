@@ -12,7 +12,7 @@ type Logs struct {
 }
 
 // Error logs everything bad that happens in application
-func (l *Logs) Error(message string, v ...interface{}) {
+func (l Logs) Error(message string, v ...interface{}) {
 	if len(l.ErrorLog) > 0 {
 		file, err := os.OpenFile(l.ErrorLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
@@ -24,11 +24,11 @@ func (l *Logs) Error(message string, v ...interface{}) {
 		log.SetOutput(file)
 	}
 
-	log.Fatalf(message, v...)
+	log.Printf(message, v...)
 }
 
 // Info logs everything that happens in application
-func (l *Logs) Info(message string, v ...interface{}) {
+func (l Logs) Info(message string, v ...interface{}) {
 	if len(l.InfoLog) > 0 {
 		file, err := os.OpenFile(l.InfoLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {

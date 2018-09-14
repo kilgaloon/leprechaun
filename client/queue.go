@@ -1,9 +1,7 @@
 package client
 
 import (
-	"bytes"
 	"io/ioutil"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -46,7 +44,6 @@ func (client *Client) BuildQueue() {
 func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		r := recipe.Build(path)
-
 		if r.Definition == "schedule" {
 			*stack = append(*stack, recipe.Build(path))
 		}
@@ -58,47 +55,71 @@ func (client *Client) ProcessQueue() {
 	now := time.Now()
 	compare := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), 0, 0, time.UTC)
 
-	for index, r := range client.Queue.Stack {
-		recipe := &client.Queue.Stack[index]
+	for index := range client.Queue.Stack {
+		go func(r *recipe.Recipe) {
+			if compare.Equal(r.StartAt) {
+				// lock mutex
+				client.mu.Lock()
+				// create worker
+				worker, err := client.Workers.CreateWorker(r.Name)
+				// unlock mutex
+				client.mu.Unlock()
 
-		if IsLocked(r.Name, client) {
-			continue
-		}
-
-		if compare.Equal(recipe.StartAt) {
-			if LockProcess(r.Name, client) {
-				client.Logs.Info("%s file is in progress... \n", r.Name)
-
-				event.EventHandler.Dispatch("client:lock")
-
-				for index, step := range r.Steps {
-					client.Logs.Info("Recipe %s Step %d is in progress... \n", r.Name, (index + 1))
-					// replace variables
-					step = client.Context.Transpile(step)
-
-					cmd := exec.Command("bash", "-c", step)
-
-					var out bytes.Buffer
-					var stderr bytes.Buffer
-					cmd.Stdout = &out
-					cmd.Stderr = &stderr
-
-					err := cmd.Run()
-					if err != nil {
-						client.Logs.Info("Recipe %s Step %d failed to start. Reason: %s \n", r.Name, (index + 1), stderr.String())
+				if err != nil {
+					switch err {
+					case client.Workers.Errors.AllowedWorkersReached:
+						client.Logs.Info("%s", err)
+						go client.ProcessRecipe(r)
+					case client.Workers.Errors.StillActive:
+						client.Logs.Info("Worker with NAME: %s is still active", r.Name)
 					}
-
-					client.Logs.Info("Recipe %s Step %d finished... \n\n", r.Name, (index + 1))
-					RemoveLock(r.Name, client)
-
-					event.EventHandler.Dispatch("client:unlock")
+					// move this worker to queue and work on it when next worker space is available
+					go client.ProcessRecipe(r)
+					client.Logs.Info("%s", err)
+					return
 				}
 
-				recipe.StartAt = schedule.ScheduleToTime(recipe.Schedule)
-
-			} else {
-				client.Logs.Info("Failed to set lock on %s recipe", r.Name)
+				event.EventHandler.Dispatch("client:lock")
+				client.Logs.Info("%s file is in progress... \n", r.Name)
+				// worker takeover steps and works on then
+				worker.Run(r.Steps)
+				// signal that worker is done
+				// then proceed with unlock
+				event.EventHandler.Dispatch("client:unlock")
+				// schedule recipe for next execution
+				r.StartAt = schedule.ScheduleToTime(r.Schedule)
 			}
-		}
+		}(&client.Queue.Stack[index])
 	}
+}
+
+// ProcessRecipe takes specific recipe and process it
+func (client *Client) ProcessRecipe(r *recipe.Recipe) {
+	// lock mutex
+	client.mu.Lock()
+	// create worker
+	worker, err := client.Workers.CreateWorker(r.Name)
+	// unlock mutex
+	client.mu.Unlock()
+
+	if err != nil {
+		switch err {
+		case client.Workers.Errors.AllowedWorkersReached:
+			// move this worker to queue and work on it when next worker space is available
+			time.Sleep(time.Duration(client.Config.RetryRecipeAfter) * time.Second)
+			client.Logs.Info("%s, retrying in %d s ...", err, client.Config.RetryRecipeAfter)
+			go client.ProcessRecipe(r)
+		case client.Workers.Errors.StillActive:
+			client.Logs.Info("Worker with NAME: %s is still active", r.Name)
+		}
+
+		return
+	}
+
+	event.EventHandler.Dispatch("client:lock")
+	client.Logs.Info("%s file is in progress... \n", r.Name)
+	// worker takeover steps and works on then
+	worker.Run(r.Steps)
+	//remove lock on client
+	event.EventHandler.Dispatch("client:unlock")
 }

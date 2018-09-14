@@ -2,6 +2,7 @@ package client
 
 import (
 	"io/ioutil"
+	"os"
 	"strconv"
 	"testing"
 
@@ -17,7 +18,7 @@ var (
 
 func TestStart(t *testing.T) {
 	// remove hanging .lock file
-	fakeClient.Unlock()
+	os.Remove(fakeClient.Config.LockFile)
 	// SetPID of client
 	fakeClient.SetPID()
 	// build queue

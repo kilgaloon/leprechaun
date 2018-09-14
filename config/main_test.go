@@ -21,6 +21,8 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, clientRecipesPath, clientCfg.RecipesPath)
 	assert.Equal(t, clientPIDFile, clientCfg.PIDFile)
 	assert.Equal(t, clientLockFile, clientCfg.LockFile)
+	assert.Equal(t, clientMaxAllowedWorkers, clientCfg.MaxAllowedWorkers)
+	assert.Equal(t, clientRetryRecipeAfter, clientCfg.RetryRecipeAfter)
 
 	serverCfg := cfg.GetServerConfig()
 	assert.Equal(t, serverErrorLog, serverCfg.ErrorLog)
@@ -29,6 +31,8 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, serverPort, serverCfg.Port)
 	assert.Equal(t, serverPIDFile, serverCfg.PIDFile)
 	assert.Equal(t, serverLockFile, serverCfg.LockFile)
+	assert.Equal(t, serverMaxAllowedWorkers, serverCfg.MaxAllowedWorkers)
+	assert.Equal(t, serverRetryRecipeAfter, serverCfg.RetryRecipeAfter)
 }
 
 func TestBuildWithSettings(t *testing.T) {
@@ -40,6 +44,8 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", clientCfg.RecipesPath)
 	assert.Equal(t, "../tests/var/run/leprechaun/client.pid", clientCfg.PIDFile)
 	assert.Equal(t, "../tests/var/run/leprechaun/client.lock", clientCfg.LockFile)
+	assert.Equal(t, 5, clientCfg.MaxAllowedWorkers)
+	assert.Equal(t, 10, clientCfg.RetryRecipeAfter)
 
 	serverCfg := cfg.GetServerConfig()
 	assert.Equal(t, "../tests/var/log/leprechaun/server-error.log", serverCfg.ErrorLog)
@@ -48,6 +54,8 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, 11400, serverCfg.Port)
 	assert.Equal(t, "../tests/var/run/leprechaun/server.pid", serverCfg.PIDFile)
 	assert.Equal(t, "../tests/var/run/leprechaun/server.lock", serverCfg.LockFile)
+	assert.Equal(t, 5, serverCfg.MaxAllowedWorkers)
+	assert.Equal(t, 10, serverCfg.RetryRecipeAfter)
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
@@ -59,6 +67,8 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, clientRecipesPath, clientCfg.RecipesPath)
 	assert.Equal(t, clientPIDFile, clientCfg.PIDFile)
 	assert.Equal(t, clientLockFile, clientCfg.LockFile)
+	assert.Equal(t, clientMaxAllowedWorkers, clientCfg.MaxAllowedWorkers)
+	assert.Equal(t, clientRetryRecipeAfter, clientCfg.RetryRecipeAfter)
 
 	serverCfg := cfg.GetServerConfig()
 	assert.Equal(t, serverErrorLog, serverCfg.ErrorLog)
@@ -67,4 +77,6 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, serverPort, serverCfg.Port)
 	assert.Equal(t, serverPIDFile, serverCfg.PIDFile)
 	assert.Equal(t, serverLockFile, serverCfg.LockFile)
+	assert.Equal(t, serverMaxAllowedWorkers, serverCfg.MaxAllowedWorkers)
+	assert.Equal(t, serverRetryRecipeAfter, serverCfg.RetryRecipeAfter)
 }

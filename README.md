@@ -50,17 +50,9 @@ Task will run every 2 days 2 hours and 10 mins, if we put just days to 0 then it
 Hooked recipe can be run by sending request to `{host}:{port}/hook?id={id_of_recipe}` on which Leprechaun server is listening, for example `localhost:11400/hook?id=45DE2239F`.
 
 
-Steps also support variables which syntax is `$variable`. At this moment we can talk about specific section in *client.ini* file where you can define all variables to be used in your steps.
+Steps also support variables which syntax is `$variable`, and those are environment variables ex: `$LOGNAME`
 
-  
-Dedicated section is named `[variables]`, anything defined in this section can and will be replaced in steps if variable defined cooresponds to syntax, sooo for example we can defined something like this
-
-	[variables]
-	testFile = ./test.txt
-
-Also all environment variables are available in steps ex: `$LOGNAME`
-
-and in our steps it will be available as `$testFile`. We can now rewrite our job file and it will look like something like this:
+and in our steps it will be available as `$LOGNAME`. We can now rewrite our job file and it will look like something like this:
 
 	name: job1 // name of recipe
 	definition: schedule
@@ -69,12 +61,21 @@ and in our steps it will be available as `$testFile`. We can now rewrite our job
 		hour: 0 // every hour
 		day: 0 // every day
 	steps: // steps are done from first to last
-		- touch $testFile
-		- echo "Is this working?" > $testFile
-		- mv $testFile ./imwondering.txt
+		- echo "Is this working?" > $LOGNAME
 
 Usage is very straightforward, you just need to start client and it will run recipes you defined previously.
   
+Steps also can be defined as sync/async tasks, but keep in mind that steps in recipes are performed by linear path, lets take this one as example
+	
+	steps:
+		- -> ping google.com
+		- echo "I will not wait above task to perform, he is async so i will start immidiatelly"
+
+but in this case for example first task will block performing on any task and all others will hang waiting it to finish
+
+	steps:
+		- ping google.com
+		- -> echo "I will not wait above task to perform, he is async so i will start immidiatelly"
 
 ## Starting/Stopping service
 
