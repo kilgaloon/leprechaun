@@ -4,10 +4,12 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent holds instance of Server
@@ -20,6 +22,8 @@ type Server struct {
 	Pool
 	HTTP    *http.Server
 	Context *context.Context
+	mu      *sync.Mutex
+	Workers *workers.Workers
 }
 
 // CreateAgent new server
@@ -29,8 +33,15 @@ func CreateAgent(cfg *config.ServerConfig) *Server {
 	server := &Server{}
 	// load configurations for server
 	server.Config = cfg
-	server.Context = context.BuildContext()
+	server.Context = context.BuildContext(server)
 	server.HTTP = &http.Server{Addr: ":" + strconv.Itoa(server.Config.Port)}
+	server.mu = new(sync.Mutex)
+	server.Logs = log.Logs{
+		ErrorLog: server.Config.ErrorLog,
+		InfoLog:  server.Config.InfoLog,
+	}
+	server.Workers = workers.BuildWorkers(server.Context, cfg.MaxAllowedWorkers, server.Logs)
+	
 
 	Agent = server
 
@@ -64,4 +75,9 @@ func (server *Server) Stop() os.Signal {
 	}
 
 	return os.Interrupt
+}
+
+// GetConfig Gets config for server
+func (server Server) GetConfig() *config.ServerConfig {
+	return server.Config
 }

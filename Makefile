@@ -33,8 +33,10 @@ test:
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
-	go test ./client
-	go test ./config
-	go test ./context
-	go test ./event
-	go test ./log
+	go test ./client -cover
+	go test ./config -cover
+	go test ./context -cover
+	go test ./event -cover
+	go test ./log -cover
+	go test ./workers -cover
+	go test ./server -cover

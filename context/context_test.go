@@ -1,9 +1,11 @@
 package context
 
-import "testing"
+import (
+	"testing"
+)
 
 var (
-	ctx = BuildContext()
+	ctx = BuildContext("context")
 )
 
 // Test defining variable and getting it back

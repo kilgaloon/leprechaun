@@ -50,8 +50,8 @@ func (c *Context) Transpile(toCompile string) string {
 	return toCompile
 }
 
-// BuildContext Create context
-func BuildContext() *Context {
+//BuildContext Create context for agent
+func BuildContext(i interface{}) *Context {
 	context := &Context{}
 	// insert environment variables in our context
 	for _, e := range os.Environ() {
