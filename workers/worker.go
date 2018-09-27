@@ -25,6 +25,7 @@ type Worker struct {
 	DoneChan       chan string
 	Name           string
 	TasksPerformed int
+	Cmd            map[string]*exec.Cmd
 }
 
 // Run starts worker
@@ -33,6 +34,7 @@ type Worker struct {
 // this can be used to write informations to {job}.lock file
 func (w *Worker) Run(steps []string) {
 	w.Steps = steps
+	w.StartedAt = time.Now()
 
 	for _, step := range w.Steps {
 		w.Logs.Info("Step %s is in progress... \n", step)
@@ -51,6 +53,7 @@ func (w *Worker) Run(steps []string) {
 
 func (w *Worker) workOnStep(step string) {
 	cmd := exec.Command("bash", "-c", step)
+	w.Cmd[step] = cmd
 
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -70,7 +73,21 @@ func (w *Worker) workOnStep(step string) {
 		w.Logs.Info("Step %s -> output: %s", step, out.String())
 	}
 
+	// command finished executing
+	// delete it, and let it rest in pepperonies
+	delete(w.Cmd, step)
 	w.Done()
+}
+
+// Kill all commands that worker is working on
+func (w *Worker) Kill() {
+	for step, cmd := range w.Cmd {
+		if err := cmd.Process.Kill(); err != nil {
+			w.Logs.Error("Failed to kill process on step %s: %s", step, err)
+		}
+	}
+
+	w.DoneChan <- w.Name
 }
 
 // Done signals that this worker is done and send his id for cleaner

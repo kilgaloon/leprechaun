@@ -14,6 +14,7 @@ import (
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/socket"
 	"github.com/kilgaloon/leprechaun/workers"
 )
 
@@ -53,7 +54,7 @@ func CreateAgent(cfg *config.ClientConfig) *Client {
 }
 
 // Start client
-func (client Client) Start() {
+func (client *Client) Start() {
 	// remove hanging .lock file
 	os.Remove(client.Config.LockFile)
 	// SetPID of client
@@ -87,6 +88,8 @@ func (client Client) Start() {
 	}
 
 	event.EventHandler.Dispatch("client:ready")
+	// register client to command socket
+	go socket.BuildSocket(client.Config.CommandSocket).Register(client)
 
 	for {
 		go client.ProcessQueue()

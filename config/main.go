@@ -12,6 +12,7 @@ const (
 	clientRecipesPath       = "/etc/leprechaun/recipes"
 	clientPIDFile           = "/var/run/leprechaun/client.pid"
 	clientLockFile          = "/var/run/leprechaun/client.lock"
+	clientCommandSocket     = "/var/run/leprechaun/client.sock"
 	clientMaxAllowedWorkers = 5
 	clientRetryRecipeAfter  = 10
 
@@ -21,6 +22,7 @@ const (
 	serverRecipesPath       = "/etc/leprechaun/recipes"
 	serverPIDFile           = "/var/run/leprechaun/server.pid"
 	serverLockFile          = "/var/run/leprechaun/server.lock"
+	serverCommandSocket     = "/var/run/leprechaun/server.sock"
 	serverPort              = 11400
 	serverMaxAllowedWorkers = 5
 	serverRetryRecipeAfter  = 10
@@ -34,22 +36,26 @@ type Config struct {
 
 // ClientConfig holds config for client
 type ClientConfig struct {
+	PathToConfig      string
 	ErrorLog          string
 	InfoLog           string
 	RecipesPath       string
 	PIDFile           string
 	LockFile          string
+	CommandSocket     string
 	MaxAllowedWorkers int
 	RetryRecipeAfter  int
 }
 
 // ServerConfig holds config for server
 type ServerConfig struct {
+	PathToConfig      string
 	ErrorLog          string
 	InfoLog           string
 	RecipesPath       string
 	PIDFile           string
 	LockFile          string
+	CommandSocket     string
 	Port              int
 	MaxAllowedWorkers int
 	RetryRecipeAfter  int
@@ -63,6 +69,7 @@ func BuildConfig(path string) *Config {
 	}
 
 	c := &Config{}
+	c.ClientConfig.PathToConfig = path
 	c.ClientConfig.ErrorLog = cfg.Section("").Key("client.error_log").MustString(clientErrorLog)
 	if !IsFileValid(c.ClientConfig.ErrorLog, ".log") {
 		c.ClientConfig.ErrorLog = clientErrorLog
@@ -88,9 +95,15 @@ func BuildConfig(path string) *Config {
 		c.ClientConfig.LockFile = clientLockFile
 	}
 
+	c.ClientConfig.CommandSocket = cfg.Section("").Key("client.command_socket").MustString(clientCommandSocket)
+	if !IsFileValid(c.ClientConfig.CommandSocket, ".sock") {
+		c.ClientConfig.CommandSocket = clientCommandSocket
+	}
+
 	c.ClientConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(clientMaxAllowedWorkers)
 	c.ClientConfig.RetryRecipeAfter = cfg.Section("").Key("client.retry_recipe_after").MustInt(clientRetryRecipeAfter)
 
+	c.ServerConfig.PathToConfig = path
 	c.ServerConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(serverMaxAllowedWorkers)
 	c.ServerConfig.RetryRecipeAfter = cfg.Section("").Key("server.retry_recipe_after").MustInt(serverRetryRecipeAfter)
 	c.ServerConfig.Port = cfg.Section("").Key("server.port").MustInt(serverPort)
@@ -117,6 +130,11 @@ func BuildConfig(path string) *Config {
 	c.ServerConfig.LockFile = cfg.Section("").Key("server.lock_file").MustString(serverLockFile)
 	if !IsFileValid(c.ServerConfig.LockFile, ".lock") {
 		c.ServerConfig.LockFile = serverLockFile
+	}
+
+	c.ServerConfig.CommandSocket = cfg.Section("").Key("server.command_socket").MustString(serverCommandSocket)
+	if !IsFileValid(c.ServerConfig.CommandSocket, ".sock") {
+		c.ServerConfig.CommandSocket = serverCommandSocket
 	}
 
 	return c

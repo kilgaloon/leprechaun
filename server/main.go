@@ -41,7 +41,6 @@ func CreateAgent(cfg *config.ServerConfig) *Server {
 		InfoLog:  server.Config.InfoLog,
 	}
 	server.Workers = workers.BuildWorkers(server.Context, cfg.MaxAllowedWorkers, server.Logs)
-	
 
 	Agent = server
 

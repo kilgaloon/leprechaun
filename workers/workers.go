@@ -2,6 +2,7 @@ package workers
 
 import (
 	"errors"
+	"os/exec"
 	"time"
 
 	"github.com/kilgaloon/leprechaun/context"
@@ -29,6 +30,21 @@ func (w Workers) Size() int {
 	return len(w.stack)
 }
 
+// GetAll workers from stack
+func (w Workers) GetAll() map[string]Worker {
+	return w.stack
+}
+
+// GetByName gets worker by provided name
+func (w Workers) GetByName(name string) (Worker, error) {
+	var worker Worker
+	if worker, ok := w.stack[name]; ok {
+		return worker, nil
+	}
+
+	return worker, errors.New("No worker with that name")
+}
+
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(name string) (*Worker, error) {
 	if _, ok := w.stack[name]; ok {
@@ -42,6 +58,7 @@ func (w *Workers) CreateWorker(name string) (*Worker, error) {
 			Logs:      w.Logs,
 			DoneChan:  w.DoneChan,
 			Name:      name,
+			Cmd:       make(map[string]*exec.Cmd),
 		}
 		// move to stack
 		w.stack[worker.Name] = *worker
