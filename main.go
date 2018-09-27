@@ -39,7 +39,7 @@ func main() {
 	case "server:start":
 		go server.Agent.Start()
 	case "client":
-		sock := socket.BuildSocket("var/run/client.sock")
+		sock := socket.BuildSocket(cfg.GetClientConfig().CommandSocket)
 		sock.Command(*cmd)
 		os.Exit(0)
 	default:
