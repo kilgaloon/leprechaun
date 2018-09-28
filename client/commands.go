@@ -44,7 +44,7 @@ func (c *Client) listWorkers(args ...string) ([][]string, error) {
 
 	for name, worker := range c.Workers.GetAll() {
 		startedAt := worker.StartedAt.Format(time.UnixDate)
-		resp = append(resp, []string{name, startedAt, worker.WorkingOn})
+		resp = append(resp, []string{name, startedAt, worker.WorkingOn, worker.Err.Error()})
 	}
 
 	return resp, nil
