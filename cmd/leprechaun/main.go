@@ -10,7 +10,7 @@ import (
 	"github.com/kilgaloon/leprechaun/client"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/server"
-	"github.com/kilgaloon/leprechaun/socket"
+	"github.com/kilgaloon/leprechaun/api"
 )
 
 // VERSION of application
@@ -39,7 +39,7 @@ func main() {
 	case "server:start":
 		go server.Agent.Start()
 	case "client":
-		sock := socket.BuildSocket(cfg.GetClientConfig().CommandSocket)
+		sock := api.BuildSocket(cfg.GetClientConfig().CommandSocket)
 		sock.Command(*cmd)
 		os.Exit(0)
 	default:

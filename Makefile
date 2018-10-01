@@ -10,7 +10,8 @@ install:
 	touch /var/log/leprechaun/error.log
 	touch /var/log/leprechaun/server/error.log
 	touch /var/run/leprechaun/.pid
-	go install
+	go install ./cmd/leprechaun
+	go install ./cmd/lepretools
 
 uninstall:
 	rm -rf /etc/leprechaun
@@ -18,7 +19,8 @@ uninstall:
 	rm -rf /var/run/leprechaun
 
 build:
-	go build
+	go build ./cmd/leprechaun
+	go build ./cmd/lepretools
 
 rebuild:
 	go clean
@@ -40,3 +42,4 @@ test:
 	go test ./log -cover
 	go test ./workers -cover
 	go test ./server -cover
+	go test ./api -cover

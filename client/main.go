@@ -14,7 +14,7 @@ import (
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
-	"github.com/kilgaloon/leprechaun/socket"
+	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/workers"
 )
 
@@ -89,7 +89,7 @@ func (client *Client) Start() {
 
 	event.EventHandler.Dispatch("client:ready")
 	// register client to command socket
-	go socket.BuildSocket(client.Config.CommandSocket).Register(client)
+	go api.BuildSocket(client.Config.CommandSocket).Register(client)
 
 	for {
 		go client.ProcessQueue()

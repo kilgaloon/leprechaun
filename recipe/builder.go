@@ -2,7 +2,6 @@ package recipe
 
 import (
 	"io/ioutil"
-	"log"
 	"time"
 
 	"github.com/kilgaloon/leprechaun/recipe/schedule"
@@ -20,17 +19,17 @@ type Recipe struct {
 }
 
 // Build recipe for use
-func Build(file string) Recipe {
+func Build(file string) (Recipe, error) {
 	r := Recipe{}
 
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatalf("Unable to open recipe: " + file)
+		return r, err
 	}
 
 	error := yaml.Unmarshal(data, &r)
 	if error != nil {
-		log.Fatalf("Unable to unmarshal yaml: %s", error)
+		return r, err
 	}
 
 	switch r.Definition {
@@ -38,5 +37,5 @@ func Build(file string) Recipe {
 		r.StartAt = recipe.ScheduleToTime(r.Schedule)
 	}
 
-	return r
+	return r, nil
 }

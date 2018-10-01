@@ -27,8 +27,10 @@ func (client *Client) BuildQueue() {
 
 	for _, file := range files {
 		fullFilepath := client.Config.RecipesPath + "/" + file.Name()
-		recipe := recipe.Build(fullFilepath)
-
+		recipe, err := recipe.Build(fullFilepath)
+		if err != nil {
+			client.Logs.Error(err.Error())
+		}
 		// recipes that needs to be pushed to queue
 		// needs to be schedule by definition
 		if recipe.Definition == "schedule" {
@@ -43,9 +45,13 @@ func (client *Client) BuildQueue() {
 // AddToQueue takes freshly created recipes and add them to queue
 func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
-		r := recipe.Build(path)
+		r, err := recipe.Build(path)
+		if err != nil {
+			client.Logs.Error(err.Error())
+		}
+
 		if r.Definition == "schedule" {
-			*stack = append(*stack, recipe.Build(path))
+			*stack = append(*stack, r)
 		}
 	}
 }

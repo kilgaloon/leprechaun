@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/socket"
+	"github.com/kilgaloon/leprechaun/api"
 )
 
 // this section is used for command responders
@@ -70,8 +70,8 @@ func (c *Client) killWorker(args ...string) ([][]string, error) {
 }
 
 // RegisterCommandSocket returns Registrator
-func (c *Client) RegisterCommandSocket() *socket.Registrator {
-	r := socket.CreateRegistrator("client")
+func (c *Client) RegisterCommandSocket() *api.Registrator {
+	r := api.CreateRegistrator("client")
 
 	// register commands
 	r.Command("info", c.clientInfo)

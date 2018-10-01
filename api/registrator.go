@@ -1,9 +1,11 @@
-package socket
+package api
 
 import "errors"
 
 // Command is closure that will be called to execute command
 type Command func(args ...string) ([][]string, error)
+type tabel [][]string
+type column []string
 
 // Registrator is agent that will be registered
 // with regi

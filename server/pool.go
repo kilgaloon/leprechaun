@@ -25,8 +25,10 @@ func (server *Server) BuildPool() {
 
 	for _, file := range files {
 		fullFilepath := server.Config.RecipesPath + "/" + file.Name()
-		recipe := recipe.Build(fullFilepath)
-
+		recipe, err := recipe.Build(fullFilepath)
+		if err != nil {
+			server.Logs.Error(err.Error())
+		}
 		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
 		if recipe.Definition == "hook" {
