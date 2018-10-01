@@ -108,3 +108,8 @@ Leprechaun provides some more commands that you can use:
 `leprechaun --cmd="client workers:list"` which will show you list of workers that are currently working
 
 `leprechaun --cmd="client workers:kill {name}"` `{name}` is a placeholder for name of a job you want to kill, all steps that are working async/sync will be terminated.
+
+
+# Lepretools
+
+For cli tools take a look [here](https://github.com/Kilgaloon/Leprechaun/blob/master/cmd/lepretools/README.md)
