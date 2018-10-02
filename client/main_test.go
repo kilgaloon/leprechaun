@@ -12,13 +12,13 @@ import (
 var (
 	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
-	cfg        = config.BuildConfig(*path)
-	fakeClient = CreateAgent(cfg.GetClientConfig())
+	cfgWrap    = config.NewConfigs()
+	fakeClient = CreateAgent("test", cfgWrap.New("test", *path))
 )
 
 func TestStart(t *testing.T) {
 	// remove hanging .lock file
-	os.Remove(fakeClient.Config.LockFile)
+	os.Remove(fakeClient.GetConfig().GetLockFile())
 	// SetPID of client
 	fakeClient.SetPID()
 	// build queue
@@ -28,7 +28,7 @@ func TestStart(t *testing.T) {
 		t.Error("Client should not be working anything here")
 	}
 
-	b, err := ioutil.ReadFile(fakeClient.Config.PIDFile)
+	b, err := ioutil.ReadFile(fakeClient.GetConfig().GetPIDFile())
 	if err != nil {
 		t.Errorf("%s", err)
 	}
@@ -43,7 +43,6 @@ func TestStart(t *testing.T) {
 		t.Errorf("PID expected to be %d but got %d", pid, fakeClient.GetPID())
 	}
 }
-
 func TestLock(t *testing.T) {
 	fakeClient.Lock()
 

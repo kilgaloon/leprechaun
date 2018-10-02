@@ -9,12 +9,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kilgaloon/leprechaun/agent"
+
 	"github.com/fsnotify/fsnotify"
+	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
-	"github.com/kilgaloon/leprechaun/api"
+	"github.com/kilgaloon/leprechaun/recipe"
 	"github.com/kilgaloon/leprechaun/workers"
 )
 
@@ -23,8 +26,9 @@ var Agent *Client
 
 // Client settings and configurations
 type Client struct {
+	Name   string
 	PID    int
-	Config *config.ClientConfig
+	Config *config.AgentConfig
 	Logs   log.Logs
 	Queue
 	Context *context.Context
@@ -35,28 +39,31 @@ type Client struct {
 // CreateAgent new client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(cfg *config.ClientConfig) *Client {
-	client := &Client{}
-	// load configurations for server
-	client.Config = cfg
-	// be carefull BuildContext might use Config, so set it before us it
-	client.Context = context.BuildContext(client)
-	client.mu = new(sync.Mutex)
-	client.Logs = log.Logs{
-		ErrorLog: client.Config.ErrorLog,
-		InfoLog:  client.Config.InfoLog,
+func CreateAgent(name string, cfg *config.AgentConfig) *Client {
+	def := agent.New(name, cfg)
+	client := &Client{
+		Name:    name,
+		Config:  def.GetConfig(),
+		Logs:    def.GetLogs(),
+		Context: def.GetContext(),
+		mu:      def.Mu,
+		Workers: def.GetWorkers(),
 	}
-	client.Workers = workers.BuildWorkers(client.Context, cfg.MaxAllowedWorkers, client.Logs)
 
 	Agent = client
 
-	return Agent
+	return client
+}
+
+// GetName of agent
+func (client Client) GetName() string {
+	return client.Name
 }
 
 // Start client
 func (client *Client) Start() {
 	// remove hanging .lock file
-	os.Remove(client.Config.LockFile)
+	os.Remove(client.GetConfig().GetLockFile())
 	// SetPID of client
 	client.SetPID()
 	// build queue
@@ -82,14 +89,14 @@ func (client *Client) Start() {
 		}
 	}()
 
-	err = watcher.Add(client.Config.RecipesPath)
+	err = watcher.Add(client.GetConfig().GetRecipesPath())
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	event.EventHandler.Dispatch("client:ready")
 	// register client to command socket
-	go api.BuildSocket(client.Config.CommandSocket).Register(client)
+	go api.BuildSocket(client.GetConfig().GetCommandSocket()).Register(client)
 
 	for {
 		go client.ProcessQueue()
@@ -100,7 +107,7 @@ func (client *Client) Start() {
 
 // SetPID sets current PID of client
 func (client *Client) SetPID() {
-	f, err := os.OpenFile(client.Config.PIDFile, os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to start client, can't save PID")
 	}
@@ -122,7 +129,7 @@ func (client Client) GetPID() int {
 // decide this in which status client resides
 func (client Client) isWorking() bool {
 	// check does .lock file exists
-	if _, err := os.Stat(client.Config.LockFile); os.IsNotExist(err) {
+	if _, err := os.Stat(client.GetConfig().GetLockFile()); os.IsNotExist(err) {
 		return false
 	}
 
@@ -131,7 +138,7 @@ func (client Client) isWorking() bool {
 
 // Lock client to busy state
 func (client Client) Lock() {
-	_, err := os.OpenFile(client.Config.LockFile, os.O_RDWR|os.O_CREATE, 0644)
+	_, err := os.OpenFile(client.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to lock client in busy state")
 	}
@@ -139,7 +146,7 @@ func (client Client) Lock() {
 
 // Unlock client to busy state
 func (client *Client) Unlock() {
-	os.Remove(client.Config.LockFile)
+	os.Remove(client.GetConfig().GetLockFile())
 }
 
 // Stop client
@@ -199,9 +206,29 @@ func (client Client) Stop() os.Signal {
 	return os.Interrupt
 }
 
-// GetConfig Gets config for server
-func (client Client) GetConfig() *config.ClientConfig {
+// GetWorkers return Workers struct
+func (client *Client) GetWorkers() *workers.Workers {
+	return client.Workers
+}
+
+// GetRecipeStack returns stack of recipes
+func (client *Client) GetRecipeStack() []recipe.Recipe {
+	return client.Queue.Stack
+}
+
+// GetConfig returns configuration for specific agent
+func (client *Client) GetConfig() *config.AgentConfig {
 	return client.Config
+}
+
+// GetContext returns context of agent
+func (client *Client) GetContext() *context.Context {
+	return client.Context
+}
+
+// GetLogs return logs of agent
+func (client *Client) GetLogs() log.Logs {
+	return client.Logs
 }
 
 func init() {

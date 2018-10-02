@@ -1,0 +1,5 @@
+name: hook
+id: 223344
+definition: hook
+steps: 
+  - "cmd"

@@ -1,9 +1,19 @@
 package api
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/kilgaloon/leprechaun/agent"
+
+	"github.com/kilgaloon/leprechaun/config"
+)
 
 var (
-	registrator = CreateRegistrator("test")
+	iniFile     = "../tests/configs/config_regular.ini"
+	path        = &iniFile
+	cfg         = config.NewConfigs()
+	fakeClient  = agent.New("test", cfg.New("test", *path))
+	registrator = CreateRegistrator(fakeClient)
 )
 
 func TestCommand(t *testing.T) {
@@ -62,6 +72,13 @@ func TestCallWithArguments(t *testing.T) {
 	}
 
 	if resp[0][0] != "arg1" || resp[0][1] != "arg2" {
+		t.Fail()
+	}
+}
+
+func TestCallCommandNotExist(t *testing.T) {
+	_, err := registrator.Call("testability")
+	if err == nil {
 		t.Fail()
 	}
 }

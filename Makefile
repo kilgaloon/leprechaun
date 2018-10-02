@@ -24,13 +24,14 @@ build:
 
 rebuild:
 	go clean
-	go build
+	make build
 
 format:
 	gofmt -s -w .
 
 test:
-	go vet
+	go vet ./cmd/leprechaun
+	go vet ./cmd/lepretools
 	cd client && go vet
 	cd log && go vet
 	cd recipe && go vet
@@ -43,3 +44,29 @@ test:
 	go test ./workers -cover
 	go test ./server -cover
 	go test ./api -cover
+
+test-with-report:
+	go vet ./cmd/leprechaun
+	go vet ./cmd/lepretools
+	cd client && go vet
+	cd log && go vet
+	cd recipe && go vet
+	cd recipe/schedule && go vet
+	go test ./client -coverprofile coverprofile/client.out
+	go tool cover -html=coverprofile/client.out -o coverprofile/client.html
+	go test ./config -coverprofile coverprofile/config.out
+	go tool cover -html=coverprofile/config.out -o coverprofile/config.html
+	go test ./context -coverprofile coverprofile/context.out
+	go tool cover -html=coverprofile/context.out -o coverprofile/context.html
+	go test ./event -coverprofile coverprofile/event.out
+	go tool cover -html=coverprofile/event.out -o coverprofile/event.html
+	go test ./log -coverprofile coverprofile/log.out
+	go tool cover -html=coverprofile/log.out -o coverprofile/log.html
+	go test ./workers -coverprofile coverprofile/workers.out
+	go tool cover -html=coverprofile/workers.out -o coverprofile/workers.html
+	go test ./server -coverprofile coverprofile/server.out
+	go tool cover -html=coverprofile/server.out -o coverprofile/server.html
+	go test ./api -coverprofile coverprofile/api.out
+	go tool cover -html=coverprofile/api.out -o coverprofile/api.html
+	go test ./agent -coverprofile coverprofile/agent.out
+	go tool cover -html=coverprofile/agent.out -o coverprofile/agent.html

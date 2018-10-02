@@ -16,6 +16,16 @@ type Variable struct {
 	value string
 }
 
+// GetName returns name of variable
+func (v Variable) GetName() string {
+	return v.name
+}
+
+// GetValue returns value of variable
+func (v Variable) GetValue() string {
+	return v.value
+}
+
 // DefineVar defines variable and puts it in present context
 func (c *Context) DefineVar(variable string, value string) {
 	var v = Variable{name: variable, value: value}
@@ -50,8 +60,8 @@ func (c *Context) Transpile(toCompile string) string {
 	return toCompile
 }
 
-//BuildContext Create context for agent
-func BuildContext(i interface{}) *Context {
+//New Create context for agent
+func New() *Context {
 	context := &Context{}
 	// insert environment variables in our context
 	for _, e := range os.Environ() {

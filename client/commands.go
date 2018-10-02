@@ -3,7 +3,6 @@ package client
 import (
 	"runtime"
 	"strconv"
-	"time"
 
 	"github.com/kilgaloon/leprechaun/api"
 )
@@ -23,28 +22,10 @@ func (c *Client) clientInfo(args ...string) ([][]string, error) {
 
 	resp := [][]string{
 		{"PID: " + pid},
-		{"Config file: " + c.GetConfig().PathToConfig},
+		{"Config file: " + c.GetConfig().GetPath()},
 		{"Number of workers: " + num},
 		{"Recipes in queue: " + recipeQueueNum},
 		{"Memory Allocated: " + alloc + " MiB"},
-	}
-
-	return resp, nil
-}
-
-// cmd: client workers:list
-func (c *Client) listWorkers(args ...string) ([][]string, error) {
-	resp := [][]string{}
-
-	if c.Workers.Size() < 1 {
-		resp = [][]string{
-			{"No workers currently working!"},
-		}
-	}
-
-	for name, worker := range c.Workers.GetAll() {
-		startedAt := worker.StartedAt.Format(time.UnixDate)
-		resp = append(resp, []string{name, startedAt, worker.WorkingOn, worker.Err.Error()})
 	}
 
 	return resp, nil
@@ -71,12 +52,10 @@ func (c *Client) killWorker(args ...string) ([][]string, error) {
 
 // RegisterCommandSocket returns Registrator
 func (c *Client) RegisterCommandSocket() *api.Registrator {
-	r := api.CreateRegistrator("client")
+	r := api.CreateRegistrator(c)
 
 	// register commands
 	r.Command("info", c.clientInfo)
-	r.Command("workers:list", c.listWorkers)
-	r.Command("workers:kill", c.killWorker)
 
 	return r
 }

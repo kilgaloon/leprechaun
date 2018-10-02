@@ -6,50 +6,37 @@ import (
 
 // Default paths
 const (
-	// Client
-	clientErrorLog          = "/var/log/leprechaun/error.log"
-	clientInfoLog           = "/var/log/leprechaun/info.log"
-	clientRecipesPath       = "/etc/leprechaun/recipes"
-	clientPIDFile           = "/var/run/leprechaun/client.pid"
-	clientLockFile          = "/var/run/leprechaun/client.lock"
-	clientCommandSocket     = "/var/run/leprechaun/client.sock"
-	clientMaxAllowedWorkers = 5
-	clientRetryRecipeAfter  = 10
-
-	// Server
-	serverErrorLog          = "/var/log/leprechaun/server/error.log"
-	serverInfoLog           = "/var/log/leprechaun/server/info.log"
-	serverRecipesPath       = "/etc/leprechaun/recipes"
-	serverPIDFile           = "/var/run/leprechaun/server.pid"
-	serverLockFile          = "/var/run/leprechaun/server.lock"
-	serverCommandSocket     = "/var/run/leprechaun/server.sock"
-	serverPort              = 11400
-	serverMaxAllowedWorkers = 5
-	serverRetryRecipeAfter  = 10
+	ErrorLog          = "/var/log/leprechaun/error.log"
+	InfoLog           = "/var/log/leprechaun/info.log"
+	RecipesPath       = "/etc/leprechaun/recipes"
+	PIDFile           = "/var/run/leprechaun/client.pid"
+	LockFile          = "/var/run/leprechaun/client.lock"
+	CommandSocket     = "/var/run/leprechaun/client.sock"
+	MaxAllowedWorkers = 5
+	RetryRecipeAfter  = 10
+	ServerPort        = 11400
 )
 
-// Config values
-type Config struct {
-	ClientConfig
-	ServerConfig
+// Configs for different agents
+type Configs struct {
+	cfgs map[string]*AgentConfig
 }
 
-// ClientConfig holds config for client
-type ClientConfig struct {
-	PathToConfig      string
-	ErrorLog          string
-	InfoLog           string
-	RecipesPath       string
-	PIDFile           string
-	LockFile          string
-	CommandSocket     string
-	MaxAllowedWorkers int
-	RetryRecipeAfter  int
+// NewConfigs return Configs of agents
+func NewConfigs() *Configs {
+	return &Configs{
+		cfgs: make(map[string]*AgentConfig),
+	}
 }
 
-// ServerConfig holds config for server
-type ServerConfig struct {
-	PathToConfig      string
+// GetConfig return config by name of the agent
+func (c *Configs) GetConfig(name string) *AgentConfig {
+	return c.cfgs[name]
+}
+
+// AgentConfig holds config for agents
+type AgentConfig struct {
+	Path              string
 	ErrorLog          string
 	InfoLog           string
 	RecipesPath       string
@@ -61,91 +48,99 @@ type ServerConfig struct {
 	RetryRecipeAfter  int
 }
 
-// BuildConfig Create client config
-func BuildConfig(path string) *Config {
+// GetPath returns path of config file
+func (ac AgentConfig) GetPath() string {
+	return ac.Path
+}
+
+// GetErrorLog returns path of config file
+func (ac AgentConfig) GetErrorLog() string {
+	return ac.ErrorLog
+}
+
+// GetInfoLog returns path of config file
+func (ac AgentConfig) GetInfoLog() string {
+	return ac.InfoLog
+}
+
+// GetRecipesPath returns path of config file
+func (ac AgentConfig) GetRecipesPath() string {
+	return ac.RecipesPath
+}
+
+// GetPIDFile returns path of config file
+func (ac AgentConfig) GetPIDFile() string {
+	return ac.PIDFile
+}
+
+// GetLockFile returns path of config file
+func (ac AgentConfig) GetLockFile() string {
+	return ac.LockFile
+}
+
+// GetCommandSocket returns path of config file
+func (ac AgentConfig) GetCommandSocket() string {
+	return ac.CommandSocket
+}
+
+// GetPort returns path of config file
+func (ac AgentConfig) GetPort() int {
+	return ac.Port
+}
+
+// GetMaxAllowedWorkers returns path of config file
+func (ac AgentConfig) GetMaxAllowedWorkers() int {
+	return ac.MaxAllowedWorkers
+}
+
+// GetRetryRecipeAfter returns path of config file
+func (ac AgentConfig) GetRetryRecipeAfter() int {
+	return ac.RetryRecipeAfter
+}
+
+// New Create new config
+func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
 	if err != nil {
 		panic(err)
 	}
 
-	c := &Config{}
-	c.ClientConfig.PathToConfig = path
-	c.ClientConfig.ErrorLog = cfg.Section("").Key("client.error_log").MustString(clientErrorLog)
-	if !IsFileValid(c.ClientConfig.ErrorLog, ".log") {
-		c.ClientConfig.ErrorLog = clientErrorLog
+	ac := &AgentConfig{}
+	ac.Path = path
+	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(ErrorLog)
+	if !IsFileValid(ac.ErrorLog, ".log") {
+		ac.ErrorLog = ErrorLog
 	}
 
-	c.ClientConfig.InfoLog = cfg.Section("").Key("client.info_log").MustString(clientInfoLog)
-	if !IsFileValid(c.ClientConfig.InfoLog, ".log") {
-		c.ClientConfig.InfoLog = clientInfoLog
+	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(InfoLog)
+	if !IsFileValid(ac.InfoLog, ".log") {
+		ac.InfoLog = InfoLog
 	}
 
-	c.ClientConfig.RecipesPath = cfg.Section("").Key("client.recipes_path").MustString(clientRecipesPath)
-	if !IsDirValid(c.ClientConfig.RecipesPath) {
-		c.ClientConfig.RecipesPath = clientRecipesPath
+	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(RecipesPath)
+	if !IsDirValid(ac.RecipesPath) {
+		ac.RecipesPath = RecipesPath
 	}
 
-	c.ClientConfig.PIDFile = cfg.Section("").Key("client.pid_file").MustString(clientPIDFile)
-	if !IsFileValid(c.ClientConfig.PIDFile, ".pid") {
-		c.ClientConfig.PIDFile = clientPIDFile
+	ac.PIDFile = cfg.Section("").Key(name + ".pid_file").MustString(PIDFile)
+	if !IsFileValid(ac.PIDFile, ".pid") {
+		ac.PIDFile = PIDFile
 	}
 
-	c.ClientConfig.LockFile = cfg.Section("").Key("client.lock_file").MustString(clientLockFile)
-	if !IsFileValid(c.ClientConfig.LockFile, ".lock") {
-		c.ClientConfig.LockFile = clientLockFile
+	ac.LockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)
+	if !IsFileValid(ac.LockFile, ".lock") {
+		ac.LockFile = LockFile
 	}
 
-	c.ClientConfig.CommandSocket = cfg.Section("").Key("client.command_socket").MustString(clientCommandSocket)
-	if !IsFileValid(c.ClientConfig.CommandSocket, ".sock") {
-		c.ClientConfig.CommandSocket = clientCommandSocket
+	ac.CommandSocket = cfg.Section("").Key(name + ".command_socket").MustString(CommandSocket)
+	if !IsFileValid(ac.CommandSocket, ".sock") {
+		ac.CommandSocket = CommandSocket
 	}
 
-	c.ClientConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(clientMaxAllowedWorkers)
-	c.ClientConfig.RetryRecipeAfter = cfg.Section("").Key("client.retry_recipe_after").MustInt(clientRetryRecipeAfter)
+	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(MaxAllowedWorkers)
+	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(RetryRecipeAfter)
+	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
 
-	c.ServerConfig.PathToConfig = path
-	c.ServerConfig.MaxAllowedWorkers = cfg.Section("").Key("client.max_allowed_workers").MustInt(serverMaxAllowedWorkers)
-	c.ServerConfig.RetryRecipeAfter = cfg.Section("").Key("server.retry_recipe_after").MustInt(serverRetryRecipeAfter)
-	c.ServerConfig.Port = cfg.Section("").Key("server.port").MustInt(serverPort)
-	c.ServerConfig.ErrorLog = cfg.Section("").Key("server.error_log").MustString(serverErrorLog)
-	if !IsFileValid(c.ServerConfig.ErrorLog, ".log") {
-		c.ServerConfig.ErrorLog = serverErrorLog
-	}
-
-	c.ServerConfig.InfoLog = cfg.Section("").Key("server.info_log").MustString(serverInfoLog)
-	if !IsFileValid(c.ServerConfig.InfoLog, ".log") {
-		c.ServerConfig.InfoLog = serverInfoLog
-	}
-
-	c.ServerConfig.RecipesPath = cfg.Section("").Key("server.recipes_path").MustString(serverRecipesPath)
-	if !IsDirValid(c.ServerConfig.RecipesPath) {
-		c.ServerConfig.RecipesPath = serverRecipesPath
-	}
-
-	c.ServerConfig.PIDFile = cfg.Section("").Key("server.pid_file").MustString(serverPIDFile)
-	if !IsFileValid(c.ServerConfig.PIDFile, ".pid") {
-		c.ServerConfig.PIDFile = serverPIDFile
-	}
-
-	c.ServerConfig.LockFile = cfg.Section("").Key("server.lock_file").MustString(serverLockFile)
-	if !IsFileValid(c.ServerConfig.LockFile, ".lock") {
-		c.ServerConfig.LockFile = serverLockFile
-	}
-
-	c.ServerConfig.CommandSocket = cfg.Section("").Key("server.command_socket").MustString(serverCommandSocket)
-	if !IsFileValid(c.ServerConfig.CommandSocket, ".sock") {
-		c.ServerConfig.CommandSocket = serverCommandSocket
-	}
-
-	return c
-}
-
-// GetClientConfig returns configuration for client
-func (config *Config) GetClientConfig() *ClientConfig {
-	return &config.ClientConfig
-}
-
-// GetServerConfig returns configuration for server
-func (config *Config) GetServerConfig() *ServerConfig {
-	return &config.ServerConfig
+	c.cfgs[name] = ac
+	return ac
 }

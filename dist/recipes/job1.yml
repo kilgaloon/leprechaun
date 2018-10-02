@@ -6,6 +6,5 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - touch $testFile
-    - echo "Is this working?" > $testFile
-    - mv $testFile ./imwondering.txt
+    - -> ping google.com
+    - echo "Async task is pinging google, i will just do my job"

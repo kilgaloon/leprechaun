@@ -25,7 +25,7 @@ type registry interface {
 // Register agent to registry
 func (s *Socket) Register(r registry) {
 	reg := r.RegisterCommandSocket()
-	s.registry[reg.Name] = reg
+	s.registry[reg.Agent.GetName()] = reg
 
 	syscall.Unlink(s.unixSock)
 	ln, err := net.Listen("unix", s.unixSock)

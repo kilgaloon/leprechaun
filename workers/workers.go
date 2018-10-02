@@ -84,11 +84,11 @@ func (w Workers) Cleaner() {
 	}()
 }
 
-// BuildWorkers create Workers struct instance
-func BuildWorkers(ctx *context.Context, allowedSize int, logs log.Logs) *Workers {
+// New create Workers struct instance
+func New(maxAllowedWorkers int, logs log.Logs, ctx *context.Context) *Workers {
 	workers := &Workers{
 		stack:       make(map[string]Worker),
-		allowedSize: allowedSize,
+		allowedSize: maxAllowedWorkers,
 		Logs:        logs,
 		Context:     ctx,
 		DoneChan:    make(chan string),

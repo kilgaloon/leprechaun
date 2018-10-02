@@ -10,73 +10,60 @@ const (
 	ConfigWithoutDefaultSettings = "../tests/configs/config_without_default_values.ini"
 	ConfigWithSettings           = "../tests/configs/config_regular.ini"
 	ConfigWithInvalidValues      = "../tests/configs/config_wrong_value.ini"
+	ConfigWithWrongExt           = "../tests/configs/config_wrong_ext.ini"
 )
 
 func TestBuildWithoutSettings(t *testing.T) {
-	cfg := BuildConfig(ConfigWithoutDefaultSettings)
+	configs := NewConfigs()
+	configs.New("test", ConfigWithoutDefaultSettings)
+	cfg := configs.GetConfig("test")
 
-	clientCfg := cfg.GetClientConfig()
-	assert.Equal(t, clientErrorLog, clientCfg.ErrorLog)
-	assert.Equal(t, clientInfoLog, clientCfg.InfoLog)
-	assert.Equal(t, clientRecipesPath, clientCfg.RecipesPath)
-	assert.Equal(t, clientPIDFile, clientCfg.PIDFile)
-	assert.Equal(t, clientLockFile, clientCfg.LockFile)
-	assert.Equal(t, clientMaxAllowedWorkers, clientCfg.MaxAllowedWorkers)
-	assert.Equal(t, clientRetryRecipeAfter, clientCfg.RetryRecipeAfter)
-
-	serverCfg := cfg.GetServerConfig()
-	assert.Equal(t, serverErrorLog, serverCfg.ErrorLog)
-	assert.Equal(t, serverInfoLog, serverCfg.InfoLog)
-	assert.Equal(t, serverRecipesPath, serverCfg.RecipesPath)
-	assert.Equal(t, serverPort, serverCfg.Port)
-	assert.Equal(t, serverPIDFile, serverCfg.PIDFile)
-	assert.Equal(t, serverLockFile, serverCfg.LockFile)
-	assert.Equal(t, serverMaxAllowedWorkers, serverCfg.MaxAllowedWorkers)
-	assert.Equal(t, serverRetryRecipeAfter, serverCfg.RetryRecipeAfter)
+	assert.Equal(t, ConfigWithoutDefaultSettings, cfg.GetPath())
+	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
+	assert.Equal(t, InfoLog, cfg.GetInfoLog())
+	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
+	assert.Equal(t, PIDFile, cfg.GetPIDFile())
+	assert.Equal(t, LockFile, cfg.GetLockFile())
+	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
+	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
+	assert.Equal(t, CommandSocket, cfg.GetCommandSocket())
+	assert.Equal(t, ServerPort, cfg.GetPort())
 }
 
 func TestBuildWithSettings(t *testing.T) {
-	cfg := BuildConfig(ConfigWithSettings)
+	cfg := NewConfigs().New("test", ConfigWithSettings)
 
-	clientCfg := cfg.GetClientConfig()
-	assert.Equal(t, "../tests/var/log/leprechaun/client-error.log", clientCfg.ErrorLog)
-	assert.Equal(t, "../tests/var/log/leprechaun/client-info.log", clientCfg.InfoLog)
-	assert.Equal(t, "../tests/etc/leprechaun/recipes", clientCfg.RecipesPath)
-	assert.Equal(t, "../tests/var/run/leprechaun/client.pid", clientCfg.PIDFile)
-	assert.Equal(t, "../tests/var/run/leprechaun/client.lock", clientCfg.LockFile)
-	assert.Equal(t, 5, clientCfg.MaxAllowedWorkers)
-	assert.Equal(t, 10, clientCfg.RetryRecipeAfter)
+	assert.Equal(t, "../tests/var/log/leprechaun/client-error.log", cfg.GetErrorLog())
+	assert.Equal(t, "../tests/var/log/leprechaun/client-info.log", cfg.GetInfoLog())
+	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
+	assert.Equal(t, "../tests/var/run/leprechaun/client.pid", cfg.GetPIDFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/client.lock", cfg.GetLockFile())
+	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
+	assert.Equal(t, 10, cfg.GetRetryRecipeAfter())
+}
 
-	serverCfg := cfg.GetServerConfig()
-	assert.Equal(t, "../tests/var/log/leprechaun/server-error.log", serverCfg.ErrorLog)
-	assert.Equal(t, "../tests/var/log/leprechaun/server-info.log", serverCfg.InfoLog)
-	assert.Equal(t, "../tests/etc/leprechaun/recipes", serverCfg.RecipesPath)
-	assert.Equal(t, 11400, serverCfg.Port)
-	assert.Equal(t, "../tests/var/run/leprechaun/server.pid", serverCfg.PIDFile)
-	assert.Equal(t, "../tests/var/run/leprechaun/server.lock", serverCfg.LockFile)
-	assert.Equal(t, 5, serverCfg.MaxAllowedWorkers)
-	assert.Equal(t, 10, serverCfg.RetryRecipeAfter)
+func TestBuildWithSettingsWithWrongExt(t *testing.T) {
+	NewConfigs().New("test", ConfigWithWrongExt)
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
-	cfg := BuildConfig(ConfigWithInvalidValues)
+	cfg := NewConfigs().New("test", ConfigWithInvalidValues)
 
-	clientCfg := cfg.GetClientConfig()
-	assert.Equal(t, clientErrorLog, clientCfg.ErrorLog)
-	assert.Equal(t, clientInfoLog, clientCfg.InfoLog)
-	assert.Equal(t, clientRecipesPath, clientCfg.RecipesPath)
-	assert.Equal(t, clientPIDFile, clientCfg.PIDFile)
-	assert.Equal(t, clientLockFile, clientCfg.LockFile)
-	assert.Equal(t, clientMaxAllowedWorkers, clientCfg.MaxAllowedWorkers)
-	assert.Equal(t, clientRetryRecipeAfter, clientCfg.RetryRecipeAfter)
+	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
+	assert.Equal(t, InfoLog, cfg.GetInfoLog())
+	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
+	assert.Equal(t, PIDFile, cfg.GetPIDFile())
+	assert.Equal(t, LockFile, cfg.GetLockFile())
+	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
+	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
+}
 
-	serverCfg := cfg.GetServerConfig()
-	assert.Equal(t, serverErrorLog, serverCfg.ErrorLog)
-	assert.Equal(t, serverInfoLog, serverCfg.InfoLog)
-	assert.Equal(t, serverRecipesPath, serverCfg.RecipesPath)
-	assert.Equal(t, serverPort, serverCfg.Port)
-	assert.Equal(t, serverPIDFile, serverCfg.PIDFile)
-	assert.Equal(t, serverLockFile, serverCfg.LockFile)
-	assert.Equal(t, serverMaxAllowedWorkers, serverCfg.MaxAllowedWorkers)
-	assert.Equal(t, serverRetryRecipeAfter, serverCfg.RetryRecipeAfter)
+func TestNotValidPathToConfig(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			//
+		}
+	}()
+
+	NewConfigs().New("test", "some_path")
 }

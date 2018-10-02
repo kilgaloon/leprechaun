@@ -8,10 +8,11 @@ import (
 )
 
 var (
-	cfg    = config.BuildConfig("../tests/configs/config_regular.ini")
-	logger = Logs{
-		ErrorLog: cfg.ClientConfig.ErrorLog,
-		InfoLog:  cfg.ClientConfig.InfoLog,
+	cfgWrap = config.NewConfigs()
+	cfg     = cfgWrap.New("test", "../tests/configs/config_regular.ini")
+	logger  = Logs{
+		ErrorLog: cfg.GetErrorLog(),
+		InfoLog:  cfg.GetInfoLog(),
 	}
 )
 
