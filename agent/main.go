@@ -11,7 +11,7 @@ import (
 )
 
 // Agent interface defines client that can be started/stop
-// that has workers and recipe stack
+// that has workers, config, context and logs
 type Agent interface {
 	GetName() string
 	GetWorkers() *workers.Workers

@@ -33,11 +33,13 @@ func TestBuildWithoutSettings(t *testing.T) {
 func TestBuildWithSettings(t *testing.T) {
 	cfg := NewConfigs().New("test", ConfigWithSettings)
 
-	assert.Equal(t, "../tests/var/log/leprechaun/client-error.log", cfg.GetErrorLog())
-	assert.Equal(t, "../tests/var/log/leprechaun/client-info.log", cfg.GetInfoLog())
+	assert.Equal(t, ConfigWithSettings, cfg.GetPath())
+	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
+	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
-	assert.Equal(t, "../tests/var/run/leprechaun/client.pid", cfg.GetPIDFile())
-	assert.Equal(t, "../tests/var/run/leprechaun/client.lock", cfg.GetLockFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 10, cfg.GetRetryRecipeAfter())
 }
