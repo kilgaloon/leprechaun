@@ -26,7 +26,7 @@ type Worker struct {
 	Name           string
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
-	Err			   error
+	Err            error
 }
 
 // Run starts worker

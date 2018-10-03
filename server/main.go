@@ -83,7 +83,7 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 		return [][]string{}, err
 	}
 
-	return [][]string{[]string{"Server shutdown"}}, nil
+	return [][]string{{"Server shutdown"}}, nil
 }
 
 // GetWorkers return workers for agent

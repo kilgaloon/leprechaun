@@ -34,7 +34,7 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 	if cfg, ok := c.cfgs[name]; ok {
 		return cfg
 	}
-	
+
 	return &AgentConfig{}
 }
 

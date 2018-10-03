@@ -13,4 +13,3 @@ func (s *Server) RegisterCommandSocket() *api.Registrator {
 
 	return r
 }
- 

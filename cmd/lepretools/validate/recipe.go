@@ -48,7 +48,7 @@ func CheckRecipe(path string) {
 			}
 		}
 
-	case "hook": 
+	case "hook":
 		if r.ID == "" {
 			log.Fatal("ID of recipe not provided")
 		}
