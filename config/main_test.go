@@ -6,19 +6,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	ConfigWithoutDefaultSettings = "../tests/configs/config_without_default_values.ini"
-	ConfigWithSettings           = "../tests/configs/config_regular.ini"
-	ConfigWithInvalidValues      = "../tests/configs/config_wrong_value.ini"
-	ConfigWithWrongExt           = "../tests/configs/config_wrong_ext.ini"
+var (
+	configs                      = NewConfigs()
+	ConfigWithoutDefaultSettings = configs.New("test", "../tests/configs/config_without_default_values.ini")
+	ConfigWithSettings           = configs.New("test", "../tests/configs/config_regular.ini")
+	ConfigWithInvalidValues      = configs.New("test", "../tests/configs/config_wrong_value.ini")
+	ConfigWithWrongExt           = configs.New("test", "../tests/configs/config_wrong_ext.ini")
 )
 
 func TestBuildWithoutSettings(t *testing.T) {
-	configs := NewConfigs()
-	configs.New("test", ConfigWithoutDefaultSettings)
-	cfg := configs.GetConfig("test")
+	cfg := ConfigWithoutDefaultSettings
 
-	assert.Equal(t, ConfigWithoutDefaultSettings, cfg.GetPath())
+	assert.Equal(t, "../tests/configs/config_without_default_values.ini", cfg.GetPath())
 	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
 	assert.Equal(t, InfoLog, cfg.GetInfoLog())
 	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
@@ -31,9 +30,9 @@ func TestBuildWithoutSettings(t *testing.T) {
 }
 
 func TestBuildWithSettings(t *testing.T) {
-	cfg := NewConfigs().New("test", ConfigWithSettings)
+	cfg := ConfigWithSettings
 
-	assert.Equal(t, ConfigWithSettings, cfg.GetPath())
+	assert.Equal(t, "../tests/configs/config_regular.ini", cfg.GetPath())
 	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
 	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
@@ -44,12 +43,8 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, 10, cfg.GetRetryRecipeAfter())
 }
 
-func TestBuildWithSettingsWithWrongExt(t *testing.T) {
-	NewConfigs().New("test", ConfigWithWrongExt)
-}
-
 func TestBuildWithInvalidValues(t *testing.T) {
-	cfg := NewConfigs().New("test", ConfigWithInvalidValues)
+	cfg := ConfigWithInvalidValues
 
 	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
 	assert.Equal(t, InfoLog, cfg.GetInfoLog())
@@ -58,6 +53,15 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
+}
+
+func TestGettingNotExistingConfig(t *testing.T) {
+	// this should not break, instead we need to get empty object
+	configs.GetConfig("not_exists")
+}
+
+func TestGettingExistingConfig(t *testing.T) {
+	configs.GetConfig("test")
 }
 
 func TestNotValidPathToConfig(t *testing.T) {

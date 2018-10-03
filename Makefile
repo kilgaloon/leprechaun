@@ -52,6 +52,7 @@ test-with-report:
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
+	mkdir -p coverprofile
 	go test ./client -coverprofile coverprofile/client.out
 	go tool cover -html=coverprofile/client.out -o coverprofile/client.html
 	go test ./config -coverprofile coverprofile/config.out

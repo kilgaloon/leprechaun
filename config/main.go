@@ -31,7 +31,11 @@ func NewConfigs() *Configs {
 
 // GetConfig return config by name of the agent
 func (c *Configs) GetConfig(name string) *AgentConfig {
-	return c.cfgs[name]
+	if cfg, ok := c.cfgs[name]; ok {
+		return cfg
+	}
+	
+	return &AgentConfig{}
 }
 
 // AgentConfig holds config for agents
