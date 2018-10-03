@@ -33,8 +33,8 @@ func TestBuildWithSettings(t *testing.T) {
 	cfg := ConfigWithSettings
 
 	assert.Equal(t, "../tests/configs/config_regular.ini", cfg.GetPath())
-	// assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
-	// assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
+	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
+	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
 	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())

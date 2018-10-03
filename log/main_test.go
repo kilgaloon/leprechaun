@@ -1,6 +1,7 @@
 package log
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,6 +31,8 @@ func TestErrorLog(t *testing.T) {
 	}
 	// first remove file
 	os.Remove(logger.ErrorLog)
+	var d []byte
+	ioutil.WriteFile(logger.ErrorLog, d, 0644)
 
 }
 
@@ -47,5 +50,6 @@ func TestInfoLog(t *testing.T) {
 	}
 	// first remove file
 	os.Remove(logger.InfoLog)
-
+	var d []byte
+	ioutil.WriteFile(logger.InfoLog, d, 0644)
 }
