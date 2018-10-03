@@ -5,3 +5,4 @@
 /var
 /coverprofile
 /tests/etc/leprechaun/recipes/schedule.lock
+/**/coverage.txt

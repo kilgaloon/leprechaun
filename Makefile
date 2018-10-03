@@ -36,14 +36,14 @@ test:
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
-	go test ./client -cover
-	go test ./config -cover
-	go test ./context -cover
-	go test ./event -cover
-	go test ./log -cover
-	go test ./workers -cover
-	go test ./server -cover
-	go test ./api -cover
+	go test ./client -coverprofile=./client/coverage.txt -covermode=atomic
+	go test ./config -coverprofile=./config/coverage.txt -covermode=atomic
+	go test ./context -coverprofile=./context/coverage.txt -covermode=atomic
+	go test ./event -coverprofile=./event/coverage.txt -covermode=atomic
+	go test ./log -coverprofile=./log/coverage.txt -covermode=atomic
+	go test ./workers -coverprofile=./workers/coverage.txt -covermode=atomic
+	go test ./server -coverprofile=./server/coverage.txt -covermode=atomic
+	go test ./api -coverprofile=./api/coverage.txt -covermode=atomic
 
 test-with-report:
 	go vet ./cmd/leprechaun

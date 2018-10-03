@@ -24,9 +24,13 @@ notifications:
 before_install:
   - curl -L -s https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 -o $GOPATH/bin/dep
   - chmod +x $GOPATH/bin/dep
+  - go get -t -v ./...
 
 before_script:
   - dep ensure
 
 script:
   - make test
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -t da790e26-a82f-4aa6-bb80-4f24baa44cf5
