@@ -39,7 +39,7 @@ func New(name string, cfg *config.AgentConfig) *Client {
 }
 
 // GetAgent of service of agent
-func (client Client) GetAgent() agent.Agent {
+func (client *Client) GetAgent() agent.Agent {
 	return client.Agent
 }
 
@@ -67,7 +67,7 @@ func (client *Client) Start() {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				client.Agent.GetLogs().Error("error:", err)
+				client.Agent.GetLogs().Error("error: %s", err)
 			}
 		}
 	}()
@@ -91,13 +91,13 @@ func (client *Client) Start() {
 // RegisterCommands to be used in socket communication
 // If you want to takeover default commands from agent
 // call DefaultCommands from Agent which is same command
-func (client Client) RegisterCommands() map[string]api.Command {
+func (client *Client) RegisterCommands() map[string]api.Command {
 	cmds := make(map[string]api.Command)
 
 	cmds["info"] = api.Command{
 		Closure: client.clientInfo,
 		Definition: api.Definition{
-			Text: "Display some basic info about running client",
+			Text:  "Display some basic info about running client",
 			Usage: "client info",
 		},
 	}
@@ -122,13 +122,13 @@ func (client *Client) SetPID() {
 }
 
 // GetPID gets current PID of client
-func (client Client) GetPID() int {
+func (client *Client) GetPID() int {
 	return client.Agent.GetPID()
 }
 
 // Check does client is working on something
 // decide this in which status client resides
-func (client Client) isWorking() bool {
+func (client *Client) isWorking() bool {
 	// check does .lock file exists
 	if _, err := os.Stat(client.Agent.GetConfig().GetLockFile()); os.IsNotExist(err) {
 		return false
@@ -138,7 +138,7 @@ func (client Client) isWorking() bool {
 }
 
 // Lock client to busy state
-func (client Client) Lock() {
+func (client *Client) Lock() {
 	_, err := os.OpenFile(client.Agent.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to lock client in busy state")
@@ -151,7 +151,7 @@ func (client *Client) Unlock() {
 }
 
 // Stop client
-func (client Client) Stop() os.Signal {
+func (client *Client) Stop() os.Signal {
 	var answer string
 	forceQuit := false
 	quit := false

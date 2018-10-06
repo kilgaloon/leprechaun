@@ -43,7 +43,7 @@ func (client *Client) BuildQueue() {
 }
 
 // AddToQueue takes freshly created recipes and add them to queue
-func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
+func (client *Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
 		if err != nil {

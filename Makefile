@@ -1,3 +1,5 @@
+export GO111MODULE=on
+
 install:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
