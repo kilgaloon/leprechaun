@@ -7,7 +7,6 @@ language: go
 os:
   - linux
   - osx
-  - windows
 
 # Only the last two Go releases are supported by the Go team with security
 # updates. Any older versions be considered deprecated. Don't bother testing
@@ -27,7 +26,7 @@ notifications:
   email: false
 
 before_install:
-  - make install
+  - go get -t -v ./...
 
 before_script:
   - make build
