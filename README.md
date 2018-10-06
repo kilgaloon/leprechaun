@@ -97,14 +97,7 @@ but in this case for example first task will block performing on any task and al
   
 To start leprechaun just simply run it in background like this : `leprechaun &` and can be stoped with command like this `leprechaun --cmd="client:stop"`
 
-Leprechaun provides some more commands that you can use:
-
-`leprechaun --cmd="client info"` which will provide you with some basic informations about client that is running
-
-`leprechaun --cmd="client workers:list"` which will show you list of workers that are currently working
-
-`leprechaun --cmd="client workers:kill {name}"` `{name}` is a placeholder for name of a job you want to kill, all steps that are working async/sync will be terminated.
-
+For more available commands run `leprechaun help`
 
 # Lepretools
 

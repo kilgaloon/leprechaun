@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -14,11 +13,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
-	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
-	"github.com/kilgaloon/leprechaun/log"
-	"github.com/kilgaloon/leprechaun/recipe"
-	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent holds instance of Client
@@ -26,28 +21,16 @@ var Agent *Client
 
 // Client settings and configurations
 type Client struct {
-	Name   string
-	PID    int
-	Config *config.AgentConfig
-	Logs   log.Logs
+	Agent agent.Agent
 	Queue
-	Context *context.Context
-	mu      *sync.Mutex
-	Workers *workers.Workers
 }
 
-// CreateAgent new client
+// New create client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(name string, cfg *config.AgentConfig) *Client {
-	def := agent.New(name, cfg)
+func New(name string, cfg *config.AgentConfig) *Client {
 	client := &Client{
-		Name:    name,
-		Config:  def.GetConfig(),
-		Logs:    def.GetLogs(),
-		Context: def.GetContext(),
-		mu:      def.Mu,
-		Workers: def.GetWorkers(),
+		Agent: agent.New(name, cfg),
 	}
 
 	Agent = client
@@ -55,15 +38,15 @@ func CreateAgent(name string, cfg *config.AgentConfig) *Client {
 	return client
 }
 
-// GetName of agent
-func (client Client) GetName() string {
-	return client.Name
+// GetAgent of service of agent
+func (client Client) GetAgent() agent.Agent {
+	return client.Agent
 }
 
 // Start client
 func (client *Client) Start() {
 	// remove hanging .lock file
-	os.Remove(client.GetConfig().GetLockFile())
+	os.Remove(client.Agent.GetConfig().GetLockFile())
 	// SetPID of client
 	client.SetPID()
 	// build queue
@@ -84,19 +67,19 @@ func (client *Client) Start() {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				client.Logs.Error("error:", err)
+				client.Agent.GetLogs().Error("error:", err)
 			}
 		}
 	}()
 
-	err = watcher.Add(client.GetConfig().GetRecipesPath())
+	err = watcher.Add(client.Agent.GetConfig().GetRecipesPath())
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	event.EventHandler.Dispatch("client:ready")
 	// register client to command socket
-	go api.BuildSocket(client.GetConfig().GetCommandSocket()).Register(client)
+	go api.New(client.Agent.GetConfig().GetCommandSocket()).Register(client)
 
 	for {
 		go client.ProcessQueue()
@@ -105,15 +88,33 @@ func (client *Client) Start() {
 
 }
 
-// SetPID sets current PID of client
-func (client *Client) SetPID() {
-	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to start client, can't save PID")
+// RegisterCommands to be used in socket communication
+// If you want to takeover default commands from agent
+// call DefaultCommands from Agent which is same command
+func (client Client) RegisterCommands() map[string]api.Command {
+	cmds := make(map[string]api.Command)
+
+	cmds["info"] = api.Command{
+		Closure: client.clientInfo,
+		Definition: api.Definition{
+			Text: "Display some basic info about running client",
+			Usage: "client info",
+		},
 	}
 
-	client.PID = os.Getpid()
-	pid := strconv.Itoa(client.PID)
+	// this function merge both maps and inject default commands from agent
+	return client.Agent.DefaultCommands(cmds)
+}
+
+// SetPID sets current PID of client
+func (client *Client) SetPID() {
+	f, err := os.OpenFile(client.Agent.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		panic("Failed to start client, can't save PID, reason: " + err.Error())
+	}
+
+	client.Agent.SetPID(os.Getpid())
+	pid := strconv.Itoa(client.Agent.GetPID())
 	_, err = f.WriteString(pid)
 	if err != nil {
 		panic("Failed to start client, can't save PID")
@@ -122,14 +123,14 @@ func (client *Client) SetPID() {
 
 // GetPID gets current PID of client
 func (client Client) GetPID() int {
-	return client.PID
+	return client.Agent.GetPID()
 }
 
 // Check does client is working on something
 // decide this in which status client resides
 func (client Client) isWorking() bool {
 	// check does .lock file exists
-	if _, err := os.Stat(client.GetConfig().GetLockFile()); os.IsNotExist(err) {
+	if _, err := os.Stat(client.Agent.GetConfig().GetLockFile()); os.IsNotExist(err) {
 		return false
 	}
 
@@ -138,7 +139,7 @@ func (client Client) isWorking() bool {
 
 // Lock client to busy state
 func (client Client) Lock() {
-	_, err := os.OpenFile(client.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
+	_, err := os.OpenFile(client.Agent.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to lock client in busy state")
 	}
@@ -146,7 +147,7 @@ func (client Client) Lock() {
 
 // Unlock client to busy state
 func (client *Client) Unlock() {
-	os.Remove(client.GetConfig().GetLockFile())
+	os.Remove(client.Agent.GetConfig().GetLockFile())
 }
 
 // Stop client
@@ -174,13 +175,13 @@ func (client Client) Stop() os.Signal {
 	pid := client.GetPID()
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		client.Logs.Error("Can't find process with that PID. %s", err)
+		client.Agent.GetLogs().Error("Can't find process with that PID. %s", err)
 	}
 
 	// shutdown gracefully
 	if quit {
 		state, err := process.Wait()
-		client.Logs.Info("Stopping Leprechaun, please wait...")
+		client.Agent.GetLogs().Info("Stopping Leprechaun, please wait...")
 
 		if err == nil {
 			if state.Exited() {
@@ -196,7 +197,7 @@ func (client Client) Stop() os.Signal {
 	if forceQuit {
 		killed := process.Kill()
 		if killed != nil {
-			client.Logs.Error("Can't kill process with that PID. %s", killed)
+			client.Agent.GetLogs().Error("Can't kill process with that PID. %s", killed)
 		} else {
 			client.Unlock()
 			return syscall.SIGTERM
@@ -204,31 +205,6 @@ func (client Client) Stop() os.Signal {
 	}
 
 	return os.Interrupt
-}
-
-// GetWorkers return Workers struct
-func (client *Client) GetWorkers() *workers.Workers {
-	return client.Workers
-}
-
-// GetRecipeStack returns stack of recipes
-func (client *Client) GetRecipeStack() []recipe.Recipe {
-	return client.Queue.Stack
-}
-
-// GetConfig returns configuration for specific agent
-func (client *Client) GetConfig() *config.AgentConfig {
-	return client.Config
-}
-
-// GetContext returns context of agent
-func (client *Client) GetContext() *context.Context {
-	return client.Context
-}
-
-// GetLogs return logs of agent
-func (client *Client) GetLogs() log.Logs {
-	return client.Logs
 }
 
 func init() {

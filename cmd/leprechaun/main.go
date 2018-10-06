@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -27,8 +28,16 @@ func main() {
 	flag.Parse()
 
 	configs := config.NewConfigs()
-	client.CreateAgent("client", configs.New("client", *iniPath))
-	server.CreateAgent("server", configs.New("server", *iniPath))
+	client.New("client", configs.New("client", *iniPath))
+	server.New("server", configs.New("server", *iniPath))
+
+	// basic leprechaun help
+	if len(os.Args) > 1 {
+		if os.Args[1] == "help" {
+			help(client.Agent)
+			help(server.Agent)
+		}
+	}
 
 	switch strings.Fields(*cmd)[0] {
 	case "run":
@@ -41,15 +50,15 @@ func main() {
 	case "server:start":
 		go server.Agent.Start()
 	case "client":
-		sock := api.BuildSocket(configs.GetConfig("client").GetCommandSocket())
-		sock.Command(*cmd)
+		sock := api.New(configs.GetConfig("client").GetCommandSocket())
+		fmt.Print(sock.Command(*cmd))
 		os.Exit(0)
 	case "server:stop":
 		*cmd = "server stop"
 		fallthrough
 	case "server":
-		sock := api.BuildSocket(configs.GetConfig("server").GetCommandSocket())
-		sock.Command(*cmd)
+		sock := api.New(configs.GetConfig("server").GetCommandSocket())
+		fmt.Print(sock.Command(*cmd))
 		os.Exit(0)
 	default:
 		os.Exit(0)

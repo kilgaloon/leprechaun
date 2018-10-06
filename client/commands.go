@@ -3,17 +3,15 @@ package client
 import (
 	"runtime"
 	"strconv"
-
-	"github.com/kilgaloon/leprechaun/api"
 )
 
 // this section is used for command responders
 
 // cmd: client info
-func (c *Client) clientInfo(args ...string) ([][]string, error) {
-	pid := strconv.Itoa(c.GetPID())
-	num := strconv.Itoa(c.Workers.Size())
-	recipeQueueNum := strconv.Itoa(len(c.Queue.Stack))
+func (client *Client) clientInfo(args ...string) ([][]string, error) {
+	pid := strconv.Itoa(client.GetPID())
+	num := strconv.Itoa(client.Agent.GetWorkers().Size())
+	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
 
 	var mem runtime.MemStats
 	runtime.ReadMemStats(&mem)
@@ -22,40 +20,11 @@ func (c *Client) clientInfo(args ...string) ([][]string, error) {
 
 	resp := [][]string{
 		{"PID: " + pid},
-		{"Config file: " + c.GetConfig().GetPath()},
+		{"Config file: " + client.Agent.GetConfig().GetPath()},
 		{"Number of workers: " + num},
 		{"Recipes in queue: " + recipeQueueNum},
 		{"Memory Allocated: " + alloc + " MiB"},
 	}
 
 	return resp, nil
-}
-
-// cms: client workers:kill {name}
-func (c *Client) killWorker(args ...string) ([][]string, error) {
-	resp := [][]string{}
-
-	worker, err := c.Workers.GetByName(args[0])
-	if err != nil {
-		resp = [][]string{
-			{err.Error()},
-		}
-	} else {
-		worker.Kill()
-		resp = [][]string{
-			{"Worker killed"},
-		}
-	}
-
-	return resp, nil
-}
-
-// RegisterCommandSocket returns Registrator
-func (c *Client) RegisterCommandSocket() *api.Registrator {
-	r := api.CreateRegistrator(c)
-
-	// register commands
-	r.Command("info", c.clientInfo)
-
-	return r
 }

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"net"
 	"strings"
@@ -12,23 +12,51 @@ import (
 
 // Socket defines socket on which we listen for commands
 type Socket struct {
-	unixSock string
-	registry map[string]*Registrator
+	unixSock  string
+	commands  map[string]Command
+	readyChan chan bool
 }
 
-// This interface implements method
-// that agents will use to register for command socket
-type registry interface {
-	RegisterCommandSocket() *Registrator
+// Closure is command that will be called to execute
+type Closure func(args ...string) ([][]string, error)
+
+// Command is definition of basic command that can be called with --cmd
+type Command struct {
+	Definition
+	Closure Closure
+}
+
+// Definition of command
+type Definition struct {
+	Text  string
+	Usage string
+}
+
+func (c Command) String() string {
+	return c.Definition.Text + " - usage: " + c.Definition.Usage
+}
+
+// Registrator is agent that will be registered
+type Registrator interface {
+	RegisterCommands() map[string]Command
+}
+
+func (s *Socket) ready() {
+	s.readyChan <- true
+}
+
+// GetCommands return array of commands
+func (s *Socket) GetCommands() map[string]Command {
+	return s.commands
 }
 
 // Register agent to registry
-func (s *Socket) Register(r registry) {
-	reg := r.RegisterCommandSocket()
-	s.registry[reg.Agent.GetName()] = reg
+func (s *Socket) Register(r Registrator) {
+	s.commands = r.RegisterCommands()
 
 	syscall.Unlink(s.unixSock)
 	ln, err := net.Listen("unix", s.unixSock)
+	s.ready()
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +72,7 @@ func (s *Socket) Register(r registry) {
 }
 
 //Command sends command to socket and gets output
-func (s *Socket) Command(cmd string) {
+func (s *Socket) Command(cmd string) string {
 	c, err := net.Dial("unix", s.unixSock)
 	if err != nil {
 		panic(err)
@@ -62,13 +90,13 @@ func (s *Socket) Command(cmd string) {
 		n, err := c.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				return
+				return ""
 			}
 
 			panic(err)
 		}
 
-		fmt.Printf("%s", string(buf[0:n]))
+		return string(buf[0:n])
 	}
 
 }
@@ -87,15 +115,15 @@ func (s Socket) resolver(c net.Conn) {
 		data := buf[0:nr]
 		req := strings.Fields(strings.Trim(string(data), "\n"))
 		if len(req) < 2 {
-			continue
+			c.Write([]byte("Invalid command"))
+			return
 		}
 
-		registry := req[0]
 		command := req[1]
 		args := req[2:]
 
-		if registry != "" || command != "" {
-			r, err := s.registry[registry].Call(command, args...)
+		if command != "" {
+			r, err := s.Call(command, args...)
 			if err != nil {
 				c.Write([]byte(err.Error()))
 			}
@@ -111,10 +139,22 @@ func (s Socket) resolver(c net.Conn) {
 	}
 }
 
-// BuildSocket create new socket instance
-func BuildSocket(socketPath string) *Socket {
-	return &Socket{
-		unixSock: socketPath,
-		registry: make(map[string]*Registrator),
+// Call specified command
+func (s Socket) Call(name string, args ...string) ([][]string, error) {
+	if command, exist := s.commands[name]; exist {
+		return command.Closure(args...)
 	}
+
+	return nil, errors.New("Command does not exists, or it's not registered")
+}
+
+// New creates new socket
+func New(socketPath string) *Socket {
+	sock := &Socket{
+		unixSock:  socketPath,
+		commands:  make(map[string]Command),
+		readyChan: make(chan bool),
+	}
+
+	return sock
 }

@@ -18,16 +18,16 @@ func (server *Server) BuildPool() {
 	q := Pool{}
 	q.Stack = make(map[string]recipe.Recipe)
 
-	files, err := ioutil.ReadDir(server.Config.RecipesPath)
+	files, err := ioutil.ReadDir(server.Agent.GetConfig().GetRecipesPath())
 	if err != nil {
-		server.Logs.Error("%s", err)
+		server.Agent.GetLogs().Error("%s", err)
 	}
 
 	for _, file := range files {
-		fullFilepath := server.Config.RecipesPath + "/" + file.Name()
+		fullFilepath := server.Agent.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			server.Logs.Error(err.Error())
+			server.Agent.GetLogs().Error(err.Error())
 		}
 		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
@@ -47,15 +47,15 @@ func (server *Server) FindInPool(id string) {
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
 	// lock mutex
-	server.mu.Lock()
+	server.Agent.GetMutex().Lock()
 	// create worker
-	worker, err := server.Workers.CreateWorker(recipe.Name)
+	worker, err := server.Agent.GetWorkers().CreateWorker(recipe.Name)
 	// unlock mutex
-	server.mu.Unlock()
+	server.Agent.GetMutex().Unlock()
 	if err != nil {
 		// move this worker to queue and retry to work on it
 		go server.ProcessRecipe(recipe)
-		server.Logs.Info("%s", err)
+		server.Agent.GetLogs().Info("%s", err)
 		return
 	}
 
@@ -66,16 +66,16 @@ func (server *Server) FindInPool(id string) {
 func (server *Server) ProcessRecipe(r recipe.Recipe) {
 	recipe := r
 
-	server.Logs.Info("%s file is in progress... \n", recipe.Name)
+	server.Agent.GetLogs().Info("%s file is in progress... \n", recipe.Name)
 	// lock mutex
-	server.mu.Lock()
+	server.Agent.GetMutex().Lock()
 	// create worker
-	worker, err := server.Workers.CreateWorker(recipe.Name)
+	worker, err := server.Agent.GetWorkers().CreateWorker(recipe.Name)
 	// unlock mutex
-	server.mu.Unlock()
+	server.Agent.GetMutex().Unlock()
 	if err != nil {
-		time.Sleep(time.Duration(server.Config.RetryRecipeAfter) * time.Second)
-		server.Logs.Info("%s, retrying in %d s...", err, server.Config.RetryRecipeAfter)
+		time.Sleep(time.Duration(server.Agent.GetConfig().RetryRecipeAfter) * time.Second)
+		server.Agent.GetLogs().Info("%s, retrying in %d s...", err, server.Agent.GetConfig().RetryRecipeAfter)
 		// move this worker to queue and work on it when next worker space is available
 		go server.ProcessRecipe(recipe)
 		return

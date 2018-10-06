@@ -6,3 +6,5 @@
 /coverprofile
 /tests/etc/leprechaun/recipes/schedule.lock
 /**/coverage.txt
+/tests/var/run/leprechaun/.pid
+.DS_Store

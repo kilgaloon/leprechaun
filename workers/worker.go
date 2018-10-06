@@ -61,8 +61,8 @@ func (w *Worker) workOnStep(step string) {
 	cmd.Stdout = &out
 	cmd.Stderr = &stderr
 
-	w.Err = cmd.Run()
 	w.WorkingOn = step
+	w.Err = cmd.Run()
 	if w.Err != nil {
 		w.Logs.Info("Step %s failed to start. Reason: %s \n", step, stderr.String())
 		w.WorkingOn = ""

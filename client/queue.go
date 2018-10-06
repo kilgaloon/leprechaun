@@ -20,16 +20,16 @@ type Queue struct {
 func (client *Client) BuildQueue() {
 	q := Queue{}
 
-	files, err := ioutil.ReadDir(client.Config.RecipesPath)
+	files, err := ioutil.ReadDir(client.Agent.GetConfig().GetRecipesPath())
 	if err != nil {
 		panic(err)
 	}
 
 	for _, file := range files {
-		fullFilepath := client.Config.RecipesPath + "/" + file.Name()
+		fullFilepath := client.Agent.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			client.Logs.Error(err.Error())
+			client.Agent.GetLogs().Error(err.Error())
 		}
 		// recipes that needs to be pushed to queue
 		// needs to be schedule by definition
@@ -47,7 +47,7 @@ func (client Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
 		if err != nil {
-			client.Logs.Error(err.Error())
+			client.Agent.GetLogs().Error(err.Error())
 		}
 
 		if r.Definition == "schedule" {
@@ -65,28 +65,28 @@ func (client *Client) ProcessQueue() {
 		go func(r *recipe.Recipe) {
 			if compare.Equal(r.StartAt) {
 				// lock mutex
-				client.mu.Lock()
+				client.Agent.GetMutex().Lock()
 				// create worker
-				worker, err := client.Workers.CreateWorker(r.Name)
+				worker, err := client.Agent.GetWorkers().CreateWorker(r.Name)
 				// unlock mutex
-				client.mu.Unlock()
+				client.Agent.GetMutex().Unlock()
 
 				if err != nil {
 					switch err {
-					case client.Workers.Errors.AllowedWorkersReached:
-						client.Logs.Info("%s", err)
+					case client.Agent.GetWorkers().Errors.AllowedWorkersReached:
+						client.Agent.GetLogs().Info("%s", err)
 						go client.ProcessRecipe(r)
-					case client.Workers.Errors.StillActive:
-						client.Logs.Info("Worker with NAME: %s is still active", r.Name)
+					case client.Agent.GetWorkers().Errors.StillActive:
+						client.Agent.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 					}
 					// move this worker to queue and work on it when next worker space is available
 					go client.ProcessRecipe(r)
-					client.Logs.Info("%s", err)
+					client.Agent.GetLogs().Info("%s", err)
 					return
 				}
 
 				event.EventHandler.Dispatch("client:lock")
-				client.Logs.Info("%s file is in progress... \n", r.Name)
+				client.Agent.GetLogs().Info("%s file is in progress... \n", r.Name)
 				// worker takeover steps and works on then
 				worker.Run(r.Steps)
 				// signal that worker is done
@@ -102,28 +102,28 @@ func (client *Client) ProcessQueue() {
 // ProcessRecipe takes specific recipe and process it
 func (client *Client) ProcessRecipe(r *recipe.Recipe) {
 	// lock mutex
-	client.mu.Lock()
+	client.Agent.GetMutex().Lock()
 	// create worker
-	worker, err := client.Workers.CreateWorker(r.Name)
+	worker, err := client.Agent.GetWorkers().CreateWorker(r.Name)
 	// unlock mutex
-	client.mu.Unlock()
+	client.Agent.GetMutex().Unlock()
 
 	if err != nil {
 		switch err {
-		case client.Workers.Errors.AllowedWorkersReached:
+		case client.Agent.GetWorkers().Errors.AllowedWorkersReached:
 			// move this worker to queue and work on it when next worker space is available
-			time.Sleep(time.Duration(client.Config.RetryRecipeAfter) * time.Second)
-			client.Logs.Info("%s, retrying in %d s ...", err, client.Config.RetryRecipeAfter)
+			time.Sleep(time.Duration(client.Agent.GetConfig().RetryRecipeAfter) * time.Second)
+			client.Agent.GetLogs().Info("%s, retrying in %d s ...", err, client.Agent.GetConfig().RetryRecipeAfter)
 			go client.ProcessRecipe(r)
-		case client.Workers.Errors.StillActive:
-			client.Logs.Info("Worker with NAME: %s is still active", r.Name)
+		case client.Agent.GetWorkers().Errors.StillActive:
+			client.Agent.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 		}
 
 		return
 	}
 
 	event.EventHandler.Dispatch("client:lock")
-	client.Logs.Info("%s file is in progress... \n", r.Name)
+	client.Agent.GetLogs().Info("%s file is in progress... \n", r.Name)
 	// worker takeover steps and works on then
 	worker.Run(r.Steps)
 	//remove lock on client

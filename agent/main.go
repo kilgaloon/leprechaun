@@ -3,6 +3,7 @@ package agent
 import (
 	"sync"
 
+	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/workers"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/kilgaloon/leprechaun/log"
 )
 
-// Agent interface defines client that can be started/stop
+// Agent interface defines service that can be started/stop
 // that has workers, config, context and logs
 type Agent interface {
 	GetName() string
@@ -18,6 +19,13 @@ type Agent interface {
 	GetContext() *context.Context
 	GetConfig() *config.AgentConfig
 	GetLogs() log.Logs
+	GetSocket() *api.Socket
+	GetMutex() *sync.Mutex
+
+	SetPID(i int)
+	GetPID() int
+
+	DefaultCommands(map[string]api.Command) map[string]api.Command
 }
 
 // Default represents default agent
@@ -29,6 +37,7 @@ type Default struct {
 	Mu      *sync.Mutex
 	Workers *workers.Workers
 	Context *context.Context
+	Socket  *api.Socket
 }
 
 // GetName returns name of the client
@@ -56,6 +65,56 @@ func (d Default) GetConfig() *config.AgentConfig {
 	return d.Config
 }
 
+// GetSocket returns information about socket
+// and commands available for internal communication
+func (d Default) GetSocket() *api.Socket {
+	return d.Socket
+}
+
+// GetMutex for agent
+func (d Default) GetMutex() *sync.Mutex {
+	return d.Mu
+}
+
+// SetPID sets process id for agent
+func (d *Default) SetPID(i int) {
+	d.PID = i
+}
+
+// GetPID sets process id for agent
+func (d Default) GetPID() int {
+	return d.PID
+}
+
+// DefaultCommands merge 2 maps into one
+// it usability is if some of the agents
+// wants to takeover default commands
+func (d Default) DefaultCommands(commands map[string]api.Command) map[string]api.Command {
+	cmds := make(map[string]api.Command)
+
+	cmds["workers:list"] = api.Command{
+		Closure: d.WorkersList,
+		Definition: api.Definition{
+			Text:  "List all currently active workers",
+			Usage: "{agent} workers:list",
+		},
+	}
+
+	cmds["workers:kill"] = api.Command{
+		Closure: d.KillWorker,
+		Definition: api.Definition{
+			Text:  "Kills currently active worker by job name",
+			Usage: "{agent} workers:kill {job}",
+		},
+	}
+
+	for name, command := range commands {
+		cmds[name] = command
+	}
+
+	return cmds
+}
+
 // New default client
 func New(name string, cfg *config.AgentConfig) *Default {
 	agent := &Default{}
@@ -73,6 +132,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 		agent.Logs,
 		agent.Context,
 	)
+	agent.Socket = api.New(cfg.GetCommandSocket())
 
 	return agent
 }

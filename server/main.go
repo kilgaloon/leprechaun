@@ -4,15 +4,10 @@ import (
 	con "context"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
-	"github.com/kilgaloon/leprechaun/context"
-	"github.com/kilgaloon/leprechaun/log"
-	"github.com/kilgaloon/leprechaun/recipe"
-	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent holds instance of Server
@@ -20,39 +15,23 @@ var Agent *Server
 
 // Server instance
 type Server struct {
-	Name   string
-	Config *config.AgentConfig
-	Logs   log.Logs
+	Agent agent.Agent
 	Pool
-	HTTP    *http.Server
-	Context *context.Context
-	mu      *sync.Mutex
-	Workers *workers.Workers
+	HTTP *http.Server
 }
 
-// CreateAgent new server
+// New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func CreateAgent(name string, cfg *config.AgentConfig) *Server {
-	def := agent.New(name, cfg)
+func New(name string, cfg *config.AgentConfig) *Server {
 	server := &Server{
-		Name:    name,
-		Config:  def.GetConfig(),
-		Logs:    def.GetLogs(),
-		Context: def.GetContext(),
-		mu:      def.Mu,
-		Workers: def.GetWorkers(),
-		HTTP:    &http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
+		Agent: agent.New(name, cfg),
+		HTTP:  &http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}
 
 	Agent = server
 
 	return server
-}
-
-// GetName returns name of the Agent
-func (server Server) GetName() string {
-	return server.Name
 }
 
 // Start server that will receive webhooks
@@ -62,11 +41,11 @@ func (server *Server) Start() {
 	// register all routes
 	server.registerHandles()
 	// listen for port
-	server.Logs.Info("Server started")
+	server.Agent.GetLogs().Info("Server started")
 	// register server to command socket
-	go api.BuildSocket(server.Config.CommandSocket).Register(server)
+	go api.New(server.Agent.GetConfig().GetCommandSocket()).Register(server)
 	if err := server.HTTP.ListenAndServe(); err != nil {
-		server.Logs.Error("Httpserver: ListenAndServe() error: %s", err)
+		server.Agent.GetLogs().Error("Httpserver: ListenAndServe() error: %s", err)
 	}
 
 }
@@ -78,7 +57,7 @@ func (server *Server) registerHandles() {
 
 // Stop http server
 func (server *Server) Stop(args ...string) ([][]string, error) {
-	server.Logs.Info("Shutting down server")
+	server.Agent.GetLogs().Info("Shutting down server")
 	if err := server.HTTP.Shutdown(con.Background()); err != nil {
 		return [][]string{}, err
 	}
@@ -86,32 +65,9 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 	return [][]string{{"Server shutdown"}}, nil
 }
 
-// GetWorkers return workers for agent
-func (server *Server) GetWorkers() *workers.Workers {
-	return server.Workers
-}
+// RegisterCommands to be used in internal communication
+func (server Server) RegisterCommands() map[string]api.Command {
+	cmds := make(map[string]api.Command)
 
-// GetRecipeStack returns stack of recipes
-func (server *Server) GetRecipeStack() []recipe.Recipe {
-	var stack []recipe.Recipe
-	for _, recipe := range server.Pool.Stack {
-		stack = append(stack, recipe)
-	}
-
-	return stack
-}
-
-// GetConfig returns configuration for specific agent
-func (server *Server) GetConfig() *config.AgentConfig {
-	return server.Config
-}
-
-// GetContext returns context of agent
-func (server *Server) GetContext() *context.Context {
-	return server.Context
-}
-
-// GetLogs return logs of agent
-func (server *Server) GetLogs() log.Logs {
-	return server.Logs
+	return server.Agent.DefaultCommands(cmds)
 }

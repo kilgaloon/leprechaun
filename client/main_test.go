@@ -13,12 +13,12 @@ var (
 	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
 	cfgWrap    = config.NewConfigs()
-	fakeClient = CreateAgent("test", cfgWrap.New("test", *path))
+	fakeClient = New("test", cfgWrap.New("test", *path))
 )
 
 func TestStart(t *testing.T) {
 	// remove hanging .lock file
-	os.Remove(fakeClient.GetConfig().GetLockFile())
+	os.Remove(fakeClient.Agent.GetConfig().GetLockFile())
 	// SetPID of client
 	fakeClient.SetPID()
 	// build queue
@@ -28,7 +28,7 @@ func TestStart(t *testing.T) {
 		t.Error("Client should not be working anything here")
 	}
 
-	b, err := ioutil.ReadFile(fakeClient.GetConfig().GetPIDFile())
+	b, err := ioutil.ReadFile(fakeClient.Agent.GetConfig().GetPIDFile())
 	if err != nil {
 		t.Errorf("%s", err)
 	}
