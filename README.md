@@ -9,7 +9,7 @@
 
   
 
-Current Version: **0.6.0**  <br  />
+Current Version: **1.0.0-alpha**  <br  />
 
 Current Release: **Calimero**
 
