@@ -9,16 +9,7 @@ var (
 )
 
 func TestListen(t *testing.T) {
-	go func() {
-		for {
-			select {
-			case event := <-eventHandler.eventChannel:
-				if event != "test" {
-					t.Fatalf("Expected event test got %s", event)
-				}
-			}
-		}
-	}()
+	go eventHandler.listen()
 }
 
 func TestSubscribe(t *testing.T) {
