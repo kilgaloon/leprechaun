@@ -133,7 +133,7 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 		ac.RecipesPath = RecipesPath
 	}
 
-	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(RecipesPath)
+	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(WorkerOutputDir)
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
 	}
