@@ -3,6 +3,8 @@ package client
 import (
 	"os"
 	"testing"
+
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -34,7 +36,12 @@ func TestAddToQueue(t *testing.T) {
 }
 
 func TestProcessRecipe(t *testing.T) {
-	fakeClient.ProcessRecipe(&fakeClient.Queue.Stack[0])
+	r, err := recipe.Build(fk.Agent.GetConfig().GetRecipesPath() + "/schedule.yml")
+	if err != nil {
+		t.Fail()
+	}
+
+	fakeClient.ProcessRecipe(&r)
 }
 
 func TestClientInfo(t *testing.T) {
