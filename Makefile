@@ -47,6 +47,7 @@ test:
 	go test ./workers -coverprofile=./workers/coverage.txt -covermode=atomic
 	go test ./server -coverprofile=./server/coverage.txt -covermode=atomic
 	go test ./api -coverprofile=./api/coverage.txt -covermode=atomic
+	go test ./recipe -coverprofile=./api/coverage.txt -covermode=atomic
 
 test-with-report:
 	go vet ./cmd/leprechaun
@@ -74,3 +75,5 @@ test-with-report:
 	go tool cover -html=coverprofile/api.out -o coverprofile/api.html
 	go test ./agent -coverprofile coverprofile/agent.out
 	go tool cover -html=coverprofile/agent.out -o coverprofile/agent.html
+	go test ./recipe -coverprofile coverprofile/recipe.out
+	go tool cover -html=coverprofile/recipe.out -o coverprofile/recipe.html

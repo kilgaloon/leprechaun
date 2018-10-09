@@ -134,8 +134,8 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	}
 
 	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(RecipesPath)
-	if !IsDirValid(ac.RecipesPath) {
-		ac.RecipesPath = RecipesPath
+	if !IsDirValid(ac.WorkerOutputDir) {
+		ac.WorkerOutputDir = WorkerOutputDir
 	}
 
 	ac.PIDFile = cfg.Section("").Key(name + ".pid_file").MustString(PIDFile)
