@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -51,14 +50,14 @@ func main() {
 		go server.Agent.Start()
 	case "client":
 		sock := api.New(configs.GetConfig("client").GetCommandSocket())
-		fmt.Print(sock.Command(*cmd))
+		sock.Command(*cmd)
 		os.Exit(0)
 	case "server:stop":
 		*cmd = "server stop"
 		fallthrough
 	case "server":
 		sock := api.New(configs.GetConfig("server").GetCommandSocket())
-		fmt.Print(sock.Command(*cmd))
+		sock.Command(*cmd)
 		os.Exit(0)
 	default:
 		os.Exit(0)

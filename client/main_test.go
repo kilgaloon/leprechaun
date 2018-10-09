@@ -1,6 +1,9 @@
 package client
 
 import (
+	"io/ioutil"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/event"
@@ -17,11 +20,31 @@ var (
 
 func TestStart(t *testing.T) {
 	go fakeClient.Start()
-	t.Run("stop", func(t *testing.T) {
-		fakeClient.Stop()
-	})
 }
 
+func TestStop(t *testing.T) {
+	tmpfile, err := ioutil.TempFile("", "agent.stdin")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove(tmpfile.Name()) // clean up
+
+	if _, err := tmpfile.Write([]byte("Y\n")); err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := tmpfile.Seek(0, 0); err != nil {
+		log.Fatal(err)
+	}
+
+	fakeClient.Agent.SetStdin(tmpfile)
+
+	fakeClient.Lock()
+	fakeClient.Stop()
+
+	tmpfile.Close()
+}
 func TestLockUnlock(t *testing.T) {
 	fakeClient.Lock()
 	if !fakeClient.isWorking() {

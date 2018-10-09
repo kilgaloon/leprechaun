@@ -1,9 +1,9 @@
 package client
 
 import (
+	"os"
 	"testing"
 )
-
 
 var (
 	fk = New("test", cfgWrap.New("test", *path))
@@ -16,7 +16,7 @@ func TestBuildQueue(t *testing.T) {
 		t.Errorf("Queue stack length expected to be 1, got %d", len(fk.Queue.Stack))
 	}
 
-	// reset queue to 0 to test AddToQueue	
+	// reset queue to 0 to test AddToQueue
 	q := &fk.Queue
 	q.Stack = q.Stack[:0]
 }
@@ -38,7 +38,7 @@ func TestProcessRecipe(t *testing.T) {
 }
 
 func TestClientInfo(t *testing.T) {
-	_, err := fakeClient.clientInfo()
+	_, err := fakeClient.clientInfo(os.Stdin)
 	if err != nil {
 		t.Fail()
 	}

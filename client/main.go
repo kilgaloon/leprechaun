@@ -156,14 +156,14 @@ func (client *Client) Stop() os.Signal {
 	forceQuit := false
 	quit := false
 
-	fmt.Print("Are you sure?(y/N): ")
-	fmt.Scanf("%s", &answer)
+	fmt.Fprintf(client.Agent, "Are you sure?(y/N): ")
+	fmt.Fscanf(client.Agent, "%s", &answer)
 
 	if client.isWorking() && strings.ToUpper(answer) == "Y" {
 		answer = ""
 		// if user doesn't choose to force quit we will wait for process, otherwise KILL IT
-		fmt.Print("Client is working on something in the background. Force quit? (y/N)")
-		fmt.Scanf("%s", &answer)
+		fmt.Fprintf(client.Agent.GetStdout(), "Client is working on something in the background. Force quit? (y/N)")
+		fmt.Fscanf(client.Agent.GetStdin(), "%s", &answer)
 
 		if strings.ToUpper(answer) == "Y" {
 			forceQuit = true

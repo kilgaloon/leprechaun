@@ -12,6 +12,7 @@ const (
 	PIDFile           = "/var/run/leprechaun/client.pid"
 	LockFile          = "/var/run/leprechaun/client.lock"
 	CommandSocket     = "/var/run/leprechaun/client.sock"
+	WorkerOutputDir   = "/var/log/leprechaun/workers.output"
 	MaxAllowedWorkers = 5
 	RetryRecipeAfter  = 10
 	ServerPort        = 11400
@@ -47,6 +48,7 @@ type AgentConfig struct {
 	PIDFile           string
 	LockFile          string
 	CommandSocket     string
+	WorkerOutputDir   string
 	Port              int
 	MaxAllowedWorkers int
 	RetryRecipeAfter  int
@@ -102,6 +104,11 @@ func (ac AgentConfig) GetRetryRecipeAfter() int {
 	return ac.RetryRecipeAfter
 }
 
+// GetWorkerOutputDir returns path of workers output dir
+func (ac AgentConfig) GetWorkerOutputDir() string {
+	return ac.WorkerOutputDir
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -122,6 +129,11 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	}
 
 	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(RecipesPath)
+	if !IsDirValid(ac.RecipesPath) {
+		ac.RecipesPath = RecipesPath
+	}
+
+	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(RecipesPath)
 	if !IsDirValid(ac.RecipesPath) {
 		ac.RecipesPath = RecipesPath
 	}

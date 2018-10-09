@@ -2,6 +2,7 @@ package workers
 
 import (
 	"bytes"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -27,6 +28,7 @@ type Worker struct {
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
 	Err            error
+	Stdout         *os.File
 }
 
 // Run starts worker
@@ -56,9 +58,8 @@ func (w *Worker) workOnStep(step string) {
 	cmd := exec.Command("bash", "-c", step)
 	w.Cmd[step] = cmd
 
-	var out bytes.Buffer
 	var stderr bytes.Buffer
-	cmd.Stdout = &out
+	cmd.Stdout = w.Stdout
 	cmd.Stderr = &stderr
 
 	w.WorkingOn = step
@@ -70,10 +71,9 @@ func (w *Worker) workOnStep(step string) {
 
 	w.Logs.Info("Step %s finished... \n\n", step)
 	// there is output, write it to info
-	if len(out.String()) > 0 {
-		w.Logs.Info("Step %s -> output: %s", step, out.String())
-	}
-
+	// if len(out.String()) > 0 {
+	// 	out.WriteTo(w.Stdout)
+	// }
 	// command finished executing
 	// delete it, and let it rest in pepperonies
 	delete(w.Cmd, step)

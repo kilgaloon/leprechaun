@@ -1,6 +1,7 @@
 .vscode
 /debug
 /leprechaun
+/lepretools
 /vendor
 /var
 /coverprofile

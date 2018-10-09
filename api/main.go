@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -18,7 +19,7 @@ type Socket struct {
 }
 
 // Closure is command that will be called to execute
-type Closure func(args ...string) ([][]string, error)
+type Closure func(r io.Writer, args ...string) ([][]string, error)
 
 // Command is definition of basic command that can be called with --cmd
 type Command struct {
@@ -72,7 +73,7 @@ func (s *Socket) Register(r Registrator) {
 }
 
 //Command sends command to socket and gets output
-func (s *Socket) Command(cmd string) string {
+func (s *Socket) Command(cmd string) {
 	c, err := net.Dial("unix", s.unixSock)
 	if err != nil {
 		panic(err)
@@ -90,13 +91,13 @@ func (s *Socket) Command(cmd string) string {
 		n, err := c.Read(buf)
 		if err != nil {
 			if err == io.EOF {
-				return ""
+				return
 			}
 
 			panic(err)
 		}
 
-		return string(buf[0:n])
+		fmt.Printf("%s", string(buf[0:n]))
 	}
 
 }
@@ -123,7 +124,7 @@ func (s Socket) resolver(c net.Conn) {
 		args := req[2:]
 
 		if command != "" {
-			r, err := s.Call(command, args...)
+			r, err := s.Call(c, command, args...)
 			if err != nil {
 				c.Write([]byte(err.Error()))
 			}
@@ -140,9 +141,9 @@ func (s Socket) resolver(c net.Conn) {
 }
 
 // Call specified command
-func (s Socket) Call(name string, args ...string) ([][]string, error) {
+func (s Socket) Call(r io.Writer, name string, args ...string) ([][]string, error) {
 	if command, exist := s.commands[name]; exist {
-		return command.Closure(args...)
+		return command.Closure(r, args...)
 	}
 
 	return nil, errors.New("Command does not exists, or it's not registered")
@@ -153,7 +154,7 @@ func New(socketPath string) *Socket {
 	sock := &Socket{
 		unixSock:  socketPath,
 		commands:  make(map[string]Command),
-		readyChan: make(chan bool),
+		readyChan: make(chan bool, 1),
 	}
 
 	return sock

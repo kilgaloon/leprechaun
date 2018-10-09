@@ -1,6 +1,9 @@
 package agent
 
 import (
+	"bufio"
+	"io"
+	"os"
 	"sync"
 
 	"github.com/kilgaloon/leprechaun/api"
@@ -26,6 +29,29 @@ type Agent interface {
 	GetPID() int
 
 	DefaultCommands(map[string]api.Command) map[string]api.Command
+
+	io.Reader
+	io.Writer
+
+	StandardIO
+}
+
+// StandardIO of agent
+type StandardIO interface {
+	StandardInput
+	StandardOutput
+}
+
+// StandardInput holds everything for input
+type StandardInput interface {
+	GetStdin() io.Reader
+	SetStdin(r io.Reader)
+}
+
+// StandardOutput holds everything for output
+type StandardOutput interface {
+	GetStdout() io.Writer
+	SetStdout(w io.Writer)
 }
 
 // Default represents default agent
@@ -38,6 +64,8 @@ type Default struct {
 	Workers *workers.Workers
 	Context *context.Context
 	Socket  *api.Socket
+	Stdin   io.Reader
+	Stdout  io.Writer
 }
 
 // GetName returns name of the client
@@ -86,6 +114,36 @@ func (d Default) GetPID() int {
 	return d.PID
 }
 
+func (d Default) Write(p []byte) (n int, err error) {
+	os.Stdout.Write(p)
+	return d.GetStdout().Write(p)
+}
+
+func (d Default) Read(p []byte) (n int, err error) {
+	os.Stdin.Read(p)
+	return d.GetStdin().Read(p)
+}
+
+// GetStdout get agent standard output that can be writen to
+func (d Default) GetStdout() io.Writer {
+	return d.Stdout
+}
+
+// GetStdin get agent standard input that can be read from to
+func (d Default) GetStdin() io.Reader {
+	return d.Stdin
+}
+
+// SetStdin ability to change standard input for agent
+func (d *Default) SetStdin(r io.Reader) {
+	d.Stdin = r
+}
+
+// SetStdout ability to change standard input for agent
+func (d *Default) SetStdout(w io.Writer) {
+	d.Stdout = w
+}
+
 // DefaultCommands merge 2 maps into one
 // it usability is if some of the agents
 // wants to takeover default commands
@@ -129,10 +187,13 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent.Context = context.New()
 	agent.Workers = workers.New(
 		cfg.GetMaxAllowedWorkers(),
+		cfg.GetWorkerOutputDir(),
 		agent.Logs,
 		agent.Context,
 	)
 	agent.Socket = api.New(cfg.GetCommandSocket())
+	agent.Stdin = bufio.NewReader(agent.Stdin)
+	agent.Stdout = bufio.NewWriter(agent.Stdout)
 
 	return agent
 }

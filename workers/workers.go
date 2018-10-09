@@ -2,6 +2,7 @@ package workers
 
 import (
 	"errors"
+	"os"
 	"os/exec"
 	"time"
 
@@ -19,6 +20,7 @@ type Errors struct {
 type Workers struct {
 	stack       map[string]Worker
 	allowedSize int
+	OutputDir   string
 	Context     *context.Context
 	Logs        log.Logs
 	DoneChan    chan string
@@ -36,13 +38,13 @@ func (w Workers) GetAll() map[string]Worker {
 }
 
 // GetByName gets worker by provided name
-func (w Workers) GetByName(name string) (Worker, error) {
+func (w Workers) GetByName(name string) (*Worker, error) {
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
-		return worker, nil
+		return &worker, nil
 	}
 
-	return worker, errors.New("No worker with that name")
+	return &worker, errors.New("No worker with that name")
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
@@ -60,6 +62,13 @@ func (w *Workers) CreateWorker(name string) (*Worker, error) {
 			Name:      name,
 			Cmd:       make(map[string]*exec.Cmd),
 		}
+
+		var err error
+		worker.Stdout, err = os.Create(w.OutputDir + "/" + name + ".out") // For read access.
+		if err != nil {
+			w.Logs.Error("%s", err)
+		}
+
 		// move to stack
 		w.stack[worker.Name] = *worker
 
@@ -85,13 +94,14 @@ func (w Workers) Cleaner() {
 }
 
 // New create Workers struct instance
-func New(maxAllowedWorkers int, logs log.Logs, ctx *context.Context) *Workers {
+func New(maxAllowedWorkers int, dir string, logs log.Logs, ctx *context.Context) *Workers {
 	workers := &Workers{
 		stack:       make(map[string]Worker),
 		allowedSize: maxAllowedWorkers,
 		Logs:        logs,
 		Context:     ctx,
 		DoneChan:    make(chan string),
+		OutputDir:   dir,
 		Errors: Errors{
 			StillActive:           errors.New("Worker still active"),
 			AllowedWorkersReached: errors.New("Maximum allowed workers reached"),

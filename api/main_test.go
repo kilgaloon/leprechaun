@@ -2,6 +2,8 @@ package api
 
 import (
 	"errors"
+	"io"
+	"os"
 	"sync"
 	"testing"
 )
@@ -13,7 +15,7 @@ func (ta TestAgent) RegisterCommands() map[string]Command {
 	var cmds = make(map[string]Command)
 
 	cmds["test"] = Command{
-		Closure: func(args ...string) ([][]string, error) {
+		Closure: func(r io.Writer, args ...string) ([][]string, error) {
 			var resp = [][]string{
 				[]string{"TEST"},
 			}
@@ -24,7 +26,7 @@ func (ta TestAgent) RegisterCommands() map[string]Command {
 	}
 
 	cmds["test_with_error"] = Command{
-		Closure: func(args ...string) ([][]string, error) {
+		Closure: func(r io.Writer, args ...string) ([][]string, error) {
 			return nil, errors.New("Test error")
 		},
 		Definition: Definition{},
@@ -49,25 +51,10 @@ func TestRegister(t *testing.T) {
 		for {
 			select {
 			case <-API.readyChan:
-				resp := API.Command("agent test")
-				if resp == "" {
-					t.Fail()
-				}
-
-				resp2 := API.Command("agent test_with_error")
-				if resp2 == "" {
-					t.Fail()
-				}
-
-				resp3 := API.Command("test")
-				if resp3 == "" {
-					t.Fail()
-				}
-
-				resp4 := API.Command("agent not_exist")
-				if resp4 == "" {
-					t.Fail()
-				}
+				API.Command("agent test")
+				API.Command("agent test_with_error")
+				API.Command("test")
+				API.Command("agent not_exist")
 
 				return
 			}
@@ -80,7 +67,7 @@ func TestRegister(t *testing.T) {
 
 func TestCall(t *testing.T) {
 	API.commands = Agent.RegisterCommands()
-	r, err := API.Call("test")
+	r, err := API.Call(os.Stdout, "test")
 	if err != nil {
 		t.Fail()
 	}
@@ -89,7 +76,7 @@ func TestCall(t *testing.T) {
 		t.Fail()
 	}
 
-	_, err = API.Call("test_with_error")
+	_, err = API.Call(os.Stdout, "test_with_error")
 	if err == nil {
 		t.Fail()
 	}

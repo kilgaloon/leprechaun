@@ -1,6 +1,7 @@
 package client
 
 import (
+	"io"
 	"runtime"
 	"strconv"
 )
@@ -8,7 +9,7 @@ import (
 // this section is used for command responders
 
 // cmd: client info
-func (client *Client) clientInfo(args ...string) ([][]string, error) {
+func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error) {
 	pid := strconv.Itoa(client.GetPID())
 	num := strconv.Itoa(client.Agent.GetWorkers().Size())
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))

@@ -1,11 +1,12 @@
 package agent
 
 import (
+	"io"
 	"time"
 )
 
 // WorkersList is default command for agents
-func (d Default) WorkersList(args ...string) ([][]string, error) {
+func (d Default) WorkersList(r io.Writer, args ...string) ([][]string, error) {
 	workers := d.GetWorkers()
 	resp := [][]string{}
 
@@ -26,7 +27,7 @@ func (d Default) WorkersList(args ...string) ([][]string, error) {
 }
 
 // KillWorker kills worker by provided name
-func (d Default) KillWorker(args ...string) ([][]string, error) {
+func (d Default) KillWorker(r io.Writer, args ...string) ([][]string, error) {
 	workers := d.GetWorkers()
 	resp := [][]string{}
 

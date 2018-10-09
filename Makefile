@@ -7,6 +7,7 @@ install:
 	mkdir /var/log/leprechaun/
 	mkdir /var/log/leprechaun/server
 	mkdir /var/run/leprechaun/
+	mkdir /var/run/leprechaun/workers.output
 	touch /var/log/leprechaun/info.log
 	touch /var/log/leprechaun/server/info.log
 	touch /var/log/leprechaun/error.log
