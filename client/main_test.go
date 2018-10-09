@@ -3,8 +3,11 @@ package client
 import (
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/kilgaloon/leprechaun/event"
 
@@ -23,7 +26,11 @@ func TestStart(t *testing.T) {
 }
 
 func TestStop(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("/tmp", "")
+	var seededRand = rand.New(
+		rand.NewSource(time.Now().UnixNano()))
+
+	fn := strconv.Itoa(seededRand.Int())
+	tmpfile, err := ioutil.TempFile("/tmp", fn)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -23,17 +23,14 @@ type Agent interface {
 	GetConfig() *config.AgentConfig
 	GetLogs() log.Logs
 	GetSocket() *api.Socket
-	GetMutex() *sync.Mutex
 
 	SetPID(i int)
 	GetPID() int
 
 	DefaultCommands(map[string]api.Command) map[string]api.Command
 
-	io.Reader
-	io.Writer
-
 	StandardIO
+	Vault
 }
 
 // StandardIO of agent
@@ -46,12 +43,14 @@ type StandardIO interface {
 type StandardInput interface {
 	GetStdin() io.Reader
 	SetStdin(r io.Reader)
+	io.Reader
 }
 
 // StandardOutput holds everything for output
 type StandardOutput interface {
 	GetStdout() io.Writer
 	SetStdout(w io.Writer)
+	io.Writer
 }
 
 // Default represents default agent

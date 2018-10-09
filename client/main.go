@@ -50,9 +50,9 @@ func (client *Client) Start() {
 	// SetPID of client
 	client.SetPID()
 	// build queue
-	client.Agent.GetMutex().Lock()
+	client.Agent.Lock()
 	client.BuildQueue()
-	client.Agent.GetMutex().Unlock()
+	client.Agent.Unlock()
 
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
