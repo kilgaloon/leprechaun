@@ -23,7 +23,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStop(t *testing.T) {
-	tmpfile, err := ioutil.TempFile("./", "agent.stdin")
+	tmpfile, err := ioutil.TempFile("/tmp", "agent.stdin")
 	if err != nil {
 		log.Fatal(err)
 	}
