@@ -39,6 +39,13 @@ test:
 	cd log && go vet
 	cd recipe && go vet
 	cd recipe/schedule && go vet
+	cd config && go vet
+	cd context && go vet
+	cd event && go vet
+	cd workers && go vet
+	cd server && go vet
+	cd agent && go vet
+	cd api && go vet
 	go test ./client -coverprofile=./client/coverage.txt -covermode=atomic
 	go test ./config -coverprofile=./config/coverage.txt -covermode=atomic
 	go test ./context -coverprofile=./context/coverage.txt -covermode=atomic
