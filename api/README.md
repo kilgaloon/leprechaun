@@ -2,11 +2,11 @@
 
 This package is used to provide API (socket/unix) between cli and client. API receives command from cli and return kind of informations through commands that are registered for Agents.
 
-It implements `registry` interface
+It implements `Registrator` interface
 
 ```
-type registry interface {
-    RegisterCommandSocket() *Registrator
+type Registrator interface {
+	RegisterCommands() map[string]Command
 }
 ```
 
