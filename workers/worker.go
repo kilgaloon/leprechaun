@@ -32,9 +32,6 @@ type Worker struct {
 }
 
 // Run starts worker
-//
-// TODO: Worker should send information back to some channel
-// this can be used to write informations to {job}.lock file
 func (w *Worker) Run(steps []string) {
 	w.Steps = steps
 	w.StartedAt = time.Now()

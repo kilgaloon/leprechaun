@@ -49,7 +49,7 @@ func (w Workers) GetByName(name string) (*Worker, error) {
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(name string) (*Worker, error) {
-	if _, ok := w.stack[name]; ok {
+	if _, ok := w.GetByName(name); ok == nil {
 		return nil, w.Errors.StillActive
 	}
 

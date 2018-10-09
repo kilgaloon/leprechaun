@@ -27,6 +27,7 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
 	assert.Equal(t, CommandSocket, cfg.GetCommandSocket())
 	assert.Equal(t, ServerPort, cfg.GetPort())
+	assert.Equal(t, WorkerOutputDir, cfg.GetWorkerOutputDir())
 }
 
 func TestBuildWithSettings(t *testing.T) {
@@ -39,6 +40,7 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
 	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
+	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 10, cfg.GetRetryRecipeAfter())
 }

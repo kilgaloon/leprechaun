@@ -30,7 +30,7 @@ func TestStop(t *testing.T) {
 
 	defer os.Remove(tmpfile.Name()) // clean up
 
-	if _, err := tmpfile.Write([]byte("Y\n")); err != nil {
+	if _, err := tmpfile.Write([]byte("Y")); err != nil {
 		log.Fatal(err)
 	}
 

@@ -47,6 +47,7 @@ test:
 	go test ./workers -coverprofile=./workers/coverage.txt -covermode=atomic
 	go test ./server -coverprofile=./server/coverage.txt -covermode=atomic
 	go test ./api -coverprofile=./api/coverage.txt -covermode=atomic
+	go test ./agent -coverprofile=./agent/coverage.txt -covermode=atomic
 	go test ./recipe -coverprofile=./api/coverage.txt -covermode=atomic
 
 test-with-report:
