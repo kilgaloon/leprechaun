@@ -5,7 +5,7 @@
 
   
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun) [![Build Status](https://travis-ci.com/kilgaloon/leprechaun.svg?branch=master)](https://travis-ci.com/kilgaloon/leprechaun.svg?branch=master) [![codecov](https://codecov.io/gh/Kilgaloon/Leprechaun/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilgaloon/Leprechaun)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun) [![Build Status](https://travis-ci.com/kilgaloon/leprechaun.svg?branch=master)](https://travis-ci.com/kilgaloon/leprechaun) [![codecov](https://codecov.io/gh/Kilgaloon/Leprechaun/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilgaloon/Leprechaun)
 
   
 
