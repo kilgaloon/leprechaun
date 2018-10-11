@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/recipe/schedule"
+	scheduler "github.com/kilgaloon/leprechaun/recipe/schedule"
 	"gopkg.in/yaml.v2"
 )
 
@@ -16,6 +16,7 @@ type Recipe struct {
 	StartAt    time.Time
 	Schedule   map[string]int
 	Steps      []string
+	Pattern    string
 }
 
 // Build recipe for use
@@ -34,7 +35,7 @@ func Build(file string) (Recipe, error) {
 
 	switch r.Definition {
 	case "schedule":
-		r.StartAt = recipe.ScheduleToTime(r.Schedule)
+		r.StartAt = scheduler.ScheduleToTime(r.Schedule)
 	}
 
 	return r, nil

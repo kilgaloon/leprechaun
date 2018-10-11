@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/kilgaloon/leprechaun/api"
 )
@@ -10,11 +10,12 @@ import (
 func help(r api.Registrator) {
 	cmds := r.RegisterCommands()
 
-	fmt.Println("---------- LIST OF AVAILABLE COMMANDS -----------")
+	fmt.Println("---------- COMMANDS FOR " + strings.ToUpper(r.GetName()) + " -----------")
 
 	for name, cmd := range cmds {
-		fmt.Println(name + " - " + cmd.String())
+		formated := cmd.String()
+		fmt.Println(name + " - " + strings.Replace(formated, "{agent}", r.GetName(), -1))
 	}
 
-	os.Exit(0)
+	fmt.Println("-------------------------------------------------")
 }

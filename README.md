@@ -9,7 +9,7 @@
 
   
 
-Current Version: **1.0.0-alpha**  <br  />
+Current Version: **1.0.0-alpha**
 
 Current Release: **Calimero**
 
@@ -24,7 +24,7 @@ In **Leprechaun** tasks are **recipes**, lets observe simple recipe file which i
   
 File is located in recipes directory which can be specified in `configs.ini` configurational file.
 
-By definition there are 2 types of recipes, the ones that can be scheduled and the others that can be hooked, they are similiar regarding steps but have some difference in definition
+By definition there are 3 types of recipes, the ones that can be scheduled, the others that can be hooked and last ones that use cron pattern for scheduling jobs, they are similiar regarding steps but have some difference in definition
 
 
 First we will talk about scheduled recipes and they are defined like this:
@@ -60,6 +60,16 @@ Task will run every 2 days 2 hours and 10 mins, if we put just days to 0 then it
   
 
 Hooked recipe can be run by sending request to `{host}:{port}/hook?id={id_of_recipe}` on which Leprechaun server is listening, for example `localhost:11400/hook?id=45DE2239F`.
+
+Recipes that use cron pattern to schedule tasks are used like this:
+
+	name: job3 // name of recipe
+	definition: cron // definition of which type is recipe
+	pattern: * * * * *
+	steps: // steps are done from first to last
+		- touch ./test.txt
+		- echo "Is this working?" > ./test.txt
+		- mv ./test.txt ./imwondering.txt
 
 
 Steps also support variables which syntax is `$variable`, and those are environment variables ex: `$LOGNAME` and in our steps it will be available as `$LOGNAME`. We can now rewrite our job file and it will look like something like this:

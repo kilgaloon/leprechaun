@@ -38,6 +38,11 @@ func New(name string, cfg *config.AgentConfig) *Client {
 	return client
 }
 
+// GetName of agent
+func (client *Client) GetName() string {
+	return client.Agent.GetName()
+}
+
 // GetAgent of service of agent
 func (client *Client) GetAgent() agent.Agent {
 	return client.Agent

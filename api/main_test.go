@@ -10,6 +10,10 @@ import (
 
 type TestAgent struct{}
 
+func (ta TestAgent) GetName() string {
+	return "test agent"
+}
+
 // Test registering commands
 func (ta TestAgent) RegisterCommands() map[string]Command {
 	var cmds = make(map[string]Command)

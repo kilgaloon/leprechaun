@@ -39,6 +39,7 @@ func (c Command) String() string {
 
 // Registrator is agent that will be registered
 type Registrator interface {
+	GetName() string
 	RegisterCommands() map[string]Command
 }
 

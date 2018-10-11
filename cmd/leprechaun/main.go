@@ -10,6 +10,7 @@ import (
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/client"
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/cron"
 	"github.com/kilgaloon/leprechaun/server"
 )
 
@@ -29,12 +30,16 @@ func main() {
 	configs := config.NewConfigs()
 	client.New("client", configs.New("client", *iniPath))
 	server.New("server", configs.New("server", *iniPath))
+	cron.New("cron", configs.New("cron", *iniPath))
 
 	// basic leprechaun help
 	if len(os.Args) > 1 {
 		if os.Args[1] == "help" {
 			help(client.Agent)
 			help(server.Agent)
+			help(cron.Agent)
+
+			os.Exit(0)
 		}
 	}
 
@@ -42,12 +47,15 @@ func main() {
 	case "run":
 		go client.Agent.Start()
 		go server.Agent.Start()
+		go cron.Agent.Start()
 	case "client:stop":
 		shutdownSignal <- client.Agent.Stop()
 	case "client:start":
 		go client.Agent.Start()
 	case "server:start":
 		go server.Agent.Start()
+	case "cron:start":
+		go cron.Agent.Start()
 	case "client":
 		sock := api.New(configs.GetConfig("client").GetCommandSocket())
 		sock.Command(*cmd)
@@ -56,6 +64,13 @@ func main() {
 		*cmd = "server stop"
 		fallthrough
 	case "server":
+		sock := api.New(configs.GetConfig("server").GetCommandSocket())
+		sock.Command(*cmd)
+		os.Exit(0)
+	case "cron:stop":
+		*cmd = "cron stop"
+		fallthrough
+	case "cron":
 		sock := api.New(configs.GetConfig("server").GetCommandSocket())
 		sock.Command(*cmd)
 		os.Exit(0)

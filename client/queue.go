@@ -36,7 +36,6 @@ func (client *Client) BuildQueue() {
 		if recipe.Definition == "schedule" {
 			q.Stack = append(q.Stack, recipe)
 		}
-
 	}
 
 	client.Queue = q
