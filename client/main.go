@@ -21,7 +21,7 @@ var Agent *Client
 
 // Client settings and configurations
 type Client struct {
-	Agent agent.Agent
+	*agent.Default
 	Queue
 }
 
@@ -30,7 +30,8 @@ type Client struct {
 // that use this package
 func New(name string, cfg *config.AgentConfig) *Client {
 	client := &Client{
-		Agent: agent.New(name, cfg),
+		agent.New(name, cfg),
+		Queue{},
 	}
 
 	Agent = client
@@ -38,26 +39,16 @@ func New(name string, cfg *config.AgentConfig) *Client {
 	return client
 }
 
-// GetName of agent
-func (client *Client) GetName() string {
-	return client.Agent.GetName()
-}
-
-// GetAgent of service of agent
-func (client *Client) GetAgent() agent.Agent {
-	return client.Agent
-}
-
 // Start client
 func (client *Client) Start() {
 	// remove hanging .lock file
-	os.Remove(client.Agent.GetConfig().GetLockFile())
+	os.Remove(client.GetConfig().GetLockFile())
 	// SetPID of client
 	client.SetPID()
 	// build queue
-	client.Agent.Lock()
+	client.Lock()
 	client.BuildQueue()
-	client.Agent.Unlock()
+	client.Unlock()
 
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
@@ -74,19 +65,19 @@ func (client *Client) Start() {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				client.Agent.GetLogs().Error("error: %s", err)
+				client.GetLogs().Error("error: %s", err)
 			}
 		}
 	}()
 
-	err = watcher.Add(client.Agent.GetConfig().GetRecipesPath())
+	err = watcher.Add(client.GetConfig().GetRecipesPath())
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	event.EventHandler.Dispatch("client:ready")
 	// register client to command socket
-	go api.New(client.Agent.GetConfig().GetCommandSocket()).Register(client)
+	go api.New(client.GetConfig().GetCommandSocket()).Register(client)
 
 	for {
 		go client.ProcessQueue()
@@ -110,18 +101,18 @@ func (client *Client) RegisterCommands() map[string]api.Command {
 	}
 
 	// this function merge both maps and inject default commands from agent
-	return client.Agent.DefaultCommands(cmds)
+	return client.DefaultCommands(cmds)
 }
 
 // SetPID sets current PID of client
 func (client *Client) SetPID() {
-	f, err := os.OpenFile(client.Agent.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
+	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to start client, can't save PID, reason: " + err.Error())
 	}
 
-	client.Agent.SetPID(os.Getpid())
-	pid := strconv.Itoa(client.Agent.GetPID())
+	client.PID = os.Getpid()
+	pid := strconv.Itoa(client.GetPID())
 	_, err = f.WriteString(pid)
 	if err != nil {
 		panic("Failed to start client, can't save PID")
@@ -130,14 +121,14 @@ func (client *Client) SetPID() {
 
 // GetPID gets current PID of client
 func (client *Client) GetPID() int {
-	return client.Agent.GetPID()
+	return client.PID
 }
 
 // Check does client is working on something
 // decide this in which status client resides
 func (client *Client) isWorking() bool {
 	// check does .lock file exists
-	if _, err := os.Stat(client.Agent.GetConfig().GetLockFile()); os.IsNotExist(err) {
+	if _, err := os.Stat(client.GetConfig().GetLockFile()); os.IsNotExist(err) {
 		return false
 	}
 
@@ -146,7 +137,7 @@ func (client *Client) isWorking() bool {
 
 // Lock client to busy state
 func (client *Client) Lock() {
-	_, err := os.OpenFile(client.Agent.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
+	_, err := os.OpenFile(client.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to lock client in busy state")
 	}
@@ -154,7 +145,7 @@ func (client *Client) Lock() {
 
 // Unlock client to busy state
 func (client *Client) Unlock() {
-	os.Remove(client.Agent.GetConfig().GetLockFile())
+	os.Remove(client.GetConfig().GetLockFile())
 }
 
 // Stop client
@@ -163,14 +154,14 @@ func (client *Client) Stop() os.Signal {
 	forceQuit := false
 	quit := false
 
-	fmt.Fprintf(client.Agent, "Are you sure?(y/N): ")
-	fmt.Fscanf(client.Agent, "%s", &answer)
+	fmt.Fprintf(client, "Are you sure?(y/N): ")
+	fmt.Fscanf(client, "%s", &answer)
 
 	if client.isWorking() && strings.ToUpper(answer) == "Y" {
 		answer = ""
 		// if user doesn't choose to force quit we will wait for process, otherwise KILL IT
-		fmt.Fprintf(client.Agent.GetStdout(), "Client is working on something in the background. Force quit? (y/N)")
-		fmt.Fscanf(client.Agent.GetStdin(), "%s", &answer)
+		fmt.Fprintf(client.GetStdout(), "Client is working on something in the background. Force quit? (y/N)")
+		fmt.Fscanf(client.GetStdin(), "%s", &answer)
 
 		if strings.ToUpper(answer) == "Y" {
 			forceQuit = true
@@ -182,13 +173,13 @@ func (client *Client) Stop() os.Signal {
 	pid := client.GetPID()
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		client.Agent.GetLogs().Error("Can't find process with that PID. %s", err)
+		client.GetLogs().Error("Can't find process with that PID. %s", err)
 	}
 
 	// shutdown gracefully
 	if quit {
 		state, err := process.Wait()
-		client.Agent.GetLogs().Info("Stopping Leprechaun, please wait...")
+		client.GetLogs().Info("Stopping Leprechaun, please wait...")
 
 		if err == nil {
 			if state.Exited() {
@@ -204,7 +195,7 @@ func (client *Client) Stop() os.Signal {
 	if forceQuit {
 		killed := process.Kill()
 		if killed != nil {
-			client.Agent.GetLogs().Error("Can't kill process with that PID. %s", killed)
+			client.GetLogs().Error("Can't kill process with that PID. %s", killed)
 		} else {
 			client.Unlock()
 			return syscall.SIGTERM

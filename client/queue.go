@@ -20,16 +20,16 @@ type Queue struct {
 func (client *Client) BuildQueue() {
 	q := Queue{}
 
-	files, err := ioutil.ReadDir(client.Agent.GetConfig().GetRecipesPath())
+	files, err := ioutil.ReadDir(client.GetConfig().GetRecipesPath())
 	if err != nil {
 		panic(err)
 	}
 
 	for _, file := range files {
-		fullFilepath := client.Agent.GetConfig().GetRecipesPath() + "/" + file.Name()
+		fullFilepath := client.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			client.Agent.GetLogs().Error(err.Error())
+			client.GetLogs().Error(err.Error())
 		}
 		// recipes that needs to be pushed to queue
 		// needs to be schedule by definition
@@ -46,7 +46,7 @@ func (client *Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
 		if err != nil {
-			client.Agent.GetLogs().Error(err.Error())
+			client.GetLogs().Error(err.Error())
 		}
 
 		if r.Definition == "schedule" {
@@ -64,28 +64,28 @@ func (client *Client) ProcessQueue() {
 		go func(r *recipe.Recipe) {
 			if compare.Equal(r.StartAt) {
 				// lock mutex
-				client.Agent.GetMutex().Lock()
+				client.GetMutex().Lock()
 				// create worker
-				worker, err := client.Agent.GetWorkers().CreateWorker(r.Name)
+				worker, err := client.CreateWorker(r.Name)
 				// unlock mutex
-				client.Agent.GetMutex().Unlock()
+				client.GetMutex().Unlock()
 
 				if err != nil {
 					switch err {
-					case client.Agent.GetWorkers().Errors.AllowedWorkersReached:
-						client.Agent.GetLogs().Info("%s", err)
+					case client.Errors.AllowedWorkersReached:
+						client.GetLogs().Info("%s", err)
 						go client.ProcessRecipe(r)
-					case client.Agent.GetWorkers().Errors.StillActive:
-						client.Agent.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
+					case client.Errors.StillActive:
+						client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 					}
 					// move this worker to queue and work on it when next worker space is available
 					go client.ProcessRecipe(r)
-					client.Agent.GetLogs().Info("%s", err)
+					client.GetLogs().Info("%s", err)
 					return
 				}
 
 				event.EventHandler.Dispatch("client:lock")
-				client.Agent.GetLogs().Info("%s file is in progress... \n", r.Name)
+				client.GetLogs().Info("%s file is in progress... \n", r.Name)
 				// worker takeover steps and works on then
 				worker.Run(r.Steps)
 				// signal that worker is done
@@ -101,28 +101,28 @@ func (client *Client) ProcessQueue() {
 // ProcessRecipe takes specific recipe and process it
 func (client *Client) ProcessRecipe(r *recipe.Recipe) {
 	// lock mutex
-	client.Agent.GetMutex().Lock()
+	client.GetMutex().Lock()
 	// create worker
-	worker, err := client.Agent.GetWorkers().CreateWorker(r.Name)
+	worker, err := client.CreateWorker(r.Name)
 	// unlock mutex
-	client.Agent.GetMutex().Unlock()
+	client.GetMutex().Unlock()
 
 	if err != nil {
 		switch err {
-		case client.Agent.GetWorkers().Errors.AllowedWorkersReached:
+		case client.Errors.AllowedWorkersReached:
 			// move this worker to queue and work on it when next worker space is available
-			time.Sleep(time.Duration(client.Agent.GetConfig().RetryRecipeAfter) * time.Second)
-			client.Agent.GetLogs().Info("%s, retrying in %d s ...", err, client.Agent.GetConfig().RetryRecipeAfter)
+			time.Sleep(time.Duration(client.GetConfig().RetryRecipeAfter) * time.Second)
+			client.GetLogs().Info("%s, retrying in %d s ...", err, client.GetConfig().RetryRecipeAfter)
 			go client.ProcessRecipe(r)
-		case client.Agent.GetWorkers().Errors.StillActive:
-			client.Agent.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
+		case client.Errors.StillActive:
+			client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 		}
 
 		return
 	}
 
 	event.EventHandler.Dispatch("client:lock")
-	client.Agent.GetLogs().Info("%s file is in progress... \n", r.Name)
+	client.GetLogs().Info("%s file is in progress... \n", r.Name)
 	// worker takeover steps and works on then
 	worker.Run(r.Steps)
 	//remove lock on client

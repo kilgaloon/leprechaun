@@ -24,19 +24,19 @@ func TestBuildQueue(t *testing.T) {
 }
 
 func TestAddToQueue(t *testing.T) {
-	fk.AddToQueue(&fk.Queue.Stack, fk.Agent.GetConfig().GetRecipesPath()+"/schedule.yml")
+	fk.AddToQueue(&fk.Queue.Stack, fk.GetConfig().GetRecipesPath()+"/schedule.yml")
 	if len(fk.Queue.Stack) != 1 {
 		t.Errorf("Queue stack length expected to be 1, got %d", len(fakeClient.Queue.Stack))
 	}
 
-	fk.AddToQueue(&fk.Queue.Stack, fk.Agent.GetConfig().GetRecipesPath()+"/hook.yml")
+	fk.AddToQueue(&fk.Queue.Stack, fk.GetConfig().GetRecipesPath()+"/hook.yml")
 	if len(fk.Queue.Stack) != 1 {
 		t.Errorf("Queue stack length expected to be 0, got %d", len(fakeClient.Queue.Stack))
 	}
 }
 
 func TestProcessRecipe(t *testing.T) {
-	r, err := recipe.Build(fk.Agent.GetConfig().GetRecipesPath() + "/schedule.yml")
+	r, err := recipe.Build(fk.GetConfig().GetRecipesPath() + "/schedule.yml")
 	if err != nil {
 		t.Fail()
 	}

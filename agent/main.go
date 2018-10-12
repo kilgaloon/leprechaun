@@ -8,6 +8,7 @@ import (
 
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/context"
+	"github.com/kilgaloon/leprechaun/notifier"
 	"github.com/kilgaloon/leprechaun/workers"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -18,14 +19,10 @@ import (
 // that has workers, config, context and logs
 type Agent interface {
 	GetName() string
-	GetWorkers() *workers.Workers
 	GetContext() *context.Context
 	GetConfig() *config.AgentConfig
 	GetLogs() log.Logs
 	GetSocket() *api.Socket
-
-	SetPID(i int)
-	GetPID() int
 
 	DefaultCommands(map[string]api.Command) map[string]api.Command
 
@@ -55,26 +52,24 @@ type StandardOutput interface {
 
 // Default represents default agent
 type Default struct {
-	Name    string
-	PID     int
-	Config  *config.AgentConfig
-	Logs    log.Logs
-	Mu      *sync.Mutex
-	Workers *workers.Workers
-	Context *context.Context
-	Socket  *api.Socket
-	Stdin   io.Reader
-	Stdout  io.Writer
+	Name   string
+	PID    int
+	Config *config.AgentConfig
+	Logs   log.Logs
+	Mu     *sync.Mutex
+
+	*workers.Workers
+
+	Context  *context.Context
+	Socket   *api.Socket
+	Notifier *notifier.Notifier
+	Stdin    io.Reader
+	Stdout   io.Writer
 }
 
 // GetName returns name of the client
 func (d Default) GetName() string {
 	return d.Name
-}
-
-// GetWorkers return instance of workers
-func (d Default) GetWorkers() *workers.Workers {
-	return d.Workers
 }
 
 // GetContext returns context of agent
@@ -101,16 +96,6 @@ func (d Default) GetSocket() *api.Socket {
 // GetMutex for agent
 func (d Default) GetMutex() *sync.Mutex {
 	return d.Mu
-}
-
-// SetPID sets process id for agent
-func (d *Default) SetPID(i int) {
-	d.PID = i
-}
-
-// GetPID sets process id for agent
-func (d Default) GetPID() int {
-	return d.PID
 }
 
 func (d Default) Write(p []byte) (n int, err error) {
@@ -193,6 +178,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent.Socket = api.New(cfg.GetCommandSocket())
 	agent.Stdin = bufio.NewReader(agent.Stdin)
 	agent.Stdout = bufio.NewWriter(agent.Stdout)
+	//agent.Notifier = notifier.New("smtp.gmail.com", agent.Logs)
 
 	return agent
 }

@@ -15,7 +15,7 @@ var Agent *Server
 
 // Server instance
 type Server struct {
-	Agent agent.Agent
+	*agent.Default
 	Pool
 	HTTP *http.Server
 }
@@ -25,8 +25,9 @@ type Server struct {
 // that use this package
 func New(name string, cfg *config.AgentConfig) *Server {
 	server := &Server{
-		Agent: agent.New(name, cfg),
-		HTTP:  &http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
+		agent.New(name, cfg),
+		Pool{},
+		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}
 
 	Agent = server
@@ -36,23 +37,23 @@ func New(name string, cfg *config.AgentConfig) *Server {
 
 // GetName of agent
 func (server *Server) GetName() string {
-	return server.Agent.GetName()
+	return server.GetName()
 }
 
 // Start server that will receive webhooks
 func (server *Server) Start() {
 	// build queue for server
-	server.Agent.GetMutex().Lock()
+	server.GetMutex().Lock()
 	server.BuildPool()
-	server.Agent.GetMutex().Unlock()
+	server.GetMutex().Unlock()
 	// register all routes
 	server.registerHandles()
 	// listen for port
-	server.Agent.GetLogs().Info("Server started")
+	server.GetLogs().Info("Server started")
 	// register server to command socket
-	go api.New(server.Agent.GetConfig().GetCommandSocket()).Register(server)
+	go api.New(server.GetConfig().GetCommandSocket()).Register(server)
 	if err := server.HTTP.ListenAndServe(); err != nil {
-		server.Agent.GetLogs().Error("Httpserver: ListenAndServe() error: %s", err)
+		server.GetLogs().Error("Httpserver: ListenAndServe() error: %s", err)
 	}
 
 }
@@ -64,7 +65,7 @@ func (server *Server) registerHandles() {
 
 // Stop http server
 func (server *Server) Stop(args ...string) ([][]string, error) {
-	server.Agent.GetLogs().Info("Shutting down server")
+	server.GetLogs().Info("Shutting down server")
 	if err := server.HTTP.Shutdown(con.Background()); err != nil {
 		return [][]string{}, err
 	}
@@ -76,5 +77,5 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 func (server Server) RegisterCommands() map[string]api.Command {
 	cmds := make(map[string]api.Command)
 
-	return server.Agent.DefaultCommands(cmds)
+	return server.DefaultCommands(cmds)
 }

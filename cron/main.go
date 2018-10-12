@@ -14,7 +14,7 @@ var Agent *Cron
 
 // Cron settings and configurations
 type Cron struct {
-	Agent   agent.Agent
+	*agent.Default
 	Service *cron.Cron
 }
 
@@ -23,8 +23,8 @@ type Cron struct {
 // that use this package
 func New(name string, cfg *config.AgentConfig) *Cron {
 	cron := &Cron{
-		Agent:   agent.New(name, cfg),
-		Service: cron.New(),
+		agent.New(name, cfg),
+		cron.New(),
 	}
 
 	Agent = cron
@@ -32,20 +32,15 @@ func New(name string, cfg *config.AgentConfig) *Cron {
 	return cron
 }
 
-// GetName of agent
-func (c *Cron) GetName() string {
-	return c.Agent.GetName()
-}
-
 // Start client
 func (c *Cron) Start() {
 	// build queue
-	c.Agent.Lock()
+	c.Lock()
 	c.buildJobs()
-	c.Agent.Unlock()
+	c.Unlock()
 
 	// register client to command socket
-	go api.New(c.Agent.GetConfig().GetCommandSocket()).Register(c)
+	go api.New(c.GetConfig().GetCommandSocket()).Register(c)
 
 	c.Service.Start()
 }
@@ -57,7 +52,7 @@ func (c *Cron) RegisterCommands() map[string]api.Command {
 	cmds := make(map[string]api.Command)
 
 	// this function merge both maps and inject default commands from agent
-	return c.Agent.DefaultCommands(cmds)
+	return c.DefaultCommands(cmds)
 }
 
 // Stop client

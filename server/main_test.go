@@ -20,7 +20,7 @@ func TestStartStop(t *testing.T) {
 	go fakeServer.Start()
 	// retry 5 times before failing
 	// this means server failed to start
-	port := strconv.Itoa(fakeServer.Agent.GetConfig().GetPort())
+	port := strconv.Itoa(fakeServer.GetConfig().GetPort())
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost" + ":" + port)
 		if err != nil {
@@ -53,7 +53,7 @@ func TestRegisterCommands(t *testing.T) {
 
 func TestFindInPool(t *testing.T) {
 	// simulate exceeding maximum number of workers
-	for i := 0; i < fakeServer.Agent.GetConfig().GetMaxAllowedWorkers(); i++ {
+	for i := 0; i < fakeServer.GetConfig().GetMaxAllowedWorkers(); i++ {
 		fakeServer.FindInPool("223344")
 	}
 }

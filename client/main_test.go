@@ -45,7 +45,7 @@ func TestStop(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	fakeClient.Agent.SetStdin(tmpfile)
+	fakeClient.SetStdin(tmpfile)
 
 	fakeClient.Lock()
 	fakeClient.Stop()
@@ -58,10 +58,4 @@ func TestLockUnlock(t *testing.T) {
 		t.Fail()
 	}
 	event.EventHandler.Dispatch("client:unlock")
-}
-
-func TestGetAgent(t *testing.T) {
-	if fakeClient.GetAgent() != fakeClient.Agent {
-		t.Fail()
-	}
 }

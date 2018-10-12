@@ -24,6 +24,7 @@ type Worker struct {
 	Context        *context.Context
 	Logs           log.Logs
 	DoneChan       chan string
+	ErrorChan      chan *Worker
 	Name           string
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
@@ -37,6 +38,10 @@ func (w *Worker) Run(steps []string) {
 	w.StartedAt = time.Now()
 
 	for _, step := range w.Steps {
+		if (w.Err != nil) {
+			// Worker had some kind of error, don't run any steps
+			return
+		}
 		w.Logs.Info("Step %s is in progress... \n", step)
 		// replace variables
 		parts := strings.Fields(step)
@@ -62,8 +67,8 @@ func (w *Worker) workOnStep(step string) {
 	w.WorkingOn = step
 	w.Err = cmd.Run()
 	if w.Err != nil {
-		w.Logs.Info("Step %s failed to start. Reason: %s \n", step, stderr.String())
-		w.WorkingOn = ""
+		w.ErrorChan <- w
+		return
 	}
 
 	w.Logs.Info("Step %s finished... \n\n", step)

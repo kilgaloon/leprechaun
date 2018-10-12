@@ -24,21 +24,22 @@ type Workers struct {
 	Context     *context.Context
 	Logs        log.Logs
 	DoneChan    chan string
+	ErrorChan   chan *Worker
 	Errors
 }
 
-// Size returns size of stack/number of workers
-func (w Workers) Size() int {
+// NumOfWorkers returns size of stack/number of workers
+func (w Workers) NumOfWorkers() int {
 	return len(w.stack)
 }
 
-// GetAll workers from stack
-func (w Workers) GetAll() map[string]Worker {
+// GetAllWorkers workers from stack
+func (w Workers) GetAllWorkers() map[string]Worker {
 	return w.stack
 }
 
-// GetByName gets worker by provided name
-func (w Workers) GetByName(name string) (*Worker, error) {
+// GetWorkerByName gets worker by provided name
+func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -49,16 +50,17 @@ func (w Workers) GetByName(name string) (*Worker, error) {
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(name string) (*Worker, error) {
-	if _, ok := w.GetByName(name); ok == nil {
+	if _, ok := w.GetWorkerByName(name); ok == nil {
 		return nil, w.Errors.StillActive
 	}
 
-	if w.Size() < w.allowedSize {
+	if w.NumOfWorkers() < w.allowedSize {
 		worker := &Worker{
 			StartedAt: time.Now(),
 			Context:   w.Context,
 			Logs:      w.Logs,
 			DoneChan:  w.DoneChan,
+			ErrorChan: w.ErrorChan,
 			Name:      name,
 			Cmd:       make(map[string]*exec.Cmd),
 		}
@@ -80,14 +82,19 @@ func (w *Workers) CreateWorker(name string) (*Worker, error) {
 	return nil, w.Errors.AllowedWorkersReached
 }
 
-// Cleaner recieves signal from DoneChan and clean workers that are done
-func (w Workers) Cleaner() {
+func (w Workers) listener() {
 	go func() {
 		for {
 			select {
 			case workerName := <-w.DoneChan:
 				delete(w.stack, workerName)
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
+			case worker := <-w.ErrorChan:
+				// when worker gets to error, log it
+				// and delete it from stack of workers
+				// otherwise it will populate stack and pretend to be active
+				delete(w.stack, worker.Name)
+				w.Logs.Error("Worker %s: %s", worker.Name, worker.Err)
 			}
 		}
 	}()
@@ -101,6 +108,7 @@ func New(maxAllowedWorkers int, dir string, logs log.Logs, ctx *context.Context)
 		Logs:        logs,
 		Context:     ctx,
 		DoneChan:    make(chan string),
+		ErrorChan:   make(chan *Worker),
 		OutputDir:   dir,
 		Errors: Errors{
 			StillActive:           errors.New("Worker still active"),
@@ -108,7 +116,7 @@ func New(maxAllowedWorkers int, dir string, logs log.Logs, ctx *context.Context)
 		},
 	}
 	// cleaner sits and wait to clean workers that are done with their job
-	workers.Cleaner()
+	workers.listener()
 
 	return workers
 }

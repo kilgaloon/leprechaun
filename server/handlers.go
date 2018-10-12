@@ -22,6 +22,6 @@ func (server Server) ping(w http.ResponseWriter, r *http.Request) {
 
 	_, err := w.Write([]byte("PONG"))
 	if err != nil {
-		server.Agent.GetLogs().Error("%s", err)
+		server.GetLogs().Error("%s", err)
 	}
 }

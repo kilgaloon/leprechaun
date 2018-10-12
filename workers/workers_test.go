@@ -35,20 +35,20 @@ func TestCreateWorker(t *testing.T) {
 }
 
 func TestGetWorkerByName(t *testing.T) {
-	_, err := workers.GetByName("test")
+	_, err := workers.GetWorkerByName("test")
 	if err != nil {
 		t.Fail()
 	}
 
-	_, err = workers.GetByName("test2")
+	_, err = workers.GetWorkerByName("test2")
 	if err == nil {
 		t.Fail()
 	}
 }
 
 func TestGetAll(t *testing.T) {
-	w := workers.GetAll()
-	if workers.Size() != len(w) {
+	w := workers.GetAllWorkers()
+	if workers.NumOfWorkers() != len(w) {
 		t.Fail()
 	}
 }

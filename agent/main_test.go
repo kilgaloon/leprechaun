@@ -20,16 +20,11 @@ var (
 
 func TestGetterers(t *testing.T) {
 	defaultAgent.GetName()
-	defaultAgent.GetWorkers()
 	defaultAgent.GetContext()
 	defaultAgent.GetLogs()
 	defaultAgent.GetConfig()
 	defaultAgent.GetSocket()
 	defaultAgent.GetMutex()
-	defaultAgent.SetPID(1)
-	if defaultAgent.GetPID() != 1 {
-		t.Fail()
-	}
 
 	defaultAgent.GetStdout()
 	defaultAgent.GetStdin()
@@ -61,7 +56,7 @@ func TestCommands(t *testing.T) {
 	defaultAgent.WorkersList(defaultAgent.GetStdout())
 
 	// create worker
-	_, err := defaultAgent.GetWorkers().CreateWorker("jobber")
+	_, err := defaultAgent.CreateWorker("jobber")
 	if err != nil {
 		t.Fail()
 	}
