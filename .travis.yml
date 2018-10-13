@@ -13,6 +13,7 @@ os:
 # with them.
 go:
   - 1.11.x
+  - 1.10.x
 
 # Only clone the most recent commit.
 git:
@@ -28,7 +29,7 @@ notifications:
   email: false
 
 before_install:
-  - go mod vendor
+  - go get -t ./...
 
 before_script:
   - make build
