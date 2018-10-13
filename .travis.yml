@@ -29,7 +29,7 @@ notifications:
   email: false
 
 before_install:
-  - go get -t -v ./...
+  - go get ./...
 
 before_script:
   - make build
