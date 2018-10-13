@@ -8,7 +8,6 @@ import (
 
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/context"
-	"github.com/kilgaloon/leprechaun/notifier"
 	"github.com/kilgaloon/leprechaun/workers"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -60,11 +59,10 @@ type Default struct {
 
 	*workers.Workers
 
-	Context  *context.Context
-	Socket   *api.Socket
-	Notifier *notifier.Notifier
-	Stdin    io.Reader
-	Stdout   io.Writer
+	Context *context.Context
+	Socket  *api.Socket
+	Stdin   io.Reader
+	Stdout  io.Writer
 }
 
 // GetName returns name of the client
