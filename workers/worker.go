@@ -9,6 +9,7 @@ import (
 
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 // AsyncMarker is string in step that we use to know
@@ -25,23 +26,19 @@ type Worker struct {
 	Logs           log.Logs
 	DoneChan       chan string
 	ErrorChan      chan *Worker
-	Name           string
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
-	Err            error
 	Stdout         *os.File
+	Recipe         *recipe.Recipe
+	Err            error
 }
 
 // Run starts worker
-func (w *Worker) Run(steps []string) {
-	w.Steps = steps
+func (w *Worker) Run() {
+	w.Steps = w.Recipe.Steps
 	w.StartedAt = time.Now()
 
 	for _, step := range w.Steps {
-		if (w.Err != nil) {
-			// Worker had some kind of error, don't run any steps
-			return
-		}
 		w.Logs.Info("Step %s is in progress... \n", step)
 		// replace variables
 		parts := strings.Fields(step)
@@ -68,6 +65,7 @@ func (w *Worker) workOnStep(step string) {
 	w.Err = cmd.Run()
 	if w.Err != nil {
 		w.ErrorChan <- w
+		w.Recipe.Err = w.Err
 		return
 	}
 
@@ -90,7 +88,7 @@ func (w *Worker) Kill() {
 		}
 	}
 
-	w.DoneChan <- w.Name
+	w.DoneChan <- w.Recipe.Name
 }
 
 // Done signals that this worker is done and send his id for cleaner
@@ -98,6 +96,6 @@ func (w *Worker) Done() {
 	w.TasksPerformed++
 	// worker performed all tasks, and can be done
 	if w.TasksPerformed == len(w.Steps) {
-		w.DoneChan <- w.Name
+		w.DoneChan <- w.Recipe.Name
 	}
 }

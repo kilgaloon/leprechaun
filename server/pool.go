@@ -10,13 +10,13 @@ import (
 
 // Pool stack for pulling out recipes
 type Pool struct {
-	Stack map[string]recipe.Recipe
+	Stack map[string]*recipe.Recipe
 }
 
 // BuildPool takes all recipes and put them in pool
 func (server *Server) BuildPool() {
 	q := Pool{}
-	q.Stack = make(map[string]recipe.Recipe)
+	q.Stack = make(map[string]*recipe.Recipe)
 
 	files, err := ioutil.ReadDir(server.GetConfig().GetRecipesPath())
 	if err != nil {
@@ -32,7 +32,7 @@ func (server *Server) BuildPool() {
 		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
 		if recipe.Definition == "hook" {
-			q.Stack[recipe.ID] = recipe
+			q.Stack[recipe.ID] = &recipe
 		}
 
 	}
@@ -41,15 +41,21 @@ func (server *Server) BuildPool() {
 }
 
 // FindInPool Find recipe in pool and run it
+// **TODO**: Rename this method to something more descriptive
 func (server *Server) FindInPool(id string) {
 	// lock mutex
 	server.GetMutex().Lock()
 	recipe := server.Pool.Stack[id]
 
+	// Recipe has some error, don't execute it
+	if recipe.Err != nil {
+		return
+	}
+
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
 	// create worker
-	worker, err := server.CreateWorker(recipe.Name)
+	worker, err := server.CreateWorker(recipe)
 	// unlock mutex
 	server.GetMutex().Unlock()
 	if err != nil {
@@ -59,18 +65,23 @@ func (server *Server) FindInPool(id string) {
 		return
 	}
 
-	worker.Run(recipe.Steps)
+	worker.Run()
 }
 
 // ProcessRecipe takes specific recipe and process it
-func (server *Server) ProcessRecipe(r recipe.Recipe) {
+func (server *Server) ProcessRecipe(r *recipe.Recipe) {
 	recipe := r
+
+	// Recipe has some error, don't execute it
+	if &recipe.Err != nil {
+		return
+	}
 
 	server.GetLogs().Info("%s file is in progress... \n", recipe.Name)
 	// lock mutex
 	server.GetMutex().Lock()
 	// create worker
-	worker, err := server.CreateWorker(recipe.Name)
+	worker, err := server.CreateWorker(recipe)
 	// unlock mutex
 	server.GetMutex().Unlock()
 	if err != nil {
@@ -81,5 +92,5 @@ func (server *Server) ProcessRecipe(r recipe.Recipe) {
 		return
 	}
 
-	worker.Run(recipe.Steps)
+	worker.Run()
 }

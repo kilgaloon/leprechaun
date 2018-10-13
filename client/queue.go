@@ -61,12 +61,19 @@ func (client *Client) ProcessQueue() {
 	compare := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), 0, 0, time.UTC)
 
 	for index := range client.Queue.Stack {
+		r := &client.Queue.Stack[index]
+		// If recipe had some errors
+		// don't run it again
+		if r.Err != nil {
+			continue
+		}
+
 		go func(r *recipe.Recipe) {
 			if compare.Equal(r.StartAt) {
 				// lock mutex
 				client.GetMutex().Lock()
 				// create worker
-				worker, err := client.CreateWorker(r.Name)
+				worker, err := client.CreateWorker(r)
 				// unlock mutex
 				client.GetMutex().Unlock()
 
@@ -87,14 +94,14 @@ func (client *Client) ProcessQueue() {
 				event.EventHandler.Dispatch("client:lock")
 				client.GetLogs().Info("%s file is in progress... \n", r.Name)
 				// worker takeover steps and works on then
-				worker.Run(r.Steps)
+				worker.Run()
 				// signal that worker is done
 				// then proceed with unlock
 				event.EventHandler.Dispatch("client:unlock")
 				// schedule recipe for next execution
 				r.StartAt = schedule.ScheduleToTime(r.Schedule)
 			}
-		}(&client.Queue.Stack[index])
+		}(r)
 	}
 }
 
@@ -103,7 +110,7 @@ func (client *Client) ProcessRecipe(r *recipe.Recipe) {
 	// lock mutex
 	client.GetMutex().Lock()
 	// create worker
-	worker, err := client.CreateWorker(r.Name)
+	worker, err := client.CreateWorker(r)
 	// unlock mutex
 	client.GetMutex().Unlock()
 
@@ -124,7 +131,7 @@ func (client *Client) ProcessRecipe(r *recipe.Recipe) {
 	event.EventHandler.Dispatch("client:lock")
 	client.GetLogs().Info("%s file is in progress... \n", r.Name)
 	// worker takeover steps and works on then
-	worker.Run(r.Steps)
+	worker.Run()
 	//remove lock on client
 	event.EventHandler.Dispatch("client:unlock")
 }

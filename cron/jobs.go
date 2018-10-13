@@ -26,7 +26,7 @@ func (c *Cron) buildJobs() {
 				// lock mutex
 				c.GetMutex().Lock()
 				// create worker
-				worker, err := c.CreateWorker(recipe.Name)
+				worker, err := c.CreateWorker(&recipe)
 				// unlock mutex
 				c.GetMutex().Unlock()
 
@@ -44,7 +44,7 @@ func (c *Cron) buildJobs() {
 					return
 				}
 
-				worker.Run(recipe.Steps)
+				worker.Run()
 			})
 		}
 	}
@@ -55,7 +55,7 @@ func (c *Cron) processRecipe(r *recipe.Recipe) {
 	// lock mutex
 	c.GetMutex().Lock()
 	// create worker
-	worker, err := c.CreateWorker(r.Name)
+	worker, err := c.CreateWorker(r)
 	// unlock mutex
 	c.GetMutex().Unlock()
 
@@ -75,6 +75,6 @@ func (c *Cron) processRecipe(r *recipe.Recipe) {
 
 	c.GetLogs().Info("%s file is in progress... \n", r.Name)
 	// worker takeover steps and works on then
-	worker.Run(r.Steps)
+	worker.Run()
 	//remove lock on client
 }

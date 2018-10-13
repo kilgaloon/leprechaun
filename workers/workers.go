@@ -8,6 +8,7 @@ import (
 
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 // Errors hold possible errors that can happen on worker
@@ -49,8 +50,8 @@ func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
-func (w *Workers) CreateWorker(name string) (*Worker, error) {
-	if _, ok := w.GetWorkerByName(name); ok == nil {
+func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, w.Errors.StillActive
 	}
 
@@ -61,20 +62,20 @@ func (w *Workers) CreateWorker(name string) (*Worker, error) {
 			Logs:      w.Logs,
 			DoneChan:  w.DoneChan,
 			ErrorChan: w.ErrorChan,
-			Name:      name,
+			Recipe:    r,
 			Cmd:       make(map[string]*exec.Cmd),
 		}
 
 		var err error
-		worker.Stdout, err = os.Create(w.OutputDir + "/" + name + ".out") // For read access.
+		worker.Stdout, err = os.Create(w.OutputDir + "/" + worker.Recipe.Name + ".out") // For read access.
 		if err != nil {
 			w.Logs.Error("%s", err)
 		}
 
 		// move to stack
-		w.stack[worker.Name] = *worker
+		w.stack[worker.Recipe.Name] = *worker
 
-		w.Logs.Info("Worker with NAME: %s created", worker.Name)
+		w.Logs.Info("Worker with NAME: %s created", worker.Recipe.Name)
 
 		return worker, nil
 	}
@@ -93,8 +94,8 @@ func (w Workers) listener() {
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
-				delete(w.stack, worker.Name)
-				w.Logs.Error("Worker %s: %s", worker.Name, worker.Err)
+				delete(w.stack, worker.Recipe.Name)
+				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
 			}
 		}
 	}()

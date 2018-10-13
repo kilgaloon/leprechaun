@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -52,13 +53,15 @@ func TestRegisterCommands(t *testing.T) {
 }
 
 func TestFindInPool(t *testing.T) {
-	// simulate exceeding maximum number of workers
-	for i := 0; i < fakeServer.GetConfig().GetMaxAllowedWorkers(); i++ {
-		fakeServer.FindInPool("223344")
-	}
+	fakeServer.BuildPool()
+	fakeServer.FindInPool("223344")
 }
 
 func TestProcessRecipe(t *testing.T) {
-	recipe := fakeServer.Pool.Stack["223344"]
-	fakeServer.ProcessRecipe(recipe)
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	if err != nil {
+		t.Fail()
+	}
+
+	fakeServer.ProcessRecipe(&r)
 }

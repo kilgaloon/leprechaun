@@ -1,11 +1,11 @@
 package workers
 
 import (
-	"os"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -15,23 +15,24 @@ var (
 		log.Logs{},
 		context.New(),
 	)
-	worker, err = workers2.CreateWorker("test")
+	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	worker, errr = workers2.CreateWorker(&r)
 )
 
 func TestRun(t *testing.T) {
-	steps := []string{"echo 'test output to file' > ../tests/test.txt"}
+	//steps := []string{"echo 'test output to file' > ../tests/test.txt"}
 	//var wg sync.WaitGroup
 	//wg.Add(1)
 
-	worker.Run(steps)
+	worker.Run()
 
-	steps = []string{"-> echo 'test output to file' > ../tests/test.txt"}
-	go worker.Run(steps)
+	// //steps = []string{"-> echo 'test output to file' > ../tests/test.txt"}
+	// go worker.Run()
 	//wg.Wait()
 
 	// try to kill worker
 	worker.Kill()
 
-	os.Remove("../tests/test.txt")
+	//os.Remove("../tests/test.txt")
 
 }

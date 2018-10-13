@@ -5,6 +5,7 @@ import (
 
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -17,25 +18,30 @@ var (
 )
 
 func TestCreateWorker(t *testing.T) {
-	_, err := workers.CreateWorker("test")
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+
+	_, err = workers.CreateWorker(&r)
 	if err != nil {
 		t.Fail()
 	}
 
-	_, err = workers.CreateWorker("test")
+	_, err = workers.CreateWorker(&r)
 	if err == nil {
 		t.Fail()
 	}
 
 	// test that size can't be more then 1
-	_, err = workers.CreateWorker("test2")
+	_, err = workers.CreateWorker(&r)
 	if err == nil {
 		t.Fail()
 	}
 }
 
 func TestGetWorkerByName(t *testing.T) {
-	_, err := workers.GetWorkerByName("test")
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	workers.CreateWorker(&r)
+
+	_, err = workers.GetWorkerByName("schedule")
 	if err != nil {
 		t.Fail()
 	}
@@ -54,5 +60,5 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestWorkerIsDone(t *testing.T) {
-	workers.DoneChan <- "test"
+	workers.DoneChan <- "schedule"
 }

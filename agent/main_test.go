@@ -9,6 +9,7 @@ import (
 
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -54,9 +55,9 @@ func TestGetterers(t *testing.T) {
 func TestCommands(t *testing.T) {
 	// no workers currently working
 	defaultAgent.WorkersList(defaultAgent.GetStdout())
-
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	// create worker
-	_, err := defaultAgent.CreateWorker("jobber")
+	_, err = defaultAgent.CreateWorker(&r)
 	if err != nil {
 		t.Fail()
 	}
