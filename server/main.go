@@ -35,11 +35,6 @@ func New(name string, cfg *config.AgentConfig) *Server {
 	return server
 }
 
-// GetName of agent
-func (server *Server) GetName() string {
-	return server.GetName()
-}
-
 // Start server that will receive webhooks
 func (server *Server) Start() {
 	// build queue for server

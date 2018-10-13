@@ -19,6 +19,9 @@ go:
 git:
   depth: 1
 
+env:
+  - GO111MODULE=on
+
 install: true
 
 # Don't email me the results of the test runs.
