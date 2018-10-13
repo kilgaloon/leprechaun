@@ -29,7 +29,7 @@ notifications:
   email: false
 
 before_install:
-  - go get ./...
+  - go mod vendor
 
 before_script:
   - make build
