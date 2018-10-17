@@ -6,16 +6,20 @@ import (
 
 // Default paths
 const (
-	ErrorLog          = "/var/log/leprechaun/error.log"
-	InfoLog           = "/var/log/leprechaun/info.log"
-	RecipesPath       = "/etc/leprechaun/recipes"
-	PIDFile           = "/var/run/leprechaun/client.pid"
-	LockFile          = "/var/run/leprechaun/client.lock"
-	CommandSocket     = "/var/run/leprechaun/client.sock"
-	WorkerOutputDir   = "/var/log/leprechaun/workers.output"
-	MaxAllowedWorkers = 5
-	RetryRecipeAfter  = 10
-	ServerPort        = 11400
+	ErrorLog           = "/var/log/leprechaun/error.log"
+	InfoLog            = "/var/log/leprechaun/info.log"
+	RecipesPath        = "/etc/leprechaun/recipes"
+	PIDFile            = "/var/run/leprechaun/client.pid"
+	LockFile           = "/var/run/leprechaun/client.lock"
+	CommandSocket      = "/var/run/leprechaun/client.sock"
+	WorkerOutputDir    = "/var/log/leprechaun/workers.output"
+	NotificationsEmail = ""
+	MaxAllowedWorkers  = 5
+	RetryRecipeAfter   = 10
+	ServerPort         = 11400
+	SMTPHost           = ""
+	SMTPUsername       = ""
+	SMTPPassword       = ""
 )
 
 // Configs for different agents
@@ -41,17 +45,21 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 
 // AgentConfig holds config for agents
 type AgentConfig struct {
-	Path              string
-	ErrorLog          string
-	InfoLog           string
-	RecipesPath       string
-	PIDFile           string
-	LockFile          string
-	CommandSocket     string
-	WorkerOutputDir   string
-	Port              int
-	MaxAllowedWorkers int
-	RetryRecipeAfter  int
+	Path               string
+	ErrorLog           string
+	InfoLog            string
+	RecipesPath        string
+	PIDFile            string
+	LockFile           string
+	CommandSocket      string
+	WorkerOutputDir    string
+	Port               int
+	MaxAllowedWorkers  int
+	RetryRecipeAfter   int
+	NotificationsEmail string
+	SMTPHost           string
+	SMTPUsername       string
+	SMTPPassword       string
 }
 
 // GetPath returns path of config file
@@ -109,6 +117,26 @@ func (ac AgentConfig) GetWorkerOutputDir() string {
 	return ac.WorkerOutputDir
 }
 
+// GetNotificationsEmail returns path of workers output dir
+func (ac AgentConfig) GetNotificationsEmail() string {
+	return ac.NotificationsEmail
+}
+
+// GetSMTPHost returns path of workers output dir
+func (ac AgentConfig) GetSMTPHost() string {
+	return ac.SMTPHost
+}
+
+// GetSMTPUsername returns path of workers output dir
+func (ac AgentConfig) GetSMTPUsername() string {
+	return ac.SMTPUsername
+}
+
+// GetSMTPPassword returns path of workers output dir
+func (ac AgentConfig) GetSMTPPassword() string {
+	return ac.SMTPPassword
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -156,6 +184,10 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(MaxAllowedWorkers)
 	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(RetryRecipeAfter)
 	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
+	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(NotificationsEmail)
+	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(SMTPHost)
+	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
+	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(SMTPPassword)
 
 	c.cfgs[name] = ac
 	return ac

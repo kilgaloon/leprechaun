@@ -15,6 +15,9 @@ type Pool struct {
 
 // BuildPool takes all recipes and put them in pool
 func (server *Server) BuildPool() {
+	server.GetMutex().Lock()
+	defer server.GetMutex().Unlock()
+
 	q := Pool{}
 	q.Stack = make(map[string]*recipe.Recipe)
 
@@ -42,9 +45,7 @@ func (server *Server) BuildPool() {
 
 // FindInPool Find recipe in pool and run it
 // **TODO**: Rename this method to something more descriptive
-func (server *Server) FindInPool(id string) {
-	// lock mutex
-	server.GetMutex().Lock()
+func (server Server) FindInPool(id string) {
 	recipe := server.Pool.Stack[id]
 
 	// Recipe has some error, don't execute it
@@ -54,10 +55,7 @@ func (server *Server) FindInPool(id string) {
 
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
-	// create worker
 	worker, err := server.CreateWorker(recipe)
-	// unlock mutex
-	server.GetMutex().Unlock()
 	if err != nil {
 		// move this worker to queue and retry to work on it
 		go server.ProcessRecipe(recipe)
@@ -78,12 +76,8 @@ func (server *Server) ProcessRecipe(r *recipe.Recipe) {
 	}
 
 	server.GetLogs().Info("%s file is in progress... \n", recipe.Name)
-	// lock mutex
-	server.GetMutex().Lock()
-	// create worker
+
 	worker, err := server.CreateWorker(recipe)
-	// unlock mutex
-	server.GetMutex().Unlock()
 	if err != nil {
 		time.Sleep(time.Duration(server.GetConfig().RetryRecipeAfter) * time.Second)
 		server.GetLogs().Info("%s, retrying in %d s...", err, server.GetConfig().RetryRecipeAfter)

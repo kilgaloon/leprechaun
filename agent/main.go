@@ -168,8 +168,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 
 	agent.Context = context.New()
 	agent.Workers = workers.New(
-		cfg.GetMaxAllowedWorkers(),
-		cfg.GetWorkerOutputDir(),
+		cfg,
 		agent.Logs,
 		agent.Context,
 	)

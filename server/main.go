@@ -37,10 +37,7 @@ func New(name string, cfg *config.AgentConfig) *Server {
 
 // Start server that will receive webhooks
 func (server *Server) Start() {
-	// build queue for server
-	server.GetMutex().Lock()
 	server.BuildPool()
-	server.GetMutex().Unlock()
 	// register all routes
 	server.registerHandles()
 	// listen for port

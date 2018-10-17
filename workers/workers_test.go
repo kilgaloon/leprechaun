@@ -10,8 +10,7 @@ import (
 
 var (
 	workers = New(
-		1,
-		"../tests/var/log/leprechaun/workers.output",
+		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
 	)

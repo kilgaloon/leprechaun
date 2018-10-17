@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/kilgaloon/leprechaun/workers"
+
 	"github.com/kilgaloon/leprechaun/event"
 
 	"github.com/kilgaloon/leprechaun/recipe"
@@ -70,19 +72,13 @@ func (client *Client) ProcessQueue() {
 
 		go func(r *recipe.Recipe) {
 			if compare.Equal(r.StartAt) {
-				// lock mutex
-				client.GetMutex().Lock()
-				// create worker
 				worker, err := client.CreateWorker(r)
-				// unlock mutex
-				client.GetMutex().Unlock()
-
 				if err != nil {
 					switch err {
-					case client.Errors.AllowedWorkersReached:
+					case workers.ErrMaxReached:
 						client.GetLogs().Info("%s", err)
 						go client.ProcessRecipe(r)
-					case client.Errors.StillActive:
+					case workers.ErrStillActive:
 						client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 					}
 					// move this worker to queue and work on it when next worker space is available
@@ -107,21 +103,15 @@ func (client *Client) ProcessQueue() {
 
 // ProcessRecipe takes specific recipe and process it
 func (client *Client) ProcessRecipe(r *recipe.Recipe) {
-	// lock mutex
-	client.GetMutex().Lock()
-	// create worker
 	worker, err := client.CreateWorker(r)
-	// unlock mutex
-	client.GetMutex().Unlock()
-
 	if err != nil {
 		switch err {
-		case client.Errors.AllowedWorkersReached:
+		case workers.ErrMaxReached:
 			// move this worker to queue and work on it when next worker space is available
 			time.Sleep(time.Duration(client.GetConfig().RetryRecipeAfter) * time.Second)
 			client.GetLogs().Info("%s, retrying in %d s ...", err, client.GetConfig().RetryRecipeAfter)
 			go client.ProcessRecipe(r)
-		case client.Errors.StillActive:
+		case workers.ErrStillActive:
 			client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
 		}
 

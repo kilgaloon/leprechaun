@@ -3,15 +3,17 @@ package workers
 import (
 	"testing"
 
+	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
-	workers2 = New(
-		1,
-		"../tests/var/log/leprechaun/workers.output",
+	configs            = config.NewConfigs()
+	ConfigWithSettings = configs.New("test", "../tests/configs/config_regular.ini")
+	workers2           = New(
+		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
 	)

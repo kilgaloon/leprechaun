@@ -4,17 +4,33 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/notifier"
+	"github.com/kilgaloon/leprechaun/notifier/notifications"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
 
-// Errors hold possible errors that can happen on worker
-type Errors struct {
-	StillActive           error
-	AllowedWorkersReached error
+var (
+	// ErrWorkerNotExist is error when worker doesn't exist in stack
+	ErrWorkerNotExist = errors.New("No worker with that name")
+	// ErrStillActive is error when in some cases when worker is created and
+	// worker with that name still exists (working on something)
+	// worker get their names from recipe names, so basically some recipe can't be run twice
+	ErrStillActive = errors.New("Worker still active")
+	// ErrMaxReached is error that says you that no more workers
+	// is allowed and this is specified in config
+	ErrMaxReached = errors.New("Maximum allowed workers reached")
+)
+
+// Config defines interface which we use to build workers struct
+type Config interface {
+	GetMaxAllowedWorkers() int
+	GetWorkerOutputDir() string
+	notifier.Config
 }
 
 // Workers hold everything about workers
@@ -26,7 +42,7 @@ type Workers struct {
 	Logs        log.Logs
 	DoneChan    chan string
 	ErrorChan   chan *Worker
-	Errors
+	*notifier.Notifier
 }
 
 // NumOfWorkers returns size of stack/number of workers
@@ -46,13 +62,18 @@ func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 		return &worker, nil
 	}
 
-	return &worker, errors.New("No worker with that name")
+	return &worker, ErrWorkerNotExist
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+	mu := new(sync.Mutex)
+
+	mu.Lock()
+	defer mu.Unlock()
+
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
-		return nil, w.Errors.StillActive
+		return nil, ErrStillActive
 	}
 
 	if w.NumOfWorkers() < w.allowedSize {
@@ -80,7 +101,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		return worker, nil
 	}
 
-	return nil, w.Errors.AllowedWorkersReached
+	return nil, ErrMaxReached
 }
 
 func (w Workers) listener() {
@@ -91,6 +112,10 @@ func (w Workers) listener() {
 				delete(w.stack, workerName)
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
+				// send notifications
+				go w.NotifyWithOptions(notifications.Options{
+					Body: "Your recipe '" + worker.Recipe.Name + "' failed on step '" + worker.WorkingOn + "' because of error '" + worker.Err.Error() + "'",
+				})
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
@@ -102,21 +127,19 @@ func (w Workers) listener() {
 }
 
 // New create Workers struct instance
-func New(maxAllowedWorkers int, dir string, logs log.Logs, ctx *context.Context) *Workers {
+func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
 	workers := &Workers{
 		stack:       make(map[string]Worker),
-		allowedSize: maxAllowedWorkers,
+		allowedSize: cfg.GetMaxAllowedWorkers(),
 		Logs:        logs,
 		Context:     ctx,
 		DoneChan:    make(chan string),
 		ErrorChan:   make(chan *Worker),
-		OutputDir:   dir,
-		Errors: Errors{
-			StillActive:           errors.New("Worker still active"),
-			AllowedWorkersReached: errors.New("Maximum allowed workers reached"),
-		},
+		OutputDir:   cfg.GetWorkerOutputDir(),
+		Notifier:    notifier.New(cfg, logs),
 	}
-	// cleaner sits and wait to clean workers that are done with their job
+	// listener listens for varius events coming from workers, currently those are
+	// done and errors
 	workers.listener()
 
 	return workers
