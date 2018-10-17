@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -16,7 +17,7 @@ import (
 
 // VERSION of application
 const (
-	VERSION = "1.0.0-alpha"
+	VERSION = "1.0.0-rc"
 	RELEASE = "Calimero"
 )
 
@@ -35,6 +36,9 @@ func main() {
 	// basic leprechaun help
 	if len(os.Args) > 1 {
 		if os.Args[1] == "help" {
+			fmt.Printf("VERSION: %s\r\n", VERSION)
+			fmt.Printf("RELEASE: %s\r\n\r\n", RELEASE)
+
 			help(client.Agent)
 			help(server.Agent)
 			help(cron.Agent)

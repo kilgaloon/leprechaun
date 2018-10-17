@@ -146,22 +146,26 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	ac := &AgentConfig{}
 	ac.Path = path
-	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(ErrorLog)
+	gErrorLog := cfg.Section("").Key("error_log").MustString(ErrorLog)
+	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(gErrorLog)
 	if !IsFileValid(ac.ErrorLog, ".log") {
 		ac.ErrorLog = ErrorLog
 	}
 
-	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(InfoLog)
+	gInfoLog := cfg.Section("").Key("info_log").MustString(InfoLog)
+	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(gInfoLog)
 	if !IsFileValid(ac.InfoLog, ".log") {
 		ac.InfoLog = InfoLog
 	}
 
-	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(RecipesPath)
+	gRecipesPath := cfg.Section("").Key("recipes_path").MustString(RecipesPath)
+	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(gRecipesPath)
 	if !IsDirValid(ac.RecipesPath) {
 		ac.RecipesPath = RecipesPath
 	}
 
-	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(WorkerOutputDir)
+	gWorkerOutputDir := cfg.Section("").Key("worker_output_dir").MustString(WorkerOutputDir)
+	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(gWorkerOutputDir)
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
 	}
@@ -181,13 +185,25 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 		ac.CommandSocket = CommandSocket
 	}
 
-	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(MaxAllowedWorkers)
-	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(RetryRecipeAfter)
+	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
+	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
+
+	gRetryRecipeAfter := cfg.Section("").Key("retry_recipe_after").MustInt(RetryRecipeAfter)
+	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(gRetryRecipeAfter)
+
 	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
-	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(NotificationsEmail)
-	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(SMTPHost)
-	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
-	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(SMTPPassword)
+
+	gNotificationsEmail := cfg.Section("").Key("notifications_email").MustString(NotificationsEmail)
+	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(gNotificationsEmail)
+
+	gSMTPHost := cfg.Section("").Key("smtp_host").MustString(SMTPHost)
+	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(gSMTPHost)
+
+	gSMTPUsername := cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
+	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(gSMTPUsername)
+
+	gSMTPPassword := cfg.Section("").Key("smtp_password").MustString(SMTPPassword)
+	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
 
 	c.cfgs[name] = ac
 	return ac
