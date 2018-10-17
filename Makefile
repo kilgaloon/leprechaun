@@ -57,6 +57,7 @@ test:
 	go test ./agent -coverprofile=./agent/coverage.txt -covermode=atomic
 	go test ./recipe -coverprofile=./api/coverage.txt -covermode=atomic
 	go test ./cron -coverprofile=./cron/coverage.txt -covermode=atomic
+	go test ./notifier -coverprofile=./notifier/coverage.txt -covermode=atomic
 
 test-with-report:
 	go vet ./cmd/leprechaun
@@ -86,5 +87,7 @@ test-with-report:
 	go tool cover -html=coverprofile/agent.out -o coverprofile/agent.html
 	go test ./recipe -coverprofile coverprofile/recipe.out
 	go tool cover -html=coverprofile/recipe.out -o coverprofile/recipe.html
-	go test ./cron -coverprofile coverprofile/recipe.out
+	go test ./cron -coverprofile coverprofile/cron.out
 	go tool cover -html=coverprofile/cron.out -o coverprofile/cron.html
+	go test ./notifier -coverprofile coverprofile/notifier.out
+	go tool cover -html=coverprofile/notifier.out -o coverprofile/notifier.html
