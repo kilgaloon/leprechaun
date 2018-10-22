@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/workers"
-
 	"github.com/kilgaloon/leprechaun/event"
 
 	"github.com/kilgaloon/leprechaun/recipe"
@@ -73,55 +71,18 @@ func (client *Client) ProcessQueue() {
 		go func(r *recipe.Recipe) {
 			if compare.Equal(r.StartAt) {
 				worker, err := client.CreateWorker(r)
-				if err != nil {
-					switch err {
-					case workers.ErrMaxReached:
-						client.GetLogs().Info("%s", err)
-						go client.ProcessRecipe(r)
-					case workers.ErrStillActive:
-						client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
-					}
-					// move this worker to queue and work on it when next worker space is available
-					go client.ProcessRecipe(r)
-					client.GetLogs().Info("%s", err)
-					return
+				if err == nil {
+					event.EventHandler.Dispatch("client:lock")
+					client.GetLogs().Info("%s file is in progress... \n", r.Name)
+					// worker takeover steps and works on then
+					worker.Run()
+					// signal that worker is done
+					// then proceed with unlock
+					event.EventHandler.Dispatch("client:unlock")
+					// schedule recipe for next execution
+					r.StartAt = schedule.ScheduleToTime(r.Schedule)
 				}
-
-				event.EventHandler.Dispatch("client:lock")
-				client.GetLogs().Info("%s file is in progress... \n", r.Name)
-				// worker takeover steps and works on then
-				worker.Run()
-				// signal that worker is done
-				// then proceed with unlock
-				event.EventHandler.Dispatch("client:unlock")
-				// schedule recipe for next execution
-				r.StartAt = schedule.ScheduleToTime(r.Schedule)
 			}
 		}(r)
 	}
-}
-
-// ProcessRecipe takes specific recipe and process it
-func (client *Client) ProcessRecipe(r *recipe.Recipe) {
-	worker, err := client.CreateWorker(r)
-	if err != nil {
-		switch err {
-		case workers.ErrMaxReached:
-			// move this worker to queue and work on it when next worker space is available
-			time.Sleep(time.Duration(client.GetConfig().RetryRecipeAfter) * time.Second)
-			client.GetLogs().Info("%s, retrying in %d s ...", err, client.GetConfig().RetryRecipeAfter)
-			go client.ProcessRecipe(r)
-		case workers.ErrStillActive:
-			client.GetLogs().Info("Worker with NAME: %s is still active", r.Name)
-		}
-
-		return
-	}
-
-	event.EventHandler.Dispatch("client:lock")
-	client.GetLogs().Info("%s file is in progress... \n", r.Name)
-	// worker takeover steps and works on then
-	worker.Run()
-	//remove lock on client
-	event.EventHandler.Dispatch("client:unlock")
 }

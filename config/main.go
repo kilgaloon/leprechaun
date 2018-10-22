@@ -6,20 +6,21 @@ import (
 
 // Default paths
 const (
-	ErrorLog           = "/var/log/leprechaun/error.log"
-	InfoLog            = "/var/log/leprechaun/info.log"
-	RecipesPath        = "/etc/leprechaun/recipes"
-	PIDFile            = "/var/run/leprechaun/client.pid"
-	LockFile           = "/var/run/leprechaun/client.lock"
-	CommandSocket      = "/var/run/leprechaun/client.sock"
-	WorkerOutputDir    = "/var/log/leprechaun/workers.output"
-	NotificationsEmail = ""
-	MaxAllowedWorkers  = 5
-	RetryRecipeAfter   = 10
-	ServerPort         = 11400
-	SMTPHost           = ""
-	SMTPUsername       = ""
-	SMTPPassword       = ""
+	ErrorLog               = "/var/log/leprechaun/error.log"
+	InfoLog                = "/var/log/leprechaun/info.log"
+	RecipesPath            = "/etc/leprechaun/recipes"
+	PIDFile                = "/var/run/leprechaun/client.pid"
+	LockFile               = "/var/run/leprechaun/client.lock"
+	CommandSocket          = "/var/run/leprechaun/client.sock"
+	WorkerOutputDir        = "/var/log/leprechaun/workers.output"
+	NotificationsEmail     = ""
+	MaxAllowedWorkers      = 5
+	MaxAllowedQueueWorkers = 5
+	RetryRecipeAfter       = 10
+	ServerPort             = 11400
+	SMTPHost               = ""
+	SMTPUsername           = ""
+	SMTPPassword           = ""
 )
 
 // Configs for different agents
@@ -45,21 +46,21 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 
 // AgentConfig holds config for agents
 type AgentConfig struct {
-	Path               string
-	ErrorLog           string
-	InfoLog            string
-	RecipesPath        string
-	PIDFile            string
-	LockFile           string
-	CommandSocket      string
-	WorkerOutputDir    string
-	Port               int
-	MaxAllowedWorkers  int
-	RetryRecipeAfter   int
-	NotificationsEmail string
-	SMTPHost           string
-	SMTPUsername       string
-	SMTPPassword       string
+	Path                   string
+	ErrorLog               string
+	InfoLog                string
+	RecipesPath            string
+	PIDFile                string
+	LockFile               string
+	CommandSocket          string
+	WorkerOutputDir        string
+	Port                   int
+	MaxAllowedWorkers      int
+	MaxAllowedQueueWorkers int
+	NotificationsEmail     string
+	SMTPHost               string
+	SMTPUsername           string
+	SMTPPassword           string
 }
 
 // GetPath returns path of config file
@@ -102,14 +103,14 @@ func (ac AgentConfig) GetPort() int {
 	return ac.Port
 }
 
-// GetMaxAllowedWorkers returns path of config file
+// GetMaxAllowedWorkers defines how much workers are allowed to work in parallel
 func (ac AgentConfig) GetMaxAllowedWorkers() int {
 	return ac.MaxAllowedWorkers
 }
 
-// GetRetryRecipeAfter returns path of config file
-func (ac AgentConfig) GetRetryRecipeAfter() int {
-	return ac.RetryRecipeAfter
+// GetMaxAllowedQueueWorkers defines how much workers are allowed to sit in queue
+func (ac AgentConfig) GetMaxAllowedQueueWorkers() int {
+	return ac.MaxAllowedQueueWorkers
 }
 
 // GetWorkerOutputDir returns path of workers output dir
@@ -188,8 +189,8 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
 	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
 
-	gRetryRecipeAfter := cfg.Section("").Key("retry_recipe_after").MustInt(RetryRecipeAfter)
-	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(gRetryRecipeAfter)
+	gMaxAllowedQueueWorkers := cfg.Section("").Key("max_allowed_queue_workers").MustInt(MaxAllowedQueueWorkers)
+	ac.MaxAllowedQueueWorkers = cfg.Section("").Key(name + ".max_allowed_queue_workers").MustInt(gMaxAllowedQueueWorkers)
 
 	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
 

@@ -12,6 +12,7 @@ import (
 var (
 	configs            = config.NewConfigs()
 	ConfigWithSettings = configs.New("test", "../tests/configs/config_regular.ini")
+	ConfigWithQueueSettings = configs.New("test", "../tests/configs/config_test_queue.ini")
 	workers2           = New(
 		ConfigWithSettings,
 		log.Logs{},
