@@ -12,6 +12,7 @@ var (
 	ConfigWithSettings           = configs.New("test", "../tests/configs/config_regular.ini")
 	ConfigWithInvalidValues      = configs.New("test", "../tests/configs/config_wrong_value.ini")
 	ConfigWithWrongExt           = configs.New("test", "../tests/configs/config_wrong_ext.ini")
+	ConfigGlobalFb               = configs.New("test", "../tests/configs/config_global_fb.ini")
 )
 
 func TestBuildWithoutSettings(t *testing.T) {
@@ -24,10 +25,25 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, PIDFile, cfg.GetPIDFile())
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
-	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
+	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())
 	assert.Equal(t, CommandSocket, cfg.GetCommandSocket())
 	assert.Equal(t, ServerPort, cfg.GetPort())
 	assert.Equal(t, WorkerOutputDir, cfg.GetWorkerOutputDir())
+}
+
+func TestBuildGlobalFallback(t *testing.T) {
+	cfg := ConfigGlobalFb
+
+	assert.Equal(t, "../tests/configs/config_global_fb.ini", cfg.GetPath())
+	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
+	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
+	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
+	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
+	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
+	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
+	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
+	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())
 }
 
 func TestBuildWithSettings(t *testing.T) {
@@ -42,7 +58,7 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
-	assert.Equal(t, 10, cfg.GetRetryRecipeAfter())
+	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
@@ -54,7 +70,7 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, PIDFile, cfg.GetPIDFile())
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
-	assert.Equal(t, RetryRecipeAfter, cfg.GetRetryRecipeAfter())
+	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())
 }
 
 func TestGettingNotExistingConfig(t *testing.T) {

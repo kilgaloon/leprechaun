@@ -6,20 +6,21 @@ import (
 
 // Default paths
 const (
-	ErrorLog           = "/var/log/leprechaun/error.log"
-	InfoLog            = "/var/log/leprechaun/info.log"
-	RecipesPath        = "/etc/leprechaun/recipes"
-	PIDFile            = "/var/run/leprechaun/client.pid"
-	LockFile           = "/var/run/leprechaun/client.lock"
-	CommandSocket      = "/var/run/leprechaun/client.sock"
-	WorkerOutputDir    = "/var/log/leprechaun/workers.output"
-	NotificationsEmail = ""
-	MaxAllowedWorkers  = 5
-	RetryRecipeAfter   = 10
-	ServerPort         = 11400
-	SMTPHost           = ""
-	SMTPUsername       = ""
-	SMTPPassword       = ""
+	ErrorLog               = "/var/log/leprechaun/error.log"
+	InfoLog                = "/var/log/leprechaun/info.log"
+	RecipesPath            = "/etc/leprechaun/recipes"
+	PIDFile                = "/var/run/leprechaun/client.pid"
+	LockFile               = "/var/run/leprechaun/client.lock"
+	CommandSocket          = "/var/run/leprechaun/client.sock"
+	WorkerOutputDir        = "/var/log/leprechaun/workers.output"
+	NotificationsEmail     = ""
+	MaxAllowedWorkers      = 5
+	MaxAllowedQueueWorkers = 5
+	RetryRecipeAfter       = 10
+	ServerPort             = 11400
+	SMTPHost               = ""
+	SMTPUsername           = ""
+	SMTPPassword           = ""
 )
 
 // Configs for different agents
@@ -45,21 +46,21 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 
 // AgentConfig holds config for agents
 type AgentConfig struct {
-	Path               string
-	ErrorLog           string
-	InfoLog            string
-	RecipesPath        string
-	PIDFile            string
-	LockFile           string
-	CommandSocket      string
-	WorkerOutputDir    string
-	Port               int
-	MaxAllowedWorkers  int
-	RetryRecipeAfter   int
-	NotificationsEmail string
-	SMTPHost           string
-	SMTPUsername       string
-	SMTPPassword       string
+	Path                   string
+	ErrorLog               string
+	InfoLog                string
+	RecipesPath            string
+	PIDFile                string
+	LockFile               string
+	CommandSocket          string
+	WorkerOutputDir        string
+	Port                   int
+	MaxAllowedWorkers      int
+	MaxAllowedQueueWorkers int
+	NotificationsEmail     string
+	SMTPHost               string
+	SMTPUsername           string
+	SMTPPassword           string
 }
 
 // GetPath returns path of config file
@@ -102,14 +103,14 @@ func (ac AgentConfig) GetPort() int {
 	return ac.Port
 }
 
-// GetMaxAllowedWorkers returns path of config file
+// GetMaxAllowedWorkers defines how much workers are allowed to work in parallel
 func (ac AgentConfig) GetMaxAllowedWorkers() int {
 	return ac.MaxAllowedWorkers
 }
 
-// GetRetryRecipeAfter returns path of config file
-func (ac AgentConfig) GetRetryRecipeAfter() int {
-	return ac.RetryRecipeAfter
+// GetMaxAllowedQueueWorkers defines how much workers are allowed to sit in queue
+func (ac AgentConfig) GetMaxAllowedQueueWorkers() int {
+	return ac.MaxAllowedQueueWorkers
 }
 
 // GetWorkerOutputDir returns path of workers output dir
@@ -146,22 +147,26 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	ac := &AgentConfig{}
 	ac.Path = path
-	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(ErrorLog)
+	gErrorLog := cfg.Section("").Key("error_log").MustString(ErrorLog)
+	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(gErrorLog)
 	if !IsFileValid(ac.ErrorLog, ".log") {
 		ac.ErrorLog = ErrorLog
 	}
 
-	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(InfoLog)
+	gInfoLog := cfg.Section("").Key("info_log").MustString(InfoLog)
+	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(gInfoLog)
 	if !IsFileValid(ac.InfoLog, ".log") {
 		ac.InfoLog = InfoLog
 	}
 
-	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(RecipesPath)
+	gRecipesPath := cfg.Section("").Key("recipes_path").MustString(RecipesPath)
+	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(gRecipesPath)
 	if !IsDirValid(ac.RecipesPath) {
 		ac.RecipesPath = RecipesPath
 	}
 
-	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(WorkerOutputDir)
+	gWorkerOutputDir := cfg.Section("").Key("worker_output_dir").MustString(WorkerOutputDir)
+	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(gWorkerOutputDir)
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
 	}
@@ -181,13 +186,25 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 		ac.CommandSocket = CommandSocket
 	}
 
-	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(MaxAllowedWorkers)
-	ac.RetryRecipeAfter = cfg.Section("").Key(name + ".retry_recipe_after").MustInt(RetryRecipeAfter)
+	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
+	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
+
+	gMaxAllowedQueueWorkers := cfg.Section("").Key("max_allowed_queue_workers").MustInt(MaxAllowedQueueWorkers)
+	ac.MaxAllowedQueueWorkers = cfg.Section("").Key(name + ".max_allowed_queue_workers").MustInt(gMaxAllowedQueueWorkers)
+
 	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
-	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(NotificationsEmail)
-	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(SMTPHost)
-	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
-	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(SMTPPassword)
+
+	gNotificationsEmail := cfg.Section("").Key("notifications_email").MustString(NotificationsEmail)
+	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(gNotificationsEmail)
+
+	gSMTPHost := cfg.Section("").Key("smtp_host").MustString(SMTPHost)
+	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(gSMTPHost)
+
+	gSMTPUsername := cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
+	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(gSMTPUsername)
+
+	gSMTPPassword := cfg.Section("").Key("smtp_password").MustString(SMTPPassword)
+	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
 
 	c.cfgs[name] = ac
 	return ac

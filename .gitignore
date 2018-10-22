@@ -9,3 +9,5 @@
 /**/coverage.txt
 /tests/var/run/leprechaun/.pid
 .DS_Store
+/tests/var/log
+/tests/etc/

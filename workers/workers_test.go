@@ -14,6 +14,12 @@ var (
 		log.Logs{},
 		context.New(),
 	)
+
+	workers3 = New(
+		ConfigWithQueueSettings,
+		log.Logs{},
+		context.New(),
+	)
 )
 
 func TestCreateWorker(t *testing.T) {
@@ -28,10 +34,23 @@ func TestCreateWorker(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+}
 
-	// test that size can't be more then 1
-	_, err = workers.CreateWorker(&r)
+func TestCreateWorkerQueue(t *testing.T) {
+	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	r2, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.2.yml")
+	r3, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.3.yml")
+
+	workers3.CreateWorker(&r)
+	workers3.CreateWorker(&r2)
+
+	_, err := workers3.CreateWorker(&r3)
 	if err == nil {
+		t.Fail()
+	}
+
+	workers3.queue.pop()
+	if workers3.queue.len() > 0 {
 		t.Fail()
 	}
 }

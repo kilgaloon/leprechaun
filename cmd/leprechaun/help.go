@@ -12,6 +12,9 @@ func help(r api.Registrator) {
 
 	fmt.Println("---------- COMMANDS FOR " + strings.ToUpper(r.GetName()) + " -----------")
 
+	fmt.Println(r.GetName() + ":start - Start agent")
+	fmt.Println(r.GetName() + ":stop - Stop agent")
+
 	for name, cmd := range cmds {
 		formated := cmd.String()
 		fmt.Println(name + " - " + strings.Replace(formated, "{agent}", r.GetName(), -1))

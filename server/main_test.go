@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/kilgaloon/leprechaun/config"
-	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -31,7 +30,6 @@ func TestStartStop(t *testing.T) {
 		}
 
 		TestFindInPool(t)
-		TestProcessRecipe(t)
 
 		_, err = http.Get("http://localhost" + ":" + port + "/ping")
 		if err != nil {
@@ -55,13 +53,4 @@ func TestRegisterCommands(t *testing.T) {
 func TestFindInPool(t *testing.T) {
 	fakeServer.BuildPool()
 	fakeServer.FindInPool("223344")
-}
-
-func TestProcessRecipe(t *testing.T) {
-	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
-	if err != nil {
-		t.Fail()
-	}
-
-	fakeServer.ProcessRecipe(&r)
 }
