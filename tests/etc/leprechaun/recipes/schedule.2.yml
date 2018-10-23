@@ -1,0 +1,9 @@
+name: schedule2 # name of recipe
+definition: schedule
+schedule: 
+    min: 0
+    hour: 0
+    day: 0
+
+steps: # steps are done from first to last
+    - this is step 2
