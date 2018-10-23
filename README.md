@@ -101,6 +101,9 @@ but in this case for example first task will block performing on any task and al
 	- -> echo "I need to wait above step to finish, then i can do my stuff"
 
   
+## Installation
+
+Go to `leprechaun` directory and run `make install`, you will need sudo privileges for this.
 
 ## Starting/Stopping service
 
