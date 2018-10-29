@@ -115,3 +115,7 @@ For more available commands run `leprechaun help`
 # Lepretools
 
 For cli tools take a look [here](https://github.com/Kilgaloon/Leprechaun/blob/master/cmd/lepretools/README.md)
+
+# Testing
+
+To run tests with covarage `make test`, to run tests and generate reports run `make test-with-report` files will be generated in `coverprofile` dir

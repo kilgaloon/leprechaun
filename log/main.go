@@ -16,7 +16,7 @@ func (l Logs) Error(message string, v ...interface{}) {
 	if len(l.ErrorLog) > 0 {
 		file, err := os.OpenFile(l.ErrorLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			log.Fatalf("error opening file: %v", err)
+			panic(err)
 		}
 
 		defer file.Close()
@@ -32,7 +32,7 @@ func (l Logs) Info(message string, v ...interface{}) {
 	if len(l.InfoLog) > 0 {
 		file, err := os.OpenFile(l.InfoLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			log.Fatalf("error opening file: %v", err)
+			panic(err)
 		}
 
 		defer file.Close()

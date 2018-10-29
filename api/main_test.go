@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -35,6 +36,8 @@ func (ta TestAgent) RegisterCommands() map[string]Command {
 		},
 		Definition: Definition{},
 	}
+
+	fmt.Print(cmds["test_with_error"].String())
 
 	return cmds
 }
@@ -82,6 +85,13 @@ func TestCall(t *testing.T) {
 
 	_, err = API.Call(os.Stdout, "test_with_error")
 	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestGetCommands(t *testing.T) {
+	cmds := API.GetCommands()
+	if len(cmds) < 2 {
 		t.Fail()
 	}
 }

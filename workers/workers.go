@@ -150,7 +150,9 @@ func (w *Workers) listener() {
 			case worker := <-w.ErrorChan:
 				// send notifications
 				go w.NotifyWithOptions(notifications.Options{
-					Body: "Your recipe '" + worker.Recipe.Name + "' failed on step '" + worker.WorkingOn + "' because of error '" + worker.Err.Error() + "'",
+					Body: "Your recipe '" + worker.Recipe.Name +
+						"' failed on step '" + worker.WorkingOn +
+						"' because of error '" + worker.Err.Error() + "'",
 				})
 				// when worker gets to error, log it
 				// and delete it from stack of workers
