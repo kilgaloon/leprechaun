@@ -87,3 +87,5 @@ test-with-report:
 	go tool cover -html=coverprofile/cron.out -o coverprofile/cron.html
 	go test ./notifier -coverprofile coverprofile/notifier.out
 	go tool cover -html=coverprofile/notifier.out -o coverprofile/notifier.html
+	go test ./notifier/notifications -coverprofile coverprofile/notifications.out
+	go tool cover -html=coverprofile/notifications.out -o coverprofile/notifications.html
