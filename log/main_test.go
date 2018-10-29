@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -11,15 +12,27 @@ import (
 var (
 	cfgWrap = config.NewConfigs()
 	cfg     = cfgWrap.New("test", "../tests/configs/config_regular.ini")
+	cfg2    = cfgWrap.New("test", "../tests/configs/config_wrong_value.ini")
 	logger  = Logs{
 		ErrorLog: cfg.GetErrorLog(),
 		InfoLog:  cfg.GetInfoLog(),
 	}
+
+	logger2 = Logs{
+		ErrorLog: cfg2.GetErrorLog(),
+		InfoLog:  cfg2.GetInfoLog(),
+	}
 )
 
 func TestErrorLog(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(r)
+		}
+	}()
 	// log some random error message
 	logger.Error("Some error message")
+	logger2.Error("Some error message")
 
 	info, err := os.Stat(logger.ErrorLog)
 	if err != nil {
@@ -37,8 +50,14 @@ func TestErrorLog(t *testing.T) {
 }
 
 func TestInfoLog(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println(r)
+		}
+	}()
 	// log some random error message
 	logger.Info("Some info message")
+	logger2.Info("Some info message")
 
 	info, err := os.Stat(logger.InfoLog)
 	if err != nil {

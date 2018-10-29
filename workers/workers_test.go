@@ -80,3 +80,10 @@ func TestGetAll(t *testing.T) {
 func TestWorkerIsDone(t *testing.T) {
 	workers.DoneChan <- "schedule"
 }
+
+func TestWorkerError(t *testing.T) {
+	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.2.yml")
+	w, _ := workers.CreateWorker(&r)
+
+	w.Run()
+}

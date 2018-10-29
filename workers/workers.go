@@ -85,11 +85,6 @@ func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
-	mu := new(sync.Mutex)
-
-	mu.Lock()
-	defer mu.Unlock()
-
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, ErrStillActive
 	}
@@ -150,7 +145,9 @@ func (w *Workers) listener() {
 			case worker := <-w.ErrorChan:
 				// send notifications
 				go w.NotifyWithOptions(notifications.Options{
-					Body: "Your recipe '" + worker.Recipe.Name + "' failed on step '" + worker.WorkingOn + "' because of error '" + worker.Err.Error() + "'",
+					Body: "Your recipe '" + worker.Recipe.Name +
+						"' failed on step '" + worker.WorkingOn +
+						"' because of error '" + worker.Err.Error() + "'",
 				})
 				// when worker gets to error, log it
 				// and delete it from stack of workers

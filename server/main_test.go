@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"testing"
@@ -10,10 +11,12 @@ import (
 )
 
 var (
-	iniFile    = "../tests/configs/config_regular.ini"
-	path       = &iniFile
-	cfgWrap    = config.NewConfigs()
-	fakeServer = New("test", cfgWrap.New("test", *path))
+	iniFile     = "../tests/configs/config_regular.ini"
+	path        = &iniFile
+	iniFile2    = "../tests/configs/config_wrong_value.ini"
+	path2       = &iniFile2
+	cfgWrap     = config.NewConfigs()
+	fakeServer  = New("test", cfgWrap.New("test", *path))
 )
 
 func TestStartStop(t *testing.T) {
@@ -53,4 +56,11 @@ func TestRegisterCommands(t *testing.T) {
 func TestFindInPool(t *testing.T) {
 	fakeServer.BuildPool()
 	fakeServer.FindInPool("223344")
+
+	recipe := fakeServer.Pool.Stack["223344"]
+	recipe.Err = errors.New("Some random error")
+
+	fakeServer.FindInPool("223344")
+
+	fakeServer.BuildPool()
 }

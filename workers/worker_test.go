@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	configs            = config.NewConfigs()
-	ConfigWithSettings = configs.New("test", "../tests/configs/config_regular.ini")
+	configs                 = config.NewConfigs()
+	ConfigWithSettings      = configs.New("test", "../tests/configs/config_regular.ini")
 	ConfigWithQueueSettings = configs.New("test", "../tests/configs/config_test_queue.ini")
-	workers2           = New(
+	workers2                = New(
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
@@ -38,4 +38,18 @@ func TestRun(t *testing.T) {
 
 	//os.Remove("../tests/test.txt")
 
+}
+
+func TestQueue(t *testing.T) {
+	workers2.queue.empty()
+
+	if workers2.queue.len() > 0 || !workers2.queue.isEmpty() {
+		t.Fatalf("Queue expected to be empty")
+	}
+
+	workers2.queue.push(worker)
+
+	if workers2.queue.isEmpty() {
+		t.Fatalf("Queue should not be empty")
+	}
 }

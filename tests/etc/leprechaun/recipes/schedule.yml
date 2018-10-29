@@ -6,4 +6,5 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - this is step
+    - echo "testing this recipe" > test.txt
+    - -> rm -rf test.txt

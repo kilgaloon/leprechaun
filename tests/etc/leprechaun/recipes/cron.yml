@@ -1,0 +1,5 @@
+name: cron # name of recipe
+definition: cron
+pattern: * * * * *
+steps: # steps are done from first to last
+    - this is step 2
