@@ -40,7 +40,6 @@ func TestStop(t *testing.T) {
 
 	fakeClient.SetStdin(tmpfile)
 
-	fakeClient.Lock()
 	fakeClient.Stop()
 
 	tmpfile.Close()

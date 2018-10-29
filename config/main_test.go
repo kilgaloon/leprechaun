@@ -29,6 +29,10 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, CommandSocket, cfg.GetCommandSocket())
 	assert.Equal(t, ServerPort, cfg.GetPort())
 	assert.Equal(t, WorkerOutputDir, cfg.GetWorkerOutputDir())
+	assert.Equal(t, "", cfg.GetNotificationsEmail())
+	assert.Equal(t, "", cfg.GetSMTPHost())
+	assert.Equal(t, "", cfg.GetSMTPUsername())
+	assert.Equal(t, "", cfg.GetSMTPPassword())
 }
 
 func TestBuildGlobalFallback(t *testing.T) {
@@ -44,6 +48,10 @@ func TestBuildGlobalFallback(t *testing.T) {
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())
+	assert.Equal(t, "some@mail.com", cfg.GetNotificationsEmail())
+	assert.Equal(t, "smtp.host.com", cfg.GetSMTPHost())
+	assert.Equal(t, "smtp_user", cfg.GetSMTPUsername())
+	assert.Equal(t, "smtp_pass", cfg.GetSMTPPassword())
 }
 
 func TestBuildWithSettings(t *testing.T) {
@@ -59,6 +67,10 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())
+	assert.Equal(t, "some@mail.com", cfg.GetNotificationsEmail())
+	assert.Equal(t, "smtp.host.com", cfg.GetSMTPHost())
+	assert.Equal(t, "smtp_user", cfg.GetSMTPUsername())
+	assert.Equal(t, "smtp_pass", cfg.GetSMTPPassword())
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {

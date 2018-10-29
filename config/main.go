@@ -200,7 +200,7 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	gSMTPHost := cfg.Section("").Key("smtp_host").MustString(SMTPHost)
 	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(gSMTPHost)
 
-	gSMTPUsername := cfg.Section("").Key(name + ".smtp_username").MustString(SMTPUsername)
+	gSMTPUsername := cfg.Section("").Key("smtp_username").MustString(SMTPUsername)
 	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(gSMTPUsername)
 
 	gSMTPPassword := cfg.Section("").Key("smtp_password").MustString(SMTPPassword)
