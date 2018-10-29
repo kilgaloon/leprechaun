@@ -17,7 +17,7 @@ var (
 	path2       = &iniFile2
 	cfgWrap     = config.NewConfigs()
 	fakeServer  = New("test", cfgWrap.New("test", *path))
-	fakeServer2 = New("test", cfgWrap.New("test2", *path2))
+	fakeServer2 = New("test", cfgWrap.New("test", *path2))
 )
 
 func TestStartStop(t *testing.T) {
