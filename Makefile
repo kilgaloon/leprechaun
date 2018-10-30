@@ -4,10 +4,11 @@ DESTDIR?=/
 install:
 	mkdir -p $(DESTDIR)/etc/leprechaun/{configs,recipes}
 	sed -e "s#@@USER_HOME@@#$(HOME)#g;s#@@LEPRECHAUN_HOME@@#$(DESTDIR)#g" dist/configs/config.ini > $(DESTDIR)/etc/leprechaun/configs/config.ini
-	cp -p dist/configs/debug_config.ini $(DESTDIR)/etc/leprechaun/configs/
+	cp dist/configs/debug_config.ini $(DESTDIR)/etc/leprechaun/configs/
 	mkdir -p $(DESTDIR)/var/log/leprechaun/{server,workers.output}
 	touch $(DESTDIR)/var/log/leprechaun/info.log
 	touch $(DESTDIR)/var/log/leprechaun/error.log
+	cp leprechaun.service /etc/systemd/system/
 	go install ./cmd/leprechaun
 	go install ./cmd/lepretools
 
