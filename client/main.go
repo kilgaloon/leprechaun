@@ -127,7 +127,7 @@ func (client *Client) SetPID() {
 	}
 
 	client.PID = os.Getpid()
-	pid := strconv.Itoa(client.GetPID())
+	pid := strconv.Itoa(client.PID)
 	_, err = f.WriteString(pid)
 	if err != nil {
 		panic("Failed to start client, can't save PID")
