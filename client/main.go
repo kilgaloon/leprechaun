@@ -2,11 +2,10 @@ package client
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
-	"syscall"
 	"time"
 
 	"github.com/kilgaloon/leprechaun/agent"
@@ -23,6 +22,7 @@ var Agent *Client
 // Client settings and configurations
 type Client struct {
 	*agent.Default
+	stopped bool
 	Queue
 }
 
@@ -32,6 +32,7 @@ type Client struct {
 func New(name string, cfg *config.AgentConfig) *Client {
 	client := &Client{
 		agent.New(name, cfg),
+		false,
 		Queue{},
 	}
 
@@ -42,6 +43,11 @@ func New(name string, cfg *config.AgentConfig) *Client {
 
 // Start client
 func (client *Client) Start() {
+	// if client is stopped/paused, just unpause it
+	if client.stopped {
+		client.stopped = false
+		return
+	}
 	// remove hanging .lock file
 	os.Remove(client.GetConfig().GetLockFile())
 	// SetPID of client
@@ -95,6 +101,14 @@ func (client *Client) RegisterCommands() map[string]api.Command {
 
 	cmds["info"] = api.Command{
 		Closure: client.clientInfo,
+		Definition: api.Definition{
+			Text:  "Display some basic info about running client",
+			Usage: "client info",
+		},
+	}
+
+	cmds["stop"] = api.Command{
+		Closure: client.Stop,
 		Definition: api.Definition{
 			Text:  "Display some basic info about running client",
 			Usage: "client info",
@@ -160,60 +174,15 @@ func (client *Client) Unlock() {
 }
 
 // Stop client
-func (client *Client) Stop() os.Signal {
-	var answer string
-	forceQuit := false
-	quit := false
+func (client *Client) Stop(r io.Writer, args ...string) ([][]string, error) {
+	var resp [][]string
 
-	fmt.Fprintf(client, "Are you sure?(y/N): ")
-	fmt.Fscanf(client, "%s", &answer)
-
-	if client.isWorking() && strings.ToUpper(answer) == "Y" {
-		answer = ""
-		// if user doesn't choose to force quit we will wait for process, otherwise KILL IT
-		fmt.Fprintf(client.GetStdout(), "Client is working on something in the background. Force quit? (y/N)")
-		fmt.Fscanf(client.GetStdin(), "%s", &answer)
-
-		if strings.ToUpper(answer) == "Y" {
-			forceQuit = true
-		}
-	} else if !client.isWorking() && strings.ToUpper(answer) == "Y" {
-		quit = true
+	client.stopped = true
+	resp = [][]string{
+		{"Schedule client stopped!"},
 	}
 
-	pid := client.GetPID()
-	process, err := os.FindProcess(pid)
-	if err != nil {
-		panic("Can't find process with that PID. %s" + err.Error())
-	}
-
-	// shutdown gracefully
-	if quit {
-		state, err := process.Wait()
-		fmt.Fprintf(client, "Stopping Leprechaun, please wait...\n")
-
-		if err == nil {
-			if state.Exited() {
-				client.Unlock()
-				return syscall.SIGTERM
-			}
-		} else {
-			forceQuit = true
-		}
-	}
-
-	// force quite and terminate everything
-	if forceQuit {
-		killed := process.Kill()
-		if killed != nil {
-			panic("Can't kill process with that PID. " + killed.Error())
-		} else {
-			client.Unlock()
-			return syscall.SIGTERM
-		}
-	}
-
-	return os.Interrupt
+	return resp, nil
 }
 
 func init() {

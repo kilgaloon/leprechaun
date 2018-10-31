@@ -39,8 +39,19 @@ func TestStop(t *testing.T) {
 	}
 
 	fakeClient.SetStdin(tmpfile)
+	fakeClient.Stop(os.Stdout, "")
 
-	fakeClient.Stop()
+	if !fakeClient.stopped {
+		t.Fatal("Schedule client expected to be stopped")
+	}
+
+	if _, err := tmpfile.Seek(0, 0); err != nil {
+		log.Fatal(err)
+	}
+
+	fakeClient.SetStdin(tmpfile)
+	fakeClient.Lock()
+	fakeClient.Stop(os.Stdout, "")
 }
 func TestLockUnlock(t *testing.T) {
 	fakeClient.Lock()

@@ -69,18 +69,23 @@ func (client *Client) ProcessQueue() {
 		}
 
 		go func(r *recipe.Recipe) {
-			if compare.Equal(r.StartAt) {
-				worker, err := client.CreateWorker(r)
-				if err == nil {
-					event.EventHandler.Dispatch("client:lock")
-					client.GetLogs().Info("%s file is in progress... \n", r.Name)
-					// worker takeover steps and works on then
-					worker.Run()
-					// signal that worker is done
-					// then proceed with unlock
-					event.EventHandler.Dispatch("client:unlock")
-					// schedule recipe for next execution
-					r.StartAt = schedule.ScheduleToTime(r.Schedule)
+			// if client is stopped reschedule recipe but don't run it
+			if client.stopped {
+				r.StartAt = schedule.ScheduleToTime(r.Schedule)
+			} else {
+				if compare.Equal(r.StartAt) {
+					worker, err := client.CreateWorker(r)
+					if err == nil {
+						event.EventHandler.Dispatch("client:lock")
+						client.GetLogs().Info("%s file is in progress... \n", r.Name)
+						// worker takeover steps and works on then
+						worker.Run()
+						// signal that worker is done
+						// then proceed with unlock
+						event.EventHandler.Dispatch("client:unlock")
+						// schedule recipe for next execution
+						r.StartAt = schedule.ScheduleToTime(r.Schedule)
+					}
 				}
 			}
 		}(r)
