@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"bufio"
 	"io"
 	"os"
 	"sync"
@@ -97,12 +96,10 @@ func (d Default) GetMutex() *sync.Mutex {
 }
 
 func (d Default) Write(p []byte) (n int, err error) {
-	os.Stdout.Write(p)
 	return d.GetStdout().Write(p)
 }
 
 func (d Default) Read(p []byte) (n int, err error) {
-	os.Stdin.Read(p)
 	return d.GetStdin().Read(p)
 }
 
@@ -173,9 +170,8 @@ func New(name string, cfg *config.AgentConfig) *Default {
 		agent.Context,
 	)
 	agent.Socket = api.New(cfg.GetCommandSocket())
-	agent.Stdin = bufio.NewReader(agent.Stdin)
-	agent.Stdout = bufio.NewWriter(agent.Stdout)
-	//agent.Notifier = notifier.New("smtp.gmail.com", agent.Logs)
+	agent.Stdin = os.Stdin
+	agent.Stdout = os.Stdout
 
 	return agent
 }

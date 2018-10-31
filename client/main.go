@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -121,7 +122,17 @@ func (client *Client) SetPID() {
 
 // GetPID gets current PID of client
 func (client *Client) GetPID() int {
-	return client.PID
+	data, err := ioutil.ReadFile(client.GetConfig().GetPIDFile())
+	if err != nil {
+		panic("Failed to get PID")
+	}
+
+	pid, err := strconv.Atoi(string(data))
+	if err != nil {
+		panic("Failed to get PID")
+	}
+
+	return pid
 }
 
 // Check does client is working on something
@@ -173,13 +184,13 @@ func (client *Client) Stop() os.Signal {
 	pid := client.GetPID()
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		client.GetLogs().Error("Can't find process with that PID. %s", err)
+		panic("Can't find process with that PID. %s" + err.Error())
 	}
 
 	// shutdown gracefully
 	if quit {
 		state, err := process.Wait()
-		client.GetLogs().Info("Stopping Leprechaun, please wait...")
+		fmt.Fprintf(client, "Stopping Leprechaun, please wait...\n")
 
 		if err == nil {
 			if state.Exited() {
@@ -195,7 +206,7 @@ func (client *Client) Stop() os.Signal {
 	if forceQuit {
 		killed := process.Kill()
 		if killed != nil {
-			client.GetLogs().Error("Can't kill process with that PID. %s", killed)
+			panic("Can't kill process with that PID. " + killed.Error())
 		} else {
 			client.Unlock()
 			return syscall.SIGTERM

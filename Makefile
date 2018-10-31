@@ -54,6 +54,7 @@ test:
 	go test ./recipe -coverprofile=./api/coverage.txt -covermode=atomic
 	go test ./cron -coverprofile=./cron/coverage.txt -covermode=atomic
 	go test ./notifier -coverprofile=./notifier/coverage.txt -covermode=atomic
+	go test ./notifier/notifications -coverprofile=./notifier/notifications/coverage.txt -covermode=atomic
 
 test-with-report:
 	go vet ./cmd/leprechaun
