@@ -13,8 +13,6 @@ import (
 var (
 	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
-	iniFile2   = "../tests/configs/config_wrong_value.ini"
-	path2      = &iniFile2
 	cfgWrap    = config.NewConfigs()
 	fakeServer = New("test", cfgWrap.New("test", *path))
 )
