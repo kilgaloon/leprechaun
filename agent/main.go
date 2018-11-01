@@ -6,11 +6,10 @@ import (
 	"sync"
 
 	"github.com/kilgaloon/leprechaun/api"
-	"github.com/kilgaloon/leprechaun/context"
-	"github.com/kilgaloon/leprechaun/workers"
-
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent interface defines service that can be started/stop
@@ -103,7 +102,7 @@ func (d Default) Read(p []byte) (n int, err error) {
 	return d.GetStdin().Read(p)
 }
 
-// GetStdout get agent standard output that can be writen to
+// GetStdout get agent standard output that can be written to
 func (d Default) GetStdout() io.Writer {
 	return d.Stdout
 }
