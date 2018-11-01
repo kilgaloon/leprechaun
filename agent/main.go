@@ -106,7 +106,7 @@ func (d Default) Read(p []byte) (n int, err error) {
 	return d.GetStdin().Read(p)
 }
 
-// GetStdout get agent standard output that can be writen to
+// GetStdout get agent standard output that can be written to
 func (d Default) GetStdout() io.Writer {
 	return d.Stdout
 }
