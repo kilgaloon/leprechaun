@@ -86,6 +86,14 @@ func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
 	return &worker, ErrWorkerNotExist
 }
 
+// DeleteWorkerByName Removes worker from stack
+func (w *Workers) DeleteWorkerByName(name string) {
+	_, err := w.GetWorkerByName(name)
+	if err == nil {
+		delete(w.stack, name)
+	}
+}
+
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
@@ -144,7 +152,7 @@ func (w *Workers) listener() {
 					go worker.Run()
 				}
 
-				delete(w.stack, workerName)
+				w.DeleteWorkerByName(workerName)
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
@@ -156,7 +164,7 @@ func (w *Workers) listener() {
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
-				delete(w.stack, worker.Recipe.Name)
+				w.DeleteWorkerByName(worker.Recipe.Name)
 				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
 			}
 		}
