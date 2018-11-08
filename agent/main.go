@@ -167,6 +167,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 		cfg,
 		agent.Logs,
 		agent.Context,
+		agent.Mu,
 	)
 	agent.Socket = api.New(cfg.GetCommandSocket())
 	agent.Stdin = os.Stdin

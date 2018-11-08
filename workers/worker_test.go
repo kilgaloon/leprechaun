@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -17,6 +18,7 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		new(sync.Mutex),
 	)
 	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	worker, errr = workers2.CreateWorker(&r)

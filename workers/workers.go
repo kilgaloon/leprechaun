@@ -59,9 +59,6 @@ func (w Workers) NumOfWorkers() int {
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	w.stack[worker.Recipe.Name] = *worker
 }
 
@@ -92,6 +89,9 @@ func (w *Workers) DeleteWorkerByName(name string) {
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, ErrStillActive
 	}
@@ -168,7 +168,7 @@ func (w Workers) listener() {
 }
 
 // New create Workers struct instance
-func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
+func New(cfg Config, logs log.Logs, ctx *context.Context, mu *sync.Mutex) Workers {
 	workers := Workers{
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
@@ -179,7 +179,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
 		ErrorChan:        make(chan *Worker),
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
-		mu:               new(sync.Mutex),
+		mu:               mu,
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors

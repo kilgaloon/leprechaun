@@ -1,6 +1,7 @@
 package workers
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/context"
@@ -13,12 +14,14 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		new(sync.Mutex),
 	)
 
 	workers3 = New(
 		ConfigWithQueueSettings,
 		log.Logs{},
 		context.New(),
+		new(sync.Mutex),
 	)
 )
 

@@ -22,9 +22,7 @@ func (c *Cron) buildJobs() {
 		// needs to be schedule by definition
 		if recipe.Definition == "cron" {
 			c.Service.AddFunc(recipe.Pattern, func() {
-				c.GetMutex().Lock()
 				worker, err := c.CreateWorker(&recipe)
-				c.GetMutex().Unlock()
 
 				if err == nil {
 					worker.Run()

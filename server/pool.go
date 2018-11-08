@@ -54,9 +54,7 @@ func (server Server) FindInPool(id string) {
 
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
 
-	server.GetMutex().Lock()
 	worker, err := server.CreateWorker(recipe)
-	server.GetMutex().Unlock()
 	if err == nil {
 		worker.Run()
 	}
