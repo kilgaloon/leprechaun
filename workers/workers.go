@@ -168,8 +168,8 @@ func (w Workers) listener() {
 }
 
 // New create Workers struct instance
-func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
-	workers := &Workers{
+func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
+	workers := Workers{
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
 		allowedQueueSize: cfg.GetMaxAllowedQueueWorkers(),

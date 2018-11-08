@@ -55,7 +55,7 @@ type Default struct {
 	Logs   log.Logs
 	Mu     *sync.Mutex
 
-	*workers.Workers
+	workers.Workers
 
 	Context *context.Context
 	Socket  *api.Socket
