@@ -49,21 +49,21 @@ type Workers struct {
 	DoneChan         chan string
 	ErrorChan        chan *Worker
 	*notifier.Notifier
-	mu *sync.Mutex
+	*sync.Mutex
 }
 
 // NumOfWorkers returns size of stack/number of workers
 func (w *Workers) NumOfWorkers() int {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	w.Lock()
+	defer w.Unlock()
 
 	return len(w.stack)
 }
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	w.Lock()
+	defer w.Unlock()
 
 	w.stack[worker.Recipe.Name] = *worker
 }
@@ -75,8 +75,8 @@ func (w *Workers) GetAllWorkers() map[string]Worker {
 
 // GetWorkerByName gets worker by provided name
 func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
+	w.Lock()
+	defer w.Unlock()
 
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
@@ -100,7 +100,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		ErrorChan: w.ErrorChan,
 		Recipe:    r,
 		Cmd:       make(map[string]*exec.Cmd),
-		mu:        w.mu,
+		Mutex:     w.Mutex,
 	}
 
 	var err error
@@ -134,6 +134,7 @@ func (w *Workers) listener() {
 		for {
 			select {
 			case workerName := <-w.DoneChan:
+				w.Lock()
 				// When worker is done, check in worker queue is there any to process
 				// ** TODO ** : Since we plan to introduce priority now everything is same priority,
 				// tasks in queue will need to wait in queue until all higher priority tasks are done
@@ -144,9 +145,9 @@ func (w *Workers) listener() {
 					go worker.Run()
 				}
 
-				w.mu.Lock()
+				
 				delete(w.stack, workerName)
-				w.mu.Unlock()
+				w.Unlock()
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
@@ -158,9 +159,9 @@ func (w *Workers) listener() {
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
-				w.mu.Lock()
+				w.Lock()
 				delete(w.stack, worker.Recipe.Name)
-				w.mu.Unlock()
+				w.Unlock()
 
 				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
 			}
@@ -180,8 +181,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
 		ErrorChan:        make(chan *Worker),
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
-		mu:               new(sync.Mutex),
-		//Queue:            NewQueue(),
+		Mutex:            new(sync.Mutex),
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors
