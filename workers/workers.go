@@ -82,12 +82,11 @@ func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
 
 // DeleteWorkerByName Removes worker from stack
 func (w *Workers) DeleteWorkerByName(name string) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	_, err := w.GetWorkerByName(name)
 	if err == nil {
+		w.mu.Lock()
 		delete(w.stack, name)
+		w.mu.Unlock()
 	}
 }
 
