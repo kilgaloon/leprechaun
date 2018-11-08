@@ -59,9 +59,6 @@ func (w Workers) NumOfWorkers() int {
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	w.stack[worker.Recipe.Name] = *worker
 }
 
