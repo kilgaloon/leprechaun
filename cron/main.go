@@ -34,6 +34,8 @@ func New(name string, cfg *config.AgentConfig) *Cron {
 
 // Start client
 func (c *Cron) Start() {
+	c.GetMutex().Lock()
+	defer c.GetMutex().Unlock()
 	// build queue
 	c.Lock()
 	c.buildJobs()

@@ -24,6 +24,9 @@ var (
 
 func TestCreateWorker(t *testing.T) {
 	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	if err != nil {
+		t.Fail()
+	}
 
 	_, err = workers.CreateWorker(&r)
 	if err != nil {
@@ -49,14 +52,17 @@ func TestCreateWorkerQueue(t *testing.T) {
 		t.Fail()
 	}
 
-	workers3.queue.pop()
-	if workers3.queue.len() > 0 {
+	workers3.Queue.pop()
+	if workers3.Queue.len() > 0 {
 		t.Fail()
 	}
 }
 
 func TestGetWorkerByName(t *testing.T) {
 	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
+	if err != nil {
+		t.Fail()
+	}
 	workers.CreateWorker(&r)
 
 	_, err = workers.GetWorkerByName("schedule")

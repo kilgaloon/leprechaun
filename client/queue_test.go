@@ -19,6 +19,10 @@ func TestBuildQueue(t *testing.T) {
 	// reset queue to 0 to test AddToQueue
 	q := &fk.Queue
 	q.Stack = q.Stack[:0]
+
+	clientInfo(t)
+	wg.Done()
+
 }
 
 func TestAddToQueue(t *testing.T) {
@@ -31,9 +35,13 @@ func TestAddToQueue(t *testing.T) {
 	if len(fk.Queue.Stack) != 1 {
 		t.Errorf("Queue stack length expected to be 0, got %d", len(fakeClient.Queue.Stack))
 	}
+
+	clientInfo(t)
+	wg.Done()
+
 }
 
-func TestClientInfo(t *testing.T) {
+func clientInfo(t *testing.T) {
 	_, err := fakeClient.clientInfo(os.Stdin)
 	if err != nil {
 		t.Fail()

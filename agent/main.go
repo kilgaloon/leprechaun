@@ -1,17 +1,15 @@
 package agent
 
 import (
-	"bufio"
 	"io"
 	"os"
 	"sync"
 
 	"github.com/kilgaloon/leprechaun/api"
-	"github.com/kilgaloon/leprechaun/context"
-	"github.com/kilgaloon/leprechaun/workers"
-
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/log"
+	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent interface defines service that can be started/stop
@@ -97,16 +95,14 @@ func (d Default) GetMutex() *sync.Mutex {
 }
 
 func (d Default) Write(p []byte) (n int, err error) {
-	os.Stdout.Write(p)
 	return d.GetStdout().Write(p)
 }
 
 func (d Default) Read(p []byte) (n int, err error) {
-	os.Stdin.Read(p)
 	return d.GetStdin().Read(p)
 }
 
-// GetStdout get agent standard output that can be writen to
+// GetStdout get agent standard output that can be written to
 func (d Default) GetStdout() io.Writer {
 	return d.Stdout
 }
@@ -173,9 +169,8 @@ func New(name string, cfg *config.AgentConfig) *Default {
 		agent.Context,
 	)
 	agent.Socket = api.New(cfg.GetCommandSocket())
-	agent.Stdin = bufio.NewReader(agent.Stdin)
-	agent.Stdout = bufio.NewWriter(agent.Stdout)
-	//agent.Notifier = notifier.New("smtp.gmail.com", agent.Logs)
+	agent.Stdin = os.Stdin
+	agent.Stdout = os.Stdout
 
 	return agent
 }

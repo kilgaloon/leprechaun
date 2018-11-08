@@ -17,7 +17,7 @@ type Recipe struct {
 	Schedule   map[string]int
 	Steps      []string
 	Pattern    string
-	Err		   error
+	Err        error
 }
 
 // Build recipe for use

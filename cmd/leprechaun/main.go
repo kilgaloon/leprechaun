@@ -52,14 +52,15 @@ func main() {
 		go client.Agent.Start()
 		go server.Agent.Start()
 		go cron.Agent.Start()
-	case "client:stop":
-		shutdownSignal <- client.Agent.Stop()
 	case "client:start":
 		go client.Agent.Start()
 	case "server:start":
 		go server.Agent.Start()
 	case "cron:start":
 		go cron.Agent.Start()
+	case "client:stop":
+		*cmd = "client stop"
+		fallthrough
 	case "client":
 		sock := api.New(configs.GetConfig("client").GetCommandSocket())
 		sock.Command(*cmd)

@@ -22,7 +22,7 @@ func (ta TestAgent) RegisterCommands() map[string]Command {
 	cmds["test"] = Command{
 		Closure: func(r io.Writer, args ...string) ([][]string, error) {
 			var resp = [][]string{
-				[]string{"TEST"},
+				{"TEST"},
 			}
 
 			return resp, nil

@@ -9,7 +9,7 @@
 
   
 
-Current Version: **1.0.0-alpha**
+Current Version: **1.0.0-rc**
 
 Current Release: **Calimero**
 
@@ -105,10 +105,12 @@ but in this case for example first task will block performing on any task and al
 
 Go to `leprechaun` directory and run `make install`, you will need sudo privileges for this.
 
-## Starting/Stopping service
+## Starting/Stopping services
 
   
-To start leprechaun just simply run it in background like this : `leprechaun &` and can be stoped with command like this `leprechaun --cmd="client:stop"`
+To start leprechaun just simply run it in background like this : `leprechaun &`
+
+Starting just specific: `leprechaun --cmd='client:start' &`, `leprechaun --cmd='server:start' &`, `leprechaun --cmd='cron:start' &`, to stop `{agent}:stop`
 
 For more available commands run `leprechaun help`
 
