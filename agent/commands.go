@@ -27,7 +27,7 @@ func (d Default) WorkersList(r io.Writer, args ...string) ([][]string, error) {
 
 // KillWorker kills worker by provided name
 func (d Default) KillWorker(r io.Writer, args ...string) ([][]string, error) {
-	var resp [][]string
+	resp := [][]string{}
 
 	worker, err := d.GetWorkerByName(args[0])
 	if err != nil {

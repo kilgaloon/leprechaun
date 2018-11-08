@@ -40,7 +40,7 @@ type Config interface {
 // Workers hold everything about workers
 type Workers struct {
 	stack map[string]Worker
-	queue
+	Queue
 	allowedSize      int
 	allowedQueueSize int
 	OutputDir        string
@@ -49,23 +49,23 @@ type Workers struct {
 	DoneChan         chan string
 	ErrorChan        chan *Worker
 	*notifier.Notifier
+	mu *sync.Mutex
 }
 
 // NumOfWorkers returns size of stack/number of workers
 func (w Workers) NumOfWorkers() int {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	return len(w.stack)
 }
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	mu := new(sync.Mutex)
-
-	mu.Lock()
-	defer mu.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	w.stack[worker.Recipe.Name] = *worker
-
-	return
 }
 
 // GetAllWorkers workers from stack
@@ -75,6 +75,9 @@ func (w Workers) GetAllWorkers() map[string]Worker {
 
 // GetWorkerByName gets worker by provided name
 func (w Workers) GetWorkerByName(name string) (*Worker, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -97,6 +100,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		ErrorChan: w.ErrorChan,
 		Recipe:    r,
 		Cmd:       make(map[string]*exec.Cmd),
+		mu:        w.mu,
 	}
 
 	var err error
@@ -114,8 +118,8 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		return worker, nil
 	}
 
-	if w.queue.len() < w.allowedQueueSize {
-		w.queue.push(worker)
+	if w.Queue.len() < w.allowedQueueSize {
+		w.Queue.push(worker)
 	} else {
 		w.Logs.Error("%s", ErrMaxQueueReached)
 		return nil, ErrMaxQueueReached
@@ -133,8 +137,8 @@ func (w *Workers) listener() {
 				// When worker is done, check in worker queue is there any to process
 				// ** TODO ** : Since we plan to introduce priority now everything is same priority,
 				// tasks in queue will need to wait in queue until all higher priority tasks are done
-				if w.queue.len() > 0 {
-					worker := w.queue.pop()
+				if !w.Queue.isEmpty() {
+					worker := w.Queue.pop()
 					w.PushToStack(worker)
 
 					go worker.Run()
@@ -171,6 +175,8 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
 		ErrorChan:        make(chan *Worker),
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
+		mu:               new(sync.Mutex),
+		Queue:            NewQueue(),
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors

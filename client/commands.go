@@ -10,6 +10,9 @@ import (
 
 // cmd: client info
 func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error) {
+	client.GetMutex().Lock()
+	defer client.GetMutex().Unlock()
+
 	pid := strconv.Itoa(client.GetPID())
 	num := strconv.Itoa(client.NumOfWorkers())
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))

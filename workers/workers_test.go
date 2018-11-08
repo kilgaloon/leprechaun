@@ -52,8 +52,8 @@ func TestCreateWorkerQueue(t *testing.T) {
 		t.Fail()
 	}
 
-	workers3.queue.pop()
-	if workers3.queue.len() > 0 {
+	workers3.Queue.pop()
+	if workers3.Queue.len() > 0 {
 		t.Fail()
 	}
 }

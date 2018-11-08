@@ -12,7 +12,7 @@ import (
 var (
 	configs                 = config.NewConfigs()
 	ConfigWithSettings      = configs.New("test", "../tests/configs/config_regular.ini")
-	ConfigWithQueueSettings = configs.New("test", "../tests/configs/config_test_queue.ini")
+	ConfigWithQueueSettings = configs.New("test", "../tests/configs/config_test_Queue.ini")
 	workers2                = New(
 		ConfigWithSettings,
 		log.Logs{},
@@ -41,15 +41,13 @@ func TestRun(t *testing.T) {
 }
 
 func TestQueue(t *testing.T) {
-	workers2.queue.empty()
-
-	if workers2.queue.len() > 0 || !workers2.queue.isEmpty() {
+	if !workers2.Queue.isEmpty() {
 		t.Fatalf("Queue expected to be empty")
 	}
 
-	workers2.queue.push(worker)
+	workers2.Queue.push(worker)
 
-	if workers2.queue.isEmpty() {
+	if workers2.Queue.isEmpty() {
 		t.Fatalf("Queue should not be empty")
 	}
 }

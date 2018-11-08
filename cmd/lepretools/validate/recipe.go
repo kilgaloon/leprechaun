@@ -32,6 +32,12 @@ func CheckRecipe(path string) {
 		log.Fatal("Steps definition is either missing or in wrong format")
 	}
 
+	checkDefinition(r)
+
+	fmt.Println("Everything good!")
+}
+
+func checkDefinition(r recipe.Recipe) {
 	switch r.Definition {
 	case "schedule":
 		if r.Schedule["min"] == 0 && r.Schedule["hour"] == 0 && r.Schedule["day"] == 0 {
@@ -53,6 +59,4 @@ func CheckRecipe(path string) {
 			log.Fatal("ID of recipe not provided")
 		}
 	}
-
-	fmt.Println("Everything good!")
 }

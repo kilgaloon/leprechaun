@@ -67,6 +67,9 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 
 // RegisterCommands to be used in internal communication
 func (server Server) RegisterCommands() map[string]api.Command {
+	server.GetMutex().Lock()
+	defer server.GetMutex().Unlock()
+
 	cmds := make(map[string]api.Command)
 
 	return server.DefaultCommands(cmds)

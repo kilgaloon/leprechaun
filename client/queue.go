@@ -18,6 +18,9 @@ type Queue struct {
 
 // BuildQueue takes all recipes and put them in queue
 func (client *Client) BuildQueue() {
+	client.GetMutex().Lock()
+	defer client.GetMutex().Unlock()
+
 	q := Queue{}
 
 	files, err := ioutil.ReadDir(client.GetConfig().GetRecipesPath())
