@@ -68,7 +68,8 @@ func TestLockUnlock(t *testing.T) {
 		if !fakeClient.isWorking() {
 			t.Fail()
 		}
-		event.EventHandler.Dispatch("client:unlock")
+
+		//event.EventHandler.Dispatch("client:unlock")
 
 		wg.Done()
 	})

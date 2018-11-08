@@ -53,7 +53,7 @@ type Workers struct {
 }
 
 // NumOfWorkers returns size of stack/number of workers
-func (w Workers) NumOfWorkers() int {
+func (w *Workers) NumOfWorkers() int {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
@@ -69,12 +69,12 @@ func (w *Workers) PushToStack(worker *Worker) {
 }
 
 // GetAllWorkers workers from stack
-func (w Workers) GetAllWorkers() map[string]Worker {
+func (w *Workers) GetAllWorkers() map[string]Worker {
 	return w.stack
 }
 
 // GetWorkerByName gets worker by provided name
-func (w Workers) GetWorkerByName(name string) (*Worker, error) {
+func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
@@ -176,7 +176,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
 		mu:               new(sync.Mutex),
-		Queue:            NewQueue(),
+		//Queue:            NewQueue(),
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors
