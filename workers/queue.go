@@ -5,7 +5,7 @@ import "sync"
 // Queue holds list of workers that are in queue
 type Queue struct {
 	elements []*Worker
-	sync.RWMutex
+	sync.Mutex
 }
 
 func (q *Queue) len() int {
