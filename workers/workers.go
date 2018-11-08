@@ -134,7 +134,6 @@ func (w *Workers) listener() {
 		for {
 			select {
 			case workerName := <-w.DoneChan:
-				w.Lock()
 				// When worker is done, check in worker queue is there any to process
 				// ** TODO ** : Since we plan to introduce priority now everything is same priority,
 				// tasks in queue will need to wait in queue until all higher priority tasks are done
@@ -145,9 +144,7 @@ func (w *Workers) listener() {
 					go worker.Run()
 				}
 
-				
 				delete(w.stack, workerName)
-				w.Unlock()
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
@@ -159,10 +156,7 @@ func (w *Workers) listener() {
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
-				w.Lock()
 				delete(w.stack, worker.Recipe.Name)
-				w.Unlock()
-
 				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
 			}
 		}
