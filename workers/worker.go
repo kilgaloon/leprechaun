@@ -32,7 +32,7 @@ type Worker struct {
 	Stdout         *os.File
 	Recipe         *recipe.Recipe
 	Err            error
-	*sync.Mutex
+	mu             *sync.Mutex
 }
 
 // Run starts worker
@@ -56,8 +56,8 @@ func (w *Worker) Run() {
 }
 
 func (w *Worker) workOnStep(step string) {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	cmd := exec.Command("bash", "-c", step)
 	w.Cmd[step] = cmd
@@ -87,8 +87,8 @@ func (w *Worker) workOnStep(step string) {
 
 // Kill all commands that worker is working on
 func (w *Worker) Kill() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	for step, cmd := range w.Cmd {
 		if err := cmd.Process.Kill(); err != nil {

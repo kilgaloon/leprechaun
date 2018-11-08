@@ -49,35 +49,26 @@ type Workers struct {
 	DoneChan         chan string
 	ErrorChan        chan *Worker
 	*notifier.Notifier
-	*sync.Mutex
+	mu *sync.Mutex
 }
 
 // NumOfWorkers returns size of stack/number of workers
-func (w *Workers) NumOfWorkers() int {
-	w.Lock()
-	defer w.Unlock()
-
+func (w Workers) NumOfWorkers() int {
 	return len(w.stack)
 }
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	w.Lock()
-	defer w.Unlock()
-
 	w.stack[worker.Recipe.Name] = *worker
 }
 
 // GetAllWorkers workers from stack
-func (w *Workers) GetAllWorkers() map[string]Worker {
+func (w Workers) GetAllWorkers() map[string]Worker {
 	return w.stack
 }
 
 // GetWorkerByName gets worker by provided name
-func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
-	w.Lock()
-	defer w.Unlock()
-
+func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -96,6 +87,9 @@ func (w *Workers) DeleteWorkerByName(name string) {
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, ErrStillActive
 	}
@@ -108,7 +102,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		ErrorChan: w.ErrorChan,
 		Recipe:    r,
 		Cmd:       make(map[string]*exec.Cmd),
-		Mutex:     w.Mutex,
+		mu:        w.mu,
 	}
 
 	var err error
@@ -137,7 +131,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 	return nil, ErrMaxReached
 }
 
-func (w *Workers) listener() {
+func (w Workers) listener() {
 	go func() {
 		for {
 			select {
@@ -183,7 +177,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) *Workers {
 		ErrorChan:        make(chan *Worker),
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
-		Mutex:            new(sync.Mutex),
+		mu:               new(sync.Mutex),
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors

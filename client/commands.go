@@ -14,7 +14,6 @@ func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error
 	defer client.GetMutex().Unlock()
 
 	pid := strconv.Itoa(client.GetPID())
-	num := strconv.Itoa(client.NumOfWorkers())
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
 
 	var mem runtime.MemStats
@@ -25,7 +24,6 @@ func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error
 	resp := [][]string{
 		{"PID: " + pid},
 		{"Config file: " + client.GetConfig().GetPath()},
-		{"Number of workers: " + num},
 		{"Recipes in queue: " + recipeQueueNum},
 		{"Memory Allocated: " + alloc + " MiB"},
 	}
