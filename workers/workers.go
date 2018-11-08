@@ -134,6 +134,7 @@ func (w *Workers) listener() {
 		for {
 			select {
 			case workerName := <-w.DoneChan:
+				w.mu.Lock()
 				// When worker is done, check in worker queue is there any to process
 				// ** TODO ** : Since we plan to introduce priority now everything is same priority,
 				// tasks in queue will need to wait in queue until all higher priority tasks are done
@@ -144,7 +145,9 @@ func (w *Workers) listener() {
 					go worker.Run()
 				}
 
+				
 				delete(w.stack, workerName)
+				w.mu.Unlock()
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
