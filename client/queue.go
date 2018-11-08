@@ -77,7 +77,9 @@ func (client *Client) ProcessQueue() {
 				r.StartAt = schedule.ScheduleToTime(r.Schedule)
 			} else {
 				if compare.Equal(r.StartAt) {
+					client.GetMutex().Lock()
 					worker, err := client.CreateWorker(r)
+					client.GetMutex().Unlock()
 					if err == nil {
 						event.EventHandler.Dispatch("client:lock")
 						client.GetLogs().Info("%s file is in progress... \n", r.Name)

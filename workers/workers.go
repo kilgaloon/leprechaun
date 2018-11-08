@@ -59,6 +59,9 @@ func (w Workers) NumOfWorkers() int {
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	w.stack[worker.Recipe.Name] = *worker
 }
 
@@ -68,7 +71,7 @@ func (w Workers) GetAllWorkers() map[string]Worker {
 }
 
 // GetWorkerByName gets worker by provided name
-func (w Workers) GetWorkerByName(name string) (*Worker, error) {
+func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -79,6 +82,9 @@ func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 
 // DeleteWorkerByName Removes worker from stack
 func (w *Workers) DeleteWorkerByName(name string) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	_, err := w.GetWorkerByName(name)
 	if err == nil {
 		delete(w.stack, name)
@@ -86,10 +92,7 @@ func (w *Workers) DeleteWorkerByName(name string) {
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
-func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
+func (w Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, ErrStillActive
 	}
