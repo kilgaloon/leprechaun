@@ -72,6 +72,8 @@ func (client *Client) ProcessQueue() {
 		}
 
 		go func(r *recipe.Recipe) {
+			client.GetMutex().Lock()
+			defer client.GetMutex().Unlock()
 			// if client is stopped reschedule recipe but don't run it
 			if client.stopped {
 				r.StartAt = schedule.ScheduleToTime(r.Schedule)
