@@ -50,6 +50,7 @@ func TestLockUnlock(t *testing.T) {
 				fakeClient.Lock()
 				if !fakeClient.isWorking() {
 					t.Fail()
+					break
 				}
 
 				fakeClient.Unlock()
