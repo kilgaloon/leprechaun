@@ -142,8 +142,9 @@ func (w Workers) listener() {
 
 					go worker.Run()
 				}
-
+				w.mu.Lock()
 				w.DeleteWorkerByName(workerName)
+				w.mu.Unlock()
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
@@ -155,7 +156,9 @@ func (w Workers) listener() {
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
+				w.mu.Lock()
 				w.DeleteWorkerByName(worker.Recipe.Name)
+				w.mu.Unlock()
 				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
 			}
 		}
