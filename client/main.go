@@ -44,10 +44,12 @@ func New(name string, cfg *config.AgentConfig) *Client {
 // Start client
 func (client *Client) Start() {
 	// if client is stopped/paused, just unpause it
+	client.GetMutex().Lock()
 	if client.stopped {
 		client.stopped = false
 		return
 	}
+	client.GetMutex().Unlock()
 	// remove hanging .lock file
 	os.Remove(client.GetConfig().GetLockFile())
 	// SetPID of client
@@ -82,7 +84,7 @@ func (client *Client) Start() {
 		fmt.Println(err)
 	}
 
-	event.EventHandler.Dispatch("client:ready")
+	client.Ready()
 	// register client to command socket
 	go api.New(client.GetConfig().GetCommandSocket()).Register(client)
 
@@ -121,6 +123,9 @@ func (client *Client) RegisterCommands() map[string]api.Command {
 
 // SetPID sets current PID of client
 func (client *Client) SetPID() {
+	client.GetMutex().Lock()
+	defer client.GetMutex().Unlock()
+
 	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Failed to start client, can't save PID, reason: " + err.Error())
@@ -175,6 +180,9 @@ func (client *Client) Unlock() {
 
 // Stop client
 func (client *Client) Stop(r io.Writer, args ...string) ([][]string, error) {
+	client.GetMutex().Lock()
+	defer client.GetMutex().Unlock()
+
 	var resp [][]string
 
 	client.stopped = true

@@ -43,6 +43,8 @@ func TestRun(t *testing.T) {
 }
 
 func TestQueue(t *testing.T) {
+	workers2.Queue.empty()
+
 	if !workers2.Queue.isEmpty() {
 		t.Fatalf("Queue expected to be empty")
 	}
@@ -51,5 +53,10 @@ func TestQueue(t *testing.T) {
 
 	if workers2.Queue.isEmpty() {
 		t.Fatalf("Queue should not be empty")
+	}
+
+	w := workers2.Queue.pop()
+	if w == nil {
+		t.Fail()
 	}
 }

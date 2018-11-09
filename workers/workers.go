@@ -86,7 +86,7 @@ func (w *Workers) DeleteWorkerByName(name string) {
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
-func (w Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
 		return nil, ErrStillActive
 	}

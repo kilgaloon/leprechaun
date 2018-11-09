@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/event"
-
 	"github.com/kilgaloon/leprechaun/recipe"
 	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 )
@@ -74,6 +72,7 @@ func (client *Client) ProcessQueue() {
 		go func(r *recipe.Recipe) {
 			client.GetMutex().Lock()
 			defer client.GetMutex().Unlock()
+
 			// if client is stopped reschedule recipe but don't run it
 			if client.stopped {
 				r.StartAt = schedule.ScheduleToTime(r.Schedule)
@@ -81,13 +80,13 @@ func (client *Client) ProcessQueue() {
 				if compare.Equal(r.StartAt) {
 					worker, err := client.CreateWorker(r)
 					if err == nil {
-						event.EventHandler.Dispatch("client:lock")
+						client.Lock()
 						client.GetLogs().Info("%s file is in progress... \n", r.Name)
 						// worker takeover steps and works on then
 						worker.Run()
 						// signal that worker is done
 						// then proceed with unlock
-						event.EventHandler.Dispatch("client:unlock")
+						client.Unlock()
 						// schedule recipe for next execution
 						r.StartAt = schedule.ScheduleToTime(r.Schedule)
 					}

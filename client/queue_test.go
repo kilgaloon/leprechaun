@@ -21,28 +21,40 @@ func TestBuildQueue(t *testing.T) {
 	q.Stack = q.Stack[:0]
 
 	clientInfo(t)
-	wg.Done()
 
 }
 
 func TestAddToQueue(t *testing.T) {
 	fk.AddToQueue(&fk.Queue.Stack, fk.GetConfig().GetRecipesPath()+"/schedule.yml")
 	if len(fk.Queue.Stack) != 1 {
-		t.Errorf("Queue stack length expected to be 1, got %d", len(fakeClient.Queue.Stack))
+		t.Errorf("Queue stack length expected to be 1, got %d", len(fk.Queue.Stack))
 	}
 
 	fk.AddToQueue(&fk.Queue.Stack, fk.GetConfig().GetRecipesPath()+"/hook.yml")
 	if len(fk.Queue.Stack) != 1 {
-		t.Errorf("Queue stack length expected to be 0, got %d", len(fakeClient.Queue.Stack))
+		t.Errorf("Queue stack length expected to be 0, got %d", len(fk.Queue.Stack))
 	}
 
 	clientInfo(t)
-	wg.Done()
 
 }
 
+func TestProcessQueueNotStoppedClient(t *testing.T) {
+	go fk.Start()
+
+	go func() {
+		for {
+			select {
+			case <-fk.ReadyChan:
+				fk.ProcessQueue()
+				break
+			}
+		}
+	}()
+}
+
 func clientInfo(t *testing.T) {
-	_, err := fakeClient.clientInfo(os.Stdin)
+	_, err := fk.clientInfo(os.Stdin)
 	if err != nil {
 		t.Fail()
 	}

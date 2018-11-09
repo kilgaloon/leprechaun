@@ -61,6 +61,8 @@ type Default struct {
 	Socket  *api.Socket
 	Stdin   io.Reader
 	Stdout  io.Writer
+
+	ReadyChan chan bool
 }
 
 // GetName returns name of the client
@@ -122,6 +124,11 @@ func (d *Default) SetStdout(w io.Writer) {
 	d.Stdout = w
 }
 
+//Ready sends signal to ReadyChan to signal that agent is ready to operate
+func (d *Default) Ready() {
+	d.ReadyChan <- true
+}
+
 // DefaultCommands merge 2 maps into one
 // it usability is if some of the agents
 // wants to takeover default commands
@@ -172,6 +179,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent.Socket = api.New(cfg.GetCommandSocket())
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
+	agent.ReadyChan = make(chan bool)
 
 	return agent
 }

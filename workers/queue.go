@@ -3,7 +3,6 @@ package workers
 // Queue holds list of workers that are in queue
 type Queue struct {
 	elements []*Worker
-	//sync.Mutex
 }
 
 func (q *Queue) len() int {
@@ -34,8 +33,6 @@ func (q *Queue) pop() *Worker {
 }
 
 func (q *Queue) push(w *Worker) {
-	//q.Lock()
 	// ** TODO ** : Introducing priorities on tasks will need to push worker by priorities and reorder elements slice
 	q.elements = append(q.elements, w)
-	//q.Unlock()
 }
