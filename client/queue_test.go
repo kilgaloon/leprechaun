@@ -40,17 +40,8 @@ func TestAddToQueue(t *testing.T) {
 }
 
 func TestProcessQueueNotStoppedClient(t *testing.T) {
-	go fk.Start()
-
-	go func() {
-		for {
-			select {
-			case <-fk.ReadyChan:
-				fk.ProcessQueue()
-				break
-			}
-		}
-	}()
+	fk.stopped = false
+	fk.ProcessQueue()
 }
 
 func clientInfo(t *testing.T) {

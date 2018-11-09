@@ -2,10 +2,19 @@ package event
 
 import (
 	"testing"
+
+	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/log"
 )
 
 var (
-	eventHandler = CreateHandler()
+	cfgWrap = config.NewConfigs()
+	cfg     = cfgWrap.New("test", "../tests/configs/config_regular.ini")
+	logger  = log.Logs{
+		ErrorLog: cfg.GetErrorLog(),
+		InfoLog:  cfg.GetInfoLog(),
+	}
+	eventHandler = NewHandler(logger)
 )
 
 func TestListen(t *testing.T) {

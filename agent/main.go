@@ -8,6 +8,7 @@ import (
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
+	"github.com/kilgaloon/leprechaun/event"
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/workers"
 )
@@ -62,7 +63,7 @@ type Default struct {
 	Stdin   io.Reader
 	Stdout  io.Writer
 
-	ReadyChan chan bool
+	Event *event.Handler
 }
 
 // GetName returns name of the client
@@ -124,15 +125,13 @@ func (d *Default) SetStdout(w io.Writer) {
 	d.Stdout = w
 }
 
-//Ready sends signal to ReadyChan to signal that agent is ready to operate
-func (d *Default) Ready() {
-	d.ReadyChan <- true
-}
-
 // DefaultCommands merge 2 maps into one
 // it usability is if some of the agents
 // wants to takeover default commands
 func (d Default) DefaultCommands(commands map[string]api.Command) map[string]api.Command {
+	d.GetMutex().Lock()
+	defer d.GetMutex().Unlock()
+
 	cmds := make(map[string]api.Command)
 
 	cmds["workers:list"] = api.Command{
@@ -179,7 +178,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent.Socket = api.New(cfg.GetCommandSocket())
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
-	agent.ReadyChan = make(chan bool)
+	agent.Event = event.NewHandler(agent.Logs)
 
 	return agent
 }

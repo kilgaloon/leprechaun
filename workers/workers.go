@@ -69,9 +69,6 @@ func (w Workers) GetAllWorkers() map[string]Worker {
 
 // GetWorkerByName gets worker by provided name
 func (w Workers) GetWorkerByName(name string) (*Worker, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil

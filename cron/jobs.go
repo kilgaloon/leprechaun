@@ -25,6 +25,7 @@ func (c *Cron) buildJobs() {
 				worker, err := c.CreateWorker(&recipe)
 
 				if err == nil {
+					c.PushToStack(worker)
 					worker.Run()
 				}
 			})

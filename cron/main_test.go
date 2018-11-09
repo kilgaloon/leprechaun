@@ -13,16 +13,20 @@ var (
 	fakeCron = New("test", cfgWrap.New("test", *path))
 )
 
-func TestStart(t *testing.T) {
-	go fakeCron.Start()
-
-	fakeCron.buildJobs()
-}
-
 func TestRegisterCommands(t *testing.T) {
 	fakeCron.RegisterCommands()
 }
 
 func TestStop(t *testing.T) {
-	fakeCron.Stop()
+	fakeCron.Event.Subscribe("cron:ready", func() {
+		fakeCron.Stop()
+	})
+}
+
+func TestBuildJobs(t *testing.T) {
+	fakeCron.buildJobs()
+}
+
+func TestStart(t *testing.T) {
+	go fakeCron.Start()
 }

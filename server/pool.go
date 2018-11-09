@@ -53,7 +53,7 @@ func (server Server) FindInPool(id string) {
 	}
 
 	log.Logger.Info("%s file is in progress... \n", recipe.Name)
-
+	
 	worker, err := server.CreateWorker(recipe)
 	if err == nil {
 		worker.Run()
