@@ -35,9 +35,9 @@ func New(name string, cfg *config.AgentConfig) *Cron {
 // Start client
 func (c *Cron) Start() {
 	// build queue
-	c.Lock()
+	c.GetMutex().Lock()
 	c.buildJobs()
-	c.Unlock()
+	c.GetMutex().Unlock()
 
 	// register client to command socket
 	go api.New(c.GetConfig().GetCommandSocket()).Register(c)

@@ -25,7 +25,6 @@ type Agent interface {
 	DefaultCommands(map[string]api.Command) map[string]api.Command
 
 	StandardIO
-	Vault
 }
 
 // StandardIO of agent
