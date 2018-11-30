@@ -73,7 +73,7 @@ func (client *Client) Start() {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				client.GetLogs().Error("error: %s", err)
+				client.Error("error: %s", err)
 			}
 		}
 	}()

@@ -49,20 +49,18 @@ type StandardOutput interface {
 
 // Default represents default agent
 type Default struct {
-	Name   string
-	PID    int
-	Config *config.AgentConfig
-	Logs   log.Logs
-	Mu     *sync.Mutex
-
-	workers.Workers
-
+	Name    string
+	PID     int
+	Config  *config.AgentConfig
+	Mu      *sync.Mutex
 	Context *context.Context
 	Socket  *api.Socket
 	Stdin   io.Reader
 	Stdout  io.Writer
+	Event   *event.Handler
 
-	Event *event.Handler
+	log.Logs
+	workers.Workers
 }
 
 // GetName returns name of the client

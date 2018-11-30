@@ -16,7 +16,7 @@ func (c *Cron) buildJobs() {
 		fullFilepath := c.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			c.GetLogs().Error(err.Error())
+			c.Error(err.Error())
 		}
 		// recipes that needs to be pushed to queue
 		// needs to be schedule by definition
