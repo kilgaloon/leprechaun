@@ -142,7 +142,6 @@ func (w Workers) listener() {
 
 					go worker.Run()
 				}
-
 				w.DeleteWorkerByName(workerName)
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:

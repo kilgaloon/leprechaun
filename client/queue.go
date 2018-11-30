@@ -30,7 +30,7 @@ func (client *Client) BuildQueue() {
 		fullFilepath := client.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			client.GetLogs().Error(err.Error())
+			client.Error(err.Error())
 		}
 		// recipes that needs to be pushed to queue
 		// needs to be schedule by definition
@@ -47,7 +47,7 @@ func (client *Client) AddToQueue(stack *[]recipe.Recipe, path string) {
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
 		if err != nil {
-			client.GetLogs().Error(err.Error())
+			client.Error(err.Error())
 		}
 
 		if r.Definition == "schedule" {
@@ -81,7 +81,7 @@ func (client *Client) ProcessQueue() {
 					worker, err := client.CreateWorker(r)
 					if err == nil {
 						client.Lock()
-						client.GetLogs().Info("%s file is in progress... \n", r.Name)
+						client.Info("%s file is in progress... \n", r.Name)
 						// worker takeover steps and works on then
 						worker.Run()
 						// signal that worker is done

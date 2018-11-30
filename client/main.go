@@ -13,7 +13,6 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
-	"github.com/kilgaloon/leprechaun/event"
 )
 
 // Agent holds instance of Client
@@ -74,7 +73,7 @@ func (client *Client) Start() {
 					client.AddToQueue(&client.Queue.Stack, event.Name)
 				}
 			case err := <-watcher.Errors:
-				client.GetLogs().Error("error: %s", err)
+				client.Error("error: %s", err)
 			}
 		}
 	}()
@@ -84,9 +83,10 @@ func (client *Client) Start() {
 		fmt.Println(err)
 	}
 
-	client.Ready()
 	// register client to command socket
 	go api.New(client.GetConfig().GetCommandSocket()).Register(client)
+	// dispatch event that client is ready
+	client.Event.Dispatch("client:ready")
 
 	for {
 		go client.ProcessQueue()
@@ -191,15 +191,4 @@ func (client *Client) Stop(r io.Writer, args ...string) ([][]string, error) {
 	}
 
 	return resp, nil
-}
-
-func init() {
-	// subscribe to events for this package
-	event.EventHandler.Subscribe("client:lock", func() {
-		Agent.Lock()
-	})
-
-	event.EventHandler.Subscribe("client:unlock", func() {
-		Agent.Unlock()
-	})
 }

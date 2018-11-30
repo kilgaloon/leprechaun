@@ -41,11 +41,11 @@ func (server *Server) Start() {
 	// register all routes
 	server.registerHandles()
 	// listen for port
-	server.GetLogs().Info("Server started")
+	server.Info("Server started")
 	// register server to command socket
 	go api.New(server.GetConfig().GetCommandSocket()).Register(server)
 	if err := server.HTTP.ListenAndServe(); err != nil {
-		server.GetLogs().Error("Httpserver: ListenAndServe() error: %s", err)
+		server.Error("Httpserver: ListenAndServe() error: %s", err)
 	}
 
 }
@@ -57,7 +57,7 @@ func (server *Server) registerHandles() {
 
 // Stop http server
 func (server *Server) Stop(args ...string) ([][]string, error) {
-	server.GetLogs().Info("Shutting down server")
+	server.Info("Shutting down server")
 	if err := server.HTTP.Shutdown(con.Background()); err != nil {
 		return [][]string{}, err
 	}
@@ -67,9 +67,6 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 
 // RegisterCommands to be used in internal communication
 func (server Server) RegisterCommands() map[string]api.Command {
-	server.GetMutex().Lock()
-	defer server.GetMutex().Unlock()
-
 	cmds := make(map[string]api.Command)
 
 	return server.DefaultCommands(cmds)

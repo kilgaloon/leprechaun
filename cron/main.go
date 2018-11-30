@@ -34,17 +34,17 @@ func New(name string, cfg *config.AgentConfig) *Cron {
 
 // Start client
 func (c *Cron) Start() {
-	c.GetMutex().Lock()
-	defer c.GetMutex().Unlock()
 	// build queue
-	c.Lock()
+	c.GetMutex().Lock()
 	c.buildJobs()
-	c.Unlock()
+	c.GetMutex().Unlock()
 
 	// register client to command socket
 	go api.New(c.GetConfig().GetCommandSocket()).Register(c)
 
 	c.Service.Start()
+
+	c.Event.Dispatch("cron:ready")
 }
 
 // RegisterCommands to be used in socket communication
