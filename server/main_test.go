@@ -11,10 +11,11 @@ import (
 )
 
 var (
-	iniFile    = "../tests/configs/config_regular.ini"
-	path       = &iniFile
-	cfgWrap    = config.NewConfigs()
-	fakeServer = New("test", cfgWrap.New("test", *path))
+	iniFile     = "../tests/configs/config_regular.ini"
+	path        = &iniFile
+	cfgWrap     = config.NewConfigs()
+	fakeServer  = New("test", cfgWrap.New("test", *path))
+	fakeServer2 = New("test", cfgWrap.New("test", *path))
 )
 
 func TestStartStop(t *testing.T) {
@@ -61,4 +62,10 @@ func TestFindInPool(t *testing.T) {
 	fakeServer.FindInPool("223344")
 
 	fakeServer.BuildPool()
+}
+
+func TestIsTLS(t *testing.T) {
+	if fakeServer.isTLS() {
+		t.Fail()
+	}
 }

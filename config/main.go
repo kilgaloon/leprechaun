@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	"gopkg.in/ini.v1"
 )
 
@@ -21,6 +23,7 @@ const (
 	SMTPHost               = ""
 	SMTPUsername           = ""
 	SMTPPassword           = ""
+	ServerDomain           = ""
 )
 
 // Configs for different agents
@@ -61,6 +64,7 @@ type AgentConfig struct {
 	SMTPHost               string
 	SMTPUsername           string
 	SMTPPassword           string
+	Domain                 string
 }
 
 // GetPath returns path of config file
@@ -138,6 +142,33 @@ func (ac AgentConfig) GetSMTPPassword() string {
 	return ac.SMTPPassword
 }
 
+// GetServerDomain returns domain of server
+func (ac AgentConfig) GetServerDomain() []string {
+	var domain string
+	var wwwdomain string
+	var d []string
+	if strings.Contains(ac.Domain, "://") {
+		d = strings.Split(ac.Domain, "://")
+	} else {
+		d = []string{ac.Domain}
+	}
+
+	if len(d) > 1 {
+		domain = d[1]
+	} else {
+		domain = d[0]
+	}
+
+	if strings.Contains(domain, "www.") {
+		wwwdomain = domain
+		domain = strings.Trim(domain, "www.")
+	} else {
+		wwwdomain = "www." + domain
+	}
+
+	return []string{domain, wwwdomain}
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -205,6 +236,8 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	gSMTPPassword := cfg.Section("").Key("smtp_password").MustString(SMTPPassword)
 	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
+
+	ac.Domain = cfg.Section("").Key(name + ".domain").MustString(ServerDomain)
 
 	c.cfgs[name] = ac
 	return ac

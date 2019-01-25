@@ -4,10 +4,12 @@ import (
 	con "context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/mholt/certmagic"
 )
 
 // Agent holds instance of Server
@@ -44,8 +46,19 @@ func (server *Server) Start() {
 	server.Info("Server started")
 	// register server to command socket
 	go api.New(server.GetConfig().GetCommandSocket()).Register(server)
-	if err := server.HTTP.ListenAndServe(); err != nil {
-		server.Error("Httpserver: ListenAndServe() error: %s", err)
+
+	if server.isTLS() {
+		certmagic.Agreed = true
+		certmagic.Email = server.GetConfig().GetNotificationsEmail()
+		certmagic.CA = certmagic.LetsEncryptStagingCA
+
+		if err := certmagic.HTTPS(server.GetConfig().GetServerDomain(), server.HTTP.Handler); err != nil {
+			server.Error("Httpserver: ListenAndServe() error: %s", err)
+		}
+	} else {
+		if err := server.HTTP.ListenAndServe(); err != nil {
+			server.Error("Httpserver: ListenAndServe() error: %s", err)
+		}
 	}
 
 }
@@ -70,4 +83,8 @@ func (server Server) RegisterCommands() map[string]api.Command {
 	cmds := make(map[string]api.Command)
 
 	return server.DefaultCommands(cmds)
+}
+
+func (server Server) isTLS() bool {
+	return strings.Contains(server.GetConfig().Domain, "https://")
 }

@@ -33,6 +33,7 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, "", cfg.GetSMTPHost())
 	assert.Equal(t, "", cfg.GetSMTPUsername())
 	assert.Equal(t, "", cfg.GetSMTPPassword())
+	assert.Equal(t, []string([]string{"", "www."}), cfg.GetServerDomain())
 }
 
 func TestBuildGlobalFallback(t *testing.T) {
@@ -71,6 +72,7 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "smtp.host.com", cfg.GetSMTPHost())
 	assert.Equal(t, "smtp_user", cfg.GetSMTPUsername())
 	assert.Equal(t, "smtp_pass", cfg.GetSMTPPassword())
+	assert.Equal(t, []string{"example.com", "www.example.com"}, cfg.GetServerDomain())
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
@@ -83,6 +85,7 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())
+	assert.Equal(t, []string([]string{"", "www."}), cfg.GetServerDomain())
 }
 
 func TestGettingNotExistingConfig(t *testing.T) {
