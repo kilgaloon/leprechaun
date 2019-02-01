@@ -39,7 +39,7 @@ func TestErrorLog(t *testing.T) {
 		t.Errorf("Failed because %s", err)
 	}
 
-	if !(info.Size() > 0) {
+	if info.Size() <= 0 {
 		t.Errorf("Filesize expected to be larger the 0, got %d", info.Size())
 	}
 	// first remove file
@@ -64,7 +64,7 @@ func TestInfoLog(t *testing.T) {
 		t.Errorf("Failed because %s", err)
 	}
 
-	if !(info.Size() > 0) {
+	if info.Size() <= 0 {
 		t.Errorf("Filesize expected to be larger the 0, got %d", info.Size())
 	}
 	// first remove file
