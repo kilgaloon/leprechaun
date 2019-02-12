@@ -51,19 +51,21 @@ func TestStart(t *testing.T) {
 
 func TestRegisterAPIHandles(t *testing.T) {
 	fakeClient.Mu.Lock()
-	defer fakeClient.Mu.Unlock()
 
 	cmds := fakeClient.RegisterAPIHandles()
-	if _, ok := cmds["info"]; !ok {
+	if foo, ok := cmds["info"]; ok {
+		req, err := http.NewRequest("GET", "/client/info", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+
+		foo(rr, req)
+	} else {
 		t.Fail()
 	}
 
-	req, err := http.NewRequest("GET", "/client/info", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	fakeClient.Mu.Unlock()
 
-	rr := httptest.NewRecorder()
-
-	cmds["info"](rr, req)
 }

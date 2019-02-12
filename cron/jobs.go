@@ -22,13 +22,17 @@ func (c *Cron) buildJobs() {
 		// needs to be schedule by definition
 		if recipe.Definition == "cron" {
 			c.Service.AddFunc(recipe.Pattern, func() {
-				worker, err := c.CreateWorker(&recipe)
-
-				if err == nil {
-					c.PushToStack(worker)
-					worker.Run()
-				}
+				c.prepareAndRun(&recipe)
 			})
 		}
+	}
+}
+
+func (c *Cron) prepareAndRun(r *recipe.Recipe) {
+	worker, err := c.CreateWorker(r)
+
+	if err == nil {
+		c.PushToStack(worker)
+		worker.Run()
 	}
 }

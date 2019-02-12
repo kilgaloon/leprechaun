@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -32,4 +33,13 @@ func TestRegisterApiHandles(t *testing.T) {
 	if len(cmds) > 0 {
 		t.Fail()
 	}
+}
+
+func TestPrepareAndRun(t *testing.T) {
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/cron.yml")
+	if err != nil {
+		t.Fail()
+	}
+
+	fakeCron.prepareAndRun(&r)
 }
