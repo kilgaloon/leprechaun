@@ -1,7 +1,6 @@
 package client
 
 import (
-	"os"
 	"testing"
 )
 
@@ -12,15 +11,13 @@ var (
 func TestBuildQueue(t *testing.T) {
 	fk.BuildQueue()
 
-	if len(fk.Queue.Stack) != 3 {
-		t.Errorf("Queue stack length expected to be 3, got %d", len(fk.Queue.Stack))
+	if len(fk.Queue.Stack) != 4 {
+		t.Errorf("Queue stack length expected to be 5, got %d", len(fk.Queue.Stack))
 	}
 
 	// reset queue to 0 to test AddToQueue
 	q := &fk.Queue
 	q.Stack = q.Stack[:0]
-
-	clientInfo(t)
 
 }
 
@@ -35,18 +32,9 @@ func TestAddToQueue(t *testing.T) {
 		t.Errorf("Queue stack length expected to be 0, got %d", len(fk.Queue.Stack))
 	}
 
-	clientInfo(t)
-
 }
 
 func TestProcessQueueNotStoppedClient(t *testing.T) {
 	fk.stopped = false
 	fk.ProcessQueue()
-}
-
-func clientInfo(t *testing.T) {
-	_, err := fk.clientInfo(os.Stdin)
-	if err != nil {
-		t.Fail()
-	}
 }

@@ -2,10 +2,10 @@ package agent
 
 import (
 	"io"
+	"net/http"
 	"os"
 	"sync"
 
-	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
 	"github.com/kilgaloon/leprechaun/event"
@@ -20,9 +20,6 @@ type Agent interface {
 	GetContext() *context.Context
 	GetConfig() *config.AgentConfig
 	GetLogs() log.Logs
-	GetSocket() *api.Socket
-
-	DefaultCommands(map[string]api.Command) map[string]api.Command
 
 	StandardIO
 }
@@ -52,9 +49,8 @@ type Default struct {
 	Name    string
 	PID     int
 	Config  *config.AgentConfig
-	Mu      *sync.Mutex
+	Mu      *sync.RWMutex
 	Context *context.Context
-	Socket  *api.Socket
 	Stdin   io.Reader
 	Stdout  io.Writer
 	Event   *event.Handler
@@ -83,14 +79,8 @@ func (d Default) GetConfig() *config.AgentConfig {
 	return d.Config
 }
 
-// GetSocket returns information about socket
-// and commands available for internal communication
-func (d Default) GetSocket() *api.Socket {
-	return d.Socket
-}
-
 // GetMutex for agent
-func (d Default) GetMutex() *sync.Mutex {
+func (d Default) GetMutex() *sync.RWMutex {
 	return d.Mu
 }
 
@@ -122,35 +112,16 @@ func (d *Default) SetStdout(w io.Writer) {
 	d.Stdout = w
 }
 
-// DefaultCommands merge 2 maps into one
-// it usability is if some of the agents
-// wants to takeover default commands
-func (d Default) DefaultCommands(commands map[string]api.Command) map[string]api.Command {
-	d.GetMutex().Lock()
-	defer d.GetMutex().Unlock()
+// DefaultAPIHandles to be used in socket communication
+// If you want to takeover default commands from agent
+// call DefaultCommands from Agent which is same command
+func (d *Default) DefaultAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
-	cmds := make(map[string]api.Command)
+	cmds["workers/list"] = d.WorkersList
+	cmds["workers/kill"] = d.KillWorker
 
-	cmds["workers:list"] = api.Command{
-		Closure: d.WorkersList,
-		Definition: api.Definition{
-			Text:  "List all currently active workers",
-			Usage: "{agent} workers:list",
-		},
-	}
-
-	cmds["workers:kill"] = api.Command{
-		Closure: d.KillWorker,
-		Definition: api.Definition{
-			Text:  "Kills currently active worker by job name",
-			Usage: "{agent} workers:kill {job}",
-		},
-	}
-
-	for name, command := range commands {
-		cmds[name] = command
-	}
-
+	// this function merge both maps and inject default commands from agent
 	return cmds
 }
 
@@ -159,7 +130,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent := &Default{}
 	agent.Name = name
 	agent.Config = cfg
-	agent.Mu = new(sync.Mutex)
+	agent.Mu = new(sync.RWMutex)
 	agent.Logs = log.Logs{
 		ErrorLog: cfg.GetErrorLog(),
 		InfoLog:  cfg.GetInfoLog(),
@@ -172,7 +143,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 		agent.Context,
 		agent.Mu,
 	)
-	agent.Socket = api.New(cfg.GetCommandSocket())
+
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
 	agent.Event = event.NewHandler(agent.Logs)

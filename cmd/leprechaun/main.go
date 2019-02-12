@@ -22,32 +22,38 @@ const (
 )
 
 func main() {
-	shutdownSignal := make(chan os.Signal, 1)
-
-	iniPath := flag.String("ini_path", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
-	cmd := flag.String("cmd", "run", "Command for app to run")
-	flag.Parse()
-
-	configs := config.NewConfigs()
-	client.New("client", configs.New("client", *iniPath))
-	server.New("server", configs.New("server", *iniPath))
-	cron.New("cron", configs.New("cron", *iniPath))
-
 	// basic leprechaun help
 	if len(os.Args) > 1 {
 		if os.Args[1] == "help" {
 			fmt.Printf("VERSION: %s\r\n", VERSION)
 			fmt.Printf("RELEASE: %s\r\n\r\n", RELEASE)
 
-			help(client.Agent)
-			help(server.Agent)
-			help(cron.Agent)
-
 			os.Exit(0)
 		}
 	}
 
-	switch strings.Fields(*cmd)[0] {
+	shutdownSignal := make(chan os.Signal, 1)
+
+	iniPath := flag.String("ini_path", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
+	cmd := flag.String("cmd", "run", "Command for app to run")
+	flag.Parse()
+
+	if !api.IsAPIRunning() {
+		configs := config.NewConfigs()
+		client.New("client", configs.New("client", *iniPath))
+		server.New("server", configs.New("server", *iniPath))
+		cron.New("cron", configs.New("cron", *iniPath))
+
+		a := api.New("")
+		a.Register(client.Agent)
+		a.Register(server.Agent)
+		a.Register(cron.Agent)
+		go a.Start()
+	}
+
+	c := strings.Fields(*cmd)[0]
+
+	switch c {
 	case "run":
 		go client.Agent.Start()
 		go server.Agent.Start()
@@ -61,25 +67,22 @@ func main() {
 	case "client:stop":
 		*cmd = "client stop"
 		fallthrough
-	case "client":
-		sock := api.New(configs.GetConfig("client").GetCommandSocket())
-		sock.Command(*cmd)
-		os.Exit(0)
-	case "server:stop":
-		*cmd = "server stop"
-		fallthrough
-	case "server":
-		sock := api.New(configs.GetConfig("server").GetCommandSocket())
-		sock.Command(*cmd)
-		os.Exit(0)
-	case "cron:stop":
-		*cmd = "cron stop"
-		fallthrough
-	case "cron":
-		sock := api.New(configs.GetConfig("server").GetCommandSocket())
-		sock.Command(*cmd)
-		os.Exit(0)
+	// case "server:stop":
+	// 	*cmd = "server stop"
+	// 	fallthrough
+	// case "server":
+	// 	sock := api.New(configs.GetConfig("server").GetCommandSocket())
+	// 	sock.Command(*cmd)
+	// 	os.Exit(0)
+	// case "cron:stop":
+	// 	*cmd = "cron stop"
+	// 	fallthrough
+	// case "cron":
+	// 	sock := api.New(configs.GetConfig("cron").GetCommandSocket())
+	// 	sock.Command(*cmd)
+	// 	os.Exit(0)
 	default:
+		api.Resolver(api.Cmd(*cmd))
 		os.Exit(0)
 	}
 

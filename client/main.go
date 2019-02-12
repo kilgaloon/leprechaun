@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/kilgaloon/leprechaun/agent"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 )
 
@@ -83,8 +83,6 @@ func (client *Client) Start() {
 		fmt.Println(err)
 	}
 
-	// register client to command socket
-	go api.New(client.GetConfig().GetCommandSocket()).Register(client)
 	// dispatch event that client is ready
 	client.Event.Dispatch("client:ready")
 
@@ -95,30 +93,16 @@ func (client *Client) Start() {
 
 }
 
-// RegisterCommands to be used in socket communication
+// RegisterAPIHandles to be used in socket communication
 // If you want to takeover default commands from agent
 // call DefaultCommands from Agent which is same command
-func (client *Client) RegisterCommands() map[string]api.Command {
-	cmds := make(map[string]api.Command)
+func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
-	cmds["info"] = api.Command{
-		Closure: client.clientInfo,
-		Definition: api.Definition{
-			Text:  "Display some basic info about running client",
-			Usage: "client info",
-		},
-	}
-
-	cmds["stop"] = api.Command{
-		Closure: client.Stop,
-		Definition: api.Definition{
-			Text:  "Display some basic info about running client",
-			Usage: "client info",
-		},
-	}
+	cmds["info"] = client.clientInfo
 
 	// this function merge both maps and inject default commands from agent
-	return client.DefaultCommands(cmds)
+	return cmds
 }
 
 // SetPID sets current PID of client

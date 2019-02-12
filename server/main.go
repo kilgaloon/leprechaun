@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/kilgaloon/leprechaun/agent"
-	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/mholt/certmagic"
 )
@@ -45,7 +44,6 @@ func (server *Server) Start() {
 	// listen for port
 	server.Info("Server started")
 	// register server to command socket
-	go api.New(server.GetConfig().GetCommandSocket()).Register(server)
 
 	if server.isTLS() {
 		certmagic.Agreed = true
@@ -64,8 +62,11 @@ func (server *Server) Start() {
 }
 
 func (server *Server) registerHandles() {
-	http.HandleFunc(WebhookEndpoint, server.webhook)
-	http.HandleFunc(PingEndpoint, server.ping)
+	mux := http.NewServeMux()
+	mux.HandleFunc(WebhookEndpoint, server.webhook)
+	mux.HandleFunc(PingEndpoint, server.ping)
+
+	server.HTTP.Handler = mux
 }
 
 // Stop http server
@@ -78,11 +79,14 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 	return [][]string{{"Server shutdown"}}, nil
 }
 
-// RegisterCommands to be used in internal communication
-func (server Server) RegisterCommands() map[string]api.Command {
-	cmds := make(map[string]api.Command)
+// RegisterAPIHandles to be used in socket communication
+// If you want to takeover default commands from agent
+// call DefaultCommands from Agent which is same command
+func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
-	return server.DefaultCommands(cmds)
+	// this function merge both maps and inject default commands from agent
+	return cmds
 }
 
 func (server Server) isTLS() bool {

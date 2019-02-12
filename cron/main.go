@@ -1,11 +1,12 @@
 package cron
 
 import (
+	"net/http"
+
 	"github.com/robfig/cron"
 
 	"github.com/kilgaloon/leprechaun/agent"
 
-	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 )
 
@@ -39,22 +40,19 @@ func (c *Cron) Start() {
 	c.buildJobs()
 	c.GetMutex().Unlock()
 
-	// register client to command socket
-	go api.New(c.GetConfig().GetCommandSocket()).Register(c)
-
 	c.Service.Start()
 
 	c.Event.Dispatch("cron:ready")
 }
 
-// RegisterCommands to be used in socket communication
+// RegisterAPIHandles to be used in socket communication
 // If you want to takeover default commands from agent
 // call DefaultCommands from Agent which is same command
-func (c *Cron) RegisterCommands() map[string]api.Command {
-	cmds := make(map[string]api.Command)
+func (c *Cron) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	// this function merge both maps and inject default commands from agent
-	return c.DefaultCommands(cmds)
+	return cmds
 }
 
 // Stop client

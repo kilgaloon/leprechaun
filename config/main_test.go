@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,8 @@ var (
 func TestBuildWithoutSettings(t *testing.T) {
 	cfg := ConfigWithoutDefaultSettings
 
-	assert.Equal(t, "../tests/configs/config_without_default_values.ini", cfg.GetPath())
+	p, _ := filepath.Abs("../tests/configs/config_without_default_values.ini")
+	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
 	assert.Equal(t, InfoLog, cfg.GetInfoLog())
 	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
@@ -26,7 +28,6 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())
-	assert.Equal(t, CommandSocket, cfg.GetCommandSocket())
 	assert.Equal(t, ServerPort, cfg.GetPort())
 	assert.Equal(t, WorkerOutputDir, cfg.GetWorkerOutputDir())
 	assert.Equal(t, "", cfg.GetNotificationsEmail())
@@ -39,13 +40,13 @@ func TestBuildWithoutSettings(t *testing.T) {
 func TestBuildGlobalFallback(t *testing.T) {
 	cfg := ConfigGlobalFb
 
-	assert.Equal(t, "../tests/configs/config_global_fb.ini", cfg.GetPath())
+	p, _ := filepath.Abs("../tests/configs/config_global_fb.ini")
+	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
 	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
 	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
-	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())
@@ -58,13 +59,13 @@ func TestBuildGlobalFallback(t *testing.T) {
 func TestBuildWithSettings(t *testing.T) {
 	cfg := ConfigWithSettings
 
-	assert.Equal(t, "../tests/configs/config_regular.ini", cfg.GetPath())
+	p, _ := filepath.Abs("../tests/configs/config_regular.ini")
+	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
 	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
 	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
-	assert.Equal(t, "../tests/var/run/leprechaun/.sock", cfg.GetCommandSocket())
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, 5, cfg.GetMaxAllowedQueueWorkers())

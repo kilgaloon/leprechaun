@@ -1,47 +1,58 @@
 package agent
 
 import (
-	"io"
+	"encoding/json"
+	"log"
+	"net/http"
 	"time"
 )
 
 // WorkersList is default command for agents
-func (d Default) WorkersList(r io.Writer, args ...string) ([][]string, error) {
-	resp := [][]string{}
+func (d Default) WorkersList(w http.ResponseWriter, r *http.Request) {
+	var resp struct {
+		Message string
+		List    [][]string `json:"list,omitempty"`
+	}
 
 	if d.NumOfWorkers() < 1 {
-		resp = [][]string{
-			{"No workers currently working!"},
-		}
-
-		return resp, nil
+		resp.Message = "No workers currently active!"
 	}
 
 	for name, worker := range d.GetAllWorkers() {
 		startedAt := worker.StartedAt.Format(time.UnixDate)
-		resp = append(resp, []string{name, startedAt, worker.WorkingOn})
+		resp.List = append(resp.List, []string{name, startedAt, worker.WorkingOn})
 	}
 
-	return resp, nil
+	w.WriteHeader(http.StatusOK)
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(j)
 }
 
 // KillWorker kills worker by provided name
-func (d Default) KillWorker(r io.Writer, args ...string) ([][]string, error) {
-	resp := [][]string{
-		[]string{""},
+func (d Default) KillWorker(w http.ResponseWriter, r *http.Request) {
+	var resp struct {
+		Message string
+		List    [][]string `json:"list,omitempty"`
 	}
 
-	worker, err := d.GetWorkerByName(args[0])
+	worker, err := d.GetWorkerByName(r.URL.Query()["name"][0])
 	if err != nil {
-		resp = [][]string{
-			{err.Error()},
-		}
+		resp.Message = err.Error()
 	} else {
 		worker.Kill()
-		resp = [][]string{
-			{"Worker killed"},
-		}
+		resp.Message = "Worker killed"
 	}
 
-	return resp, nil
+	w.WriteHeader(http.StatusOK)
+
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(j)
 }

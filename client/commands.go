@@ -1,7 +1,9 @@
 package client
 
 import (
-	"io"
+	"encoding/json"
+	"log"
+	"net/http"
 	"runtime"
 	"strconv"
 )
@@ -9,10 +11,7 @@ import (
 // this section is used for command responders
 
 // cmd: client info
-func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error) {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
-
+func (client *Client) clientInfo(w http.ResponseWriter, r *http.Request) {
 	pid := strconv.Itoa(client.GetPID())
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
 
@@ -21,12 +20,26 @@ func (client *Client) clientInfo(r io.Writer, args ...string) ([][]string, error
 
 	alloc := strconv.FormatFloat(float64(mem.Alloc/1024)/1024, 'f', 2, 64)
 
-	resp := [][]string{
-		{"PID: " + pid},
-		{"Config file: " + client.GetConfig().GetPath()},
-		{"Recipes in queue: " + recipeQueueNum},
-		{"Memory Allocated: " + alloc + " MiB"},
+	resp := struct {
+		PID             string
+		ConfigFile      string
+		RecipesInQueue  string
+		MemoryAllocated string
+	}{
+		PID:             pid,
+		ConfigFile:      client.GetConfig().GetPath(),
+		RecipesInQueue:  recipeQueueNum,
+		MemoryAllocated: alloc + " MiB",
 	}
 
-	return resp, nil
+	w.WriteHeader(http.StatusOK)
+
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(j)
+
+	return
 }

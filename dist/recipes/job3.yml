@@ -1,6 +1,6 @@
 name: job3 # name of recipe
 definition: cron
-pattern: "* * * * *"
+pattern: "* * * * 5"
 
 steps: # steps are done from first to last
     - echo "cron job" > cron.txt

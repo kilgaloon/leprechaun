@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/ini.v1"
@@ -55,7 +56,6 @@ type AgentConfig struct {
 	RecipesPath            string
 	PIDFile                string
 	LockFile               string
-	CommandSocket          string
 	WorkerOutputDir        string
 	Port                   int
 	MaxAllowedWorkers      int
@@ -69,7 +69,12 @@ type AgentConfig struct {
 
 // GetPath returns path of config file
 func (ac AgentConfig) GetPath() string {
-	return ac.Path
+	p, err := filepath.Abs(ac.Path)
+	if err != nil {
+		return ac.Path
+	}
+
+	return p
 }
 
 // GetErrorLog returns path of config file
@@ -95,11 +100,6 @@ func (ac AgentConfig) GetPIDFile() string {
 // GetLockFile returns path of config file
 func (ac AgentConfig) GetLockFile() string {
 	return ac.LockFile
-}
-
-// GetCommandSocket returns path of config file
-func (ac AgentConfig) GetCommandSocket() string {
-	return ac.CommandSocket
 }
 
 // GetPort returns path of config file
@@ -210,11 +210,6 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	ac.LockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)
 	if !IsFileValid(ac.LockFile, ".lock") {
 		ac.LockFile = LockFile
-	}
-
-	ac.CommandSocket = cfg.Section("").Key(name + ".command_socket").MustString(CommandSocket)
-	if !IsFileValid(ac.CommandSocket, ".sock") {
-		ac.CommandSocket = CommandSocket
 	}
 
 	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)

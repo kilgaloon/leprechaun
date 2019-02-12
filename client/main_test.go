@@ -1,6 +1,8 @@
 package client
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"sync"
 	"testing"
@@ -35,6 +37,8 @@ func TestLockUnlock(t *testing.T) {
 			return
 		}
 
+		fakeClient.GetPID()
+
 		fakeClient.Unlock()
 	})
 	//})
@@ -43,4 +47,23 @@ func TestStart(t *testing.T) {
 	wg.Add(3)
 	go fakeClient.Start()
 	go fakeClient2.Start()
+}
+
+func TestRegisterAPIHandles(t *testing.T) {
+	cmds := fakeClient.RegisterAPIHandles()
+	fakeClient.Mu.Lock()
+	if foo, ok := cmds["info"]; ok {
+		fakeClient.Mu.Unlock()
+		req, err := http.NewRequest("GET", "/client/info", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+
+		foo(rr, req)
+	} else {
+		t.Fail()
+	}
+
 }

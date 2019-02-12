@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/recipe"
 )
 
 var (
@@ -12,10 +13,6 @@ var (
 	cfgWrap  = config.NewConfigs()
 	fakeCron = New("test", cfgWrap.New("test", *path))
 )
-
-func TestRegisterCommands(t *testing.T) {
-	fakeCron.RegisterCommands()
-}
 
 func TestStop(t *testing.T) {
 	fakeCron.Event.Subscribe("cron:ready", func() {
@@ -29,4 +26,20 @@ func TestBuildJobs(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	go fakeCron.Start()
+}
+
+func TestRegisterApiHandles(t *testing.T) {
+	cmds := fakeCron.RegisterAPIHandles()
+	if len(cmds) > 0 {
+		t.Fail()
+	}
+}
+
+func TestPrepareAndRun(t *testing.T) {
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/cron.yml")
+	if err != nil {
+		t.Fail()
+	}
+
+	fakeCron.prepareAndRun(&r)
 }

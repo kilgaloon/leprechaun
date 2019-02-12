@@ -46,10 +46,10 @@ func TestStartStop(t *testing.T) {
 		fakeServer.Stop()
 		break
 	}
-}
 
-func TestRegisterCommands(t *testing.T) {
-	fakeServer.RegisterCommands()
+	fakeServer2.GetConfig().Domain = "https://localhost"
+	go fakeServer2.Start()
+
 }
 
 func TestFindInPool(t *testing.T) {
@@ -66,6 +66,13 @@ func TestFindInPool(t *testing.T) {
 
 func TestIsTLS(t *testing.T) {
 	if fakeServer.isTLS() {
+		t.Fail()
+	}
+}
+
+func TestRegisterAPIHandles(t *testing.T) {
+	cmds := fakeServer.RegisterAPIHandles()
+	if len(cmds) > 0 {
 		t.Fail()
 	}
 }
