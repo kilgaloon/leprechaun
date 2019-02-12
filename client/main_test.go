@@ -50,10 +50,10 @@ func TestStart(t *testing.T) {
 }
 
 func TestRegisterAPIHandles(t *testing.T) {
-	fakeClient.Mu.Lock()
-
 	cmds := fakeClient.RegisterAPIHandles()
+	fakeClient.Mu.Lock()
 	if foo, ok := cmds["info"]; ok {
+		fakeClient.Mu.Unlock()
 		req, err := http.NewRequest("GET", "/client/info", nil)
 		if err != nil {
 			t.Fatal(err)
@@ -65,7 +65,5 @@ func TestRegisterAPIHandles(t *testing.T) {
 	} else {
 		t.Fail()
 	}
-
-	fakeClient.Mu.Unlock()
 
 }
