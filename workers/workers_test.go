@@ -14,14 +14,14 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.Mutex),
+		new(sync.RWMutex),
 	)
 
 	workers3 = New(
 		ConfigWithQueueSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.Mutex),
+		new(sync.RWMutex),
 	)
 )
 
@@ -40,6 +40,32 @@ func TestCreateWorker(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+}
+
+func TestKillWorker(t *testing.T) {
+	r, err := recipe.Build("../tests/etc/leprechaun/recipes/sleep.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w, err := workers.CreateWorker(&r)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w.Run()
+
+	w.Kill()
+
+	if w.Err != nil {
+		t.Fatal(w.Err)
+	}
+
+	_, err = workers.GetWorkerByName("sleep")
+	if err == nil {
+		t.Fatalf("Worker not killed error %s", w.Err)
+	}
+
 }
 
 func TestCreateWorkerQueue(t *testing.T) {

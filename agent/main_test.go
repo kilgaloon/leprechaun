@@ -1,13 +1,11 @@
 package agent
 
 import (
-	"errors"
-	"fmt"
-	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
@@ -24,7 +22,6 @@ func TestGetterers(t *testing.T) {
 	defaultAgent.GetContext()
 	defaultAgent.GetLogs()
 	defaultAgent.GetConfig()
-	defaultAgent.GetSocket()
 	defaultAgent.GetMutex()
 
 	defaultAgent.GetStdout()
@@ -33,28 +30,23 @@ func TestGetterers(t *testing.T) {
 	defaultAgent.SetStdin(os.Stdin)
 	defaultAgent.SetStdout(os.Stdout)
 
-	var a string
-	fmt.Fprintf(defaultAgent, "%s", "Test write")
-	fmt.Fscanf(defaultAgent, "%s", &a)
-
-	externalCmds := make(map[string]api.Command)
-
-	externalCmds["default:test"] = api.Command{
-		Closure: func(r io.Writer, args ...string) ([][]string, error) {
-			return [][]string{}, errors.New("Test error")
-		},
-		Definition: api.Definition{
-			Text:  "Kills currently active worker by job name",
-			Usage: "{agent} workers:kill {job}",
-		},
+	h := defaultAgent.DefaultAPIHandles()
+	if len(h) > 2 {
+		t.Fail()
 	}
 
-	defaultAgent.DefaultCommands(externalCmds)
 }
 
 func TestCommands(t *testing.T) {
-	// no workers currently working
-	defaultAgent.WorkersList(defaultAgent.GetStdout())
+	req, err := http.NewRequest("GET", "/client/workers/list", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We create a ResponseRecorder (which satisfies http.ResponseWriter) to record the response.
+	rr := httptest.NewRecorder()
+
+	defaultAgent.WorkersList(rr, req)
 	r, err := recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	if err != nil {
 		t.Fail()
@@ -65,8 +57,19 @@ func TestCommands(t *testing.T) {
 		t.Fail()
 	}
 
-	defaultAgent.WorkersList(defaultAgent.GetStdout())
+	defaultAgent.WorkersList(rr, req)
 	// not existent worker
-	defaultAgent.KillWorker(defaultAgent.GetStdout(), "test_job")
-	defaultAgent.KillWorker(defaultAgent.GetStdout(), "jobber")
+
+	req, err = http.NewRequest("GET", "/client/workers/kill?name=schedule", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defaultAgent.KillWorker(rr, req)
+
+	req, err = http.NewRequest("GET", "/client/workers/kill?name=jobber", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defaultAgent.KillWorker(rr, req)
 }

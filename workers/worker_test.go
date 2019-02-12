@@ -18,7 +18,7 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.Mutex),
+		new(sync.RWMutex),
 	)
 	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	worker, errr = workers2.CreateWorker(&r)
@@ -34,9 +34,6 @@ func TestRun(t *testing.T) {
 	// //steps = []string{"-> echo 'test output to file' > ../tests/test.txt"}
 	// go worker.Run()
 	//wg.Wait()
-
-	// try to kill worker
-	worker.Kill()
 
 	//os.Remove("../tests/test.txt")
 

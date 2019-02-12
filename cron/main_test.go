@@ -13,10 +13,6 @@ var (
 	fakeCron = New("test", cfgWrap.New("test", *path))
 )
 
-func TestRegisterCommands(t *testing.T) {
-	fakeCron.RegisterCommands()
-}
-
 func TestStop(t *testing.T) {
 	fakeCron.Event.Subscribe("cron:ready", func() {
 		fakeCron.Stop()
@@ -29,4 +25,11 @@ func TestBuildJobs(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	go fakeCron.Start()
+}
+
+func TestRegisterApiHandles(t *testing.T) {
+	cmds := fakeCron.RegisterAPIHandles()
+	if len(cmds) > 0 {
+		t.Fail()
+	}
 }

@@ -32,7 +32,7 @@ type Worker struct {
 	Stdout         *os.File
 	Recipe         *recipe.Recipe
 	Err            error
-	mu             *sync.Mutex
+	mu             *sync.RWMutex
 }
 
 // Run starts worker
@@ -75,10 +75,6 @@ func (w *Worker) workOnStep(step string) {
 	}
 
 	w.Logs.Info("Step %s finished... \n\n", step)
-	// there is output, write it to info
-	// if len(out.String()) > 0 {
-	// 	out.WriteTo(w.Stdout)
-	// }
 	// command finished executing
 	// delete it, and let it rest in pepperonies
 	delete(w.Cmd, step)
@@ -86,13 +82,13 @@ func (w *Worker) workOnStep(step string) {
 }
 
 // Kill all commands that worker is working on
-func (w *Worker) Kill() {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
+func (w Worker) Kill() {
 	for step, cmd := range w.Cmd {
 		if err := cmd.Process.Kill(); err != nil {
 			w.Logs.Error("Failed to kill process on step %s: %s", step, err)
+			w.Err = err
+
+			return
 		}
 	}
 

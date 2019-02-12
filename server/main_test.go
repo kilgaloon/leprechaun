@@ -48,10 +48,6 @@ func TestStartStop(t *testing.T) {
 	}
 }
 
-func TestRegisterCommands(t *testing.T) {
-	fakeServer.RegisterCommands()
-}
-
 func TestFindInPool(t *testing.T) {
 	fakeServer.BuildPool()
 	fakeServer.FindInPool("223344")

@@ -1,7 +1,7 @@
 name: job1 # name of recipe
 definition: schedule
 schedule: 
-    min: 1
+    min: 0
     hour: 0
     day: 0
 

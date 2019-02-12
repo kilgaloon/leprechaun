@@ -49,7 +49,7 @@ type Workers struct {
 	DoneChan         chan string
 	ErrorChan        chan *Worker
 	*notifier.Notifier
-	mu *sync.Mutex
+	mu *sync.RWMutex
 }
 
 // NumOfWorkers returns size of stack/number of workers
@@ -68,7 +68,10 @@ func (w Workers) GetAllWorkers() map[string]Worker {
 }
 
 // GetWorkerByName gets worker by provided name
-func (w Workers) GetWorkerByName(name string) (*Worker, error) {
+func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -81,7 +84,9 @@ func (w Workers) GetWorkerByName(name string) (*Worker, error) {
 func (w *Workers) DeleteWorkerByName(name string) {
 	_, err := w.GetWorkerByName(name)
 	if err == nil {
+		w.mu.Lock()
 		delete(w.stack, name)
+		w.mu.Unlock()
 	}
 }
 
@@ -162,7 +167,7 @@ func (w Workers) listener() {
 }
 
 // New create Workers struct instance
-func New(cfg Config, logs log.Logs, ctx *context.Context, mu *sync.Mutex) Workers {
+func New(cfg Config, logs log.Logs, ctx *context.Context, mu *sync.RWMutex) Workers {
 	workers := Workers{
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
