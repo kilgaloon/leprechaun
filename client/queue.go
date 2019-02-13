@@ -44,6 +44,9 @@ func (client *Client) BuildQueue() {
 
 // AddToQueue takes freshly created recipes and add them to queue
 func (client *Client) AddToQueue(stack *[]recipe.Recipe, path string) {
+	client.GetMutex().Lock()
+	defer client.GetMutex().Unlock()
+
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
 		if err != nil {
@@ -84,7 +87,6 @@ func (client *Client) ProcessQueue() {
 						client.Info("%s file is in progress... \n", r.Name)
 						// worker takeover steps and works on then
 						worker.Run()
-						// signal that worker is done
 						// then proceed with unlock
 						client.Unlock()
 						// schedule recipe for next execution

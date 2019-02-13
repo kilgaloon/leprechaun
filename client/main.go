@@ -164,9 +164,6 @@ func (client *Client) Unlock() {
 
 // Stop client
 func (client *Client) Stop(r io.Writer, args ...string) ([][]string, error) {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
-
 	var resp [][]string
 
 	client.stopped = true
