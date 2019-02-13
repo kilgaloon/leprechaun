@@ -30,14 +30,14 @@ func TestStop(t *testing.T) {
 		dat, _ := ioutil.ReadFile(fakeClient2.GetConfig().GetRecipesPath() + "/schedule.yml")
 		ioutil.WriteFile(fakeClient2.GetConfig().GetRecipesPath()+"/test.yml", dat, 0644)
 
+		os.Remove(fakeClient2.GetConfig().GetRecipesPath() + "/test.yml")
+
 		fakeClient2.GetMutex().Lock()
 		defer fakeClient2.GetMutex().Lock()
 
 		if len(fakeClient2.Queue.Stack) < 1 {
 			t.Error("Add to queue failed when client is running and new recipe is added")
 		}
-
-		os.Remove(fakeClient2.GetConfig().GetRecipesPath() + "/test.yml")
 
 		_, err := fakeClient2.Stop(os.Stdin, "")
 		if err != nil {
