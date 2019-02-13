@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -17,15 +16,12 @@ var (
 	cfgWrap     = config.NewConfigs()
 	fakeClient  = New("test", cfgWrap.New("test", *path))
 	fakeClient2 = New("test", cfgWrap.New("test", *path))
-	wg          = new(sync.WaitGroup)
 )
 
 func TestMain(t *testing.T) {
-	wg.Add(3)
 	go fakeClient.Start()
 	go fakeClient2.Start()
-}
-func TestStop(t *testing.T) {
+
 	fakeClient2.Event.Subscribe("client:ready", func() {
 		dat, _ := ioutil.ReadFile(fakeClient2.GetConfig().GetRecipesPath() + "/schedule.yml")
 		ioutil.WriteFile(fakeClient2.GetConfig().GetRecipesPath()+"/test.yml", dat, 0644)
@@ -44,8 +40,7 @@ func TestStop(t *testing.T) {
 			t.Fail()
 		}
 	})
-}
-func TestLockUnlock(t *testing.T) {
+
 	//event.EventHandler.Subscribe("client:ready", func() {
 	fakeClient.Event.Subscribe("client:ready", func() {
 		fakeClient.Lock()
@@ -58,14 +53,11 @@ func TestLockUnlock(t *testing.T) {
 
 		fakeClient.Unlock()
 	})
-	//})
-}
 
-func TestRegisterAPIHandles(t *testing.T) {
 	cmds := fakeClient.RegisterAPIHandles()
 
 	fakeClient.Mu.Lock()
-	defer fakeClient.Mu.Unlock()
+
 	if foo, ok := cmds["info"]; ok {
 		req, err := http.NewRequest("GET", "/client/info", nil)
 		if err != nil {
@@ -79,4 +71,5 @@ func TestRegisterAPIHandles(t *testing.T) {
 		t.Fail()
 	}
 
+	fakeClient.Mu.Unlock()
 }
