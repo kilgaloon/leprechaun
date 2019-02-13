@@ -33,7 +33,7 @@ func TestStop(t *testing.T) {
 		os.Remove(fakeClient2.GetConfig().GetRecipesPath() + "/test.yml")
 
 		fakeClient2.GetMutex().Lock()
-		defer fakeClient2.GetMutex().Lock()
+		defer fakeClient2.GetMutex().Unlock()
 
 		if len(fakeClient2.Queue.Stack) < 1 {
 			t.Error("Add to queue failed when client is running and new recipe is added")
