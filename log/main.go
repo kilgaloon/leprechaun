@@ -1,12 +1,14 @@
 package log
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
 
 // Logs struct holds path to different logs
 type Logs struct {
+	Debug    bool
 	ErrorLog string
 	InfoLog  string
 }
@@ -25,6 +27,10 @@ func (l Logs) Error(message string, v ...interface{}) {
 	}
 
 	log.Printf(message, v...)
+
+	if l.Debug {
+		fmt.Printf(message, v...)
+	}
 }
 
 // Info logs everything that happens in application
@@ -41,6 +47,10 @@ func (l Logs) Info(message string, v ...interface{}) {
 	}
 
 	log.Printf(message, v...)
+
+	if l.Debug {
+		fmt.Printf(message, v...)
+	}
 }
 
 // Logger holds methods to log messages to files

@@ -12,7 +12,7 @@ var (
 	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
 	cfgWrap    = config.NewConfigs()
-	fakeClient = client.New("test", cfgWrap.New("test", *path))
+	fakeClient = client.New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestMain(t *testing.T) {

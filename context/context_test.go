@@ -12,7 +12,7 @@ var (
 	iniFile    = "../tests/configs/config_regular.ini"
 	path       = &iniFile
 	cfgWrap    = config.NewConfigs()
-	fakeClient = agent.New("test", cfgWrap.New("test", *path))
+	fakeClient = agent.New("test", cfgWrap.New("test", *path), false)
 	ctx        = context.New()
 )
 

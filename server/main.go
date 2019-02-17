@@ -24,9 +24,9 @@ type Server struct {
 // New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig) *Server {
+func New(name string, cfg *config.AgentConfig, debug bool) *Server {
 	server := &Server{
-		agent.New(name, cfg),
+		agent.New(name, cfg, debug),
 		Pool{},
 		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}

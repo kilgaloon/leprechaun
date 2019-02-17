@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -28,9 +27,9 @@ type Client struct {
 // New create client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig) *Client {
+func New(name string, cfg *config.AgentConfig, debug bool) *Client {
 	client := &Client{
-		agent.New(name, cfg),
+		agent.New(name, cfg, debug),
 		false,
 		Queue{},
 	}
@@ -100,8 +99,8 @@ func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	cmds["info"] = client.clientInfo
+	cmds["stop"] = client.cmdstop
 
-	// this function merge both maps and inject default commands from agent
 	return cmds
 }
 
@@ -163,13 +162,8 @@ func (client *Client) Unlock() {
 }
 
 // Stop client
-func (client *Client) Stop(r io.Writer, args ...string) ([][]string, error) {
-	var resp [][]string
-
+func (client *Client) Stop() bool {
 	client.stopped = true
-	resp = [][]string{
-		{"Schedule client stopped!"},
-	}
 
-	return resp, nil
+	return client.stopped
 }

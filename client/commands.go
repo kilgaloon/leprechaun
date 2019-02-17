@@ -43,3 +43,25 @@ func (client *Client) clientInfo(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
+func (client *Client) cmdstop(w http.ResponseWriter, r *http.Request) {
+	var resp struct {
+		Message string
+	}
+
+	s := client.Stop()
+	if s {
+		w.WriteHeader(http.StatusOK)
+		resp.Message = "Client stopped"
+	} else {
+		w.WriteHeader(http.StatusExpectationFailed)
+		resp.Message = "Client failed to stop"
+	}
+
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(j)
+}

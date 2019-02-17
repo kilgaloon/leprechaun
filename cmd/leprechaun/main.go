@@ -36,13 +36,16 @@ func main() {
 
 	iniPath := flag.String("ini_path", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
 	cmd := flag.String("cmd", "run", "Command for app to run")
+	debug := flag.Bool("debug", false, "Debug mode")
 	flag.Parse()
+
+	c := strings.Fields(*cmd)[0]
 
 	if !api.IsAPIRunning() {
 		configs := config.NewConfigs()
-		client.New("client", configs.New("client", *iniPath))
-		server.New("server", configs.New("server", *iniPath))
-		cron.New("cron", configs.New("cron", *iniPath))
+		client.New("client", configs.New("client", *iniPath), *debug)
+		server.New("server", configs.New("server", *iniPath), *debug)
+		cron.New("cron", configs.New("cron", *iniPath), *debug)
 
 		a := api.New("")
 		a.Register(client.Agent)
@@ -50,8 +53,6 @@ func main() {
 		a.Register(cron.Agent)
 		go a.Start()
 	}
-
-	c := strings.Fields(*cmd)[0]
 
 	switch c {
 	case "run":
@@ -67,20 +68,12 @@ func main() {
 	case "client:stop":
 		*cmd = "client stop"
 		fallthrough
-	// case "server:stop":
-	// 	*cmd = "server stop"
-	// 	fallthrough
-	// case "server":
-	// 	sock := api.New(configs.GetConfig("server").GetCommandSocket())
-	// 	sock.Command(*cmd)
-	// 	os.Exit(0)
-	// case "cron:stop":
-	// 	*cmd = "cron stop"
-	// 	fallthrough
-	// case "cron":
-	// 	sock := api.New(configs.GetConfig("cron").GetCommandSocket())
-	// 	sock.Command(*cmd)
-	// 	os.Exit(0)
+	case "server:stop":
+		*cmd = "server stop"
+		fallthrough
+	case "cron:stop":
+		*cmd = "cron stop"
+		fallthrough
 	default:
 		api.Resolver(api.Cmd(*cmd))
 		os.Exit(0)

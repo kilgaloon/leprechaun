@@ -54,6 +54,7 @@ type Default struct {
 	Stdin   io.Reader
 	Stdout  io.Writer
 	Event   *event.Handler
+	debug	bool
 
 	log.Logs
 	workers.Workers
@@ -112,6 +113,11 @@ func (d *Default) SetStdout(w io.Writer) {
 	d.Stdout = w
 }
 
+// IsDebug determines is agent in debug mode
+func (d Default) IsDebug() bool {
+	return d.debug
+}
+
 // DefaultAPIHandles to be used in socket communication
 // If you want to takeover default commands from agent
 // call DefaultCommands from Agent which is same command
@@ -126,12 +132,13 @@ func (d *Default) DefaultAPIHandles() map[string]func(w http.ResponseWriter, r *
 }
 
 // New default client
-func New(name string, cfg *config.AgentConfig) *Default {
+func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent := &Default{}
 	agent.Name = name
 	agent.Config = cfg
 	agent.Mu = new(sync.RWMutex)
 	agent.Logs = log.Logs{
+		Debug: debug,
 		ErrorLog: cfg.GetErrorLog(),
 		InfoLog:  cfg.GetInfoLog(),
 	}
@@ -147,6 +154,7 @@ func New(name string, cfg *config.AgentConfig) *Default {
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
 	agent.Event = event.NewHandler(agent.Logs)
+	agent.debug = debug
 
 	return agent
 }

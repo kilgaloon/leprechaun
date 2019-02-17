@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	fk  = New("test", cfgWrap.New("test", *path))
-	fk2 = New("test", cfgWrap.New("test", *path))
+	fk  = New("test", cfgWrap.New("test", *path), false)
+	fk2 = New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestBuildQueue(t *testing.T) {

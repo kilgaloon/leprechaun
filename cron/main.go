@@ -22,9 +22,9 @@ type Cron struct {
 // New create client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig) *Cron {
+func New(name string, cfg *config.AgentConfig, debug bool) *Cron {
 	cron := &Cron{
-		agent.New(name, cfg),
+		agent.New(name, cfg, debug),
 		cron.New(),
 	}
 

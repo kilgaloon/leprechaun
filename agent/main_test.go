@@ -14,7 +14,7 @@ var (
 	iniFile      = "../tests/configs/config_regular.ini"
 	path         = &iniFile
 	cfgWrap      = config.NewConfigs()
-	defaultAgent = New("test", cfgWrap.New("test", *path))
+	defaultAgent = New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestGetterers(t *testing.T) {

@@ -14,8 +14,8 @@ var (
 	iniFile     = "../tests/configs/config_regular.ini"
 	path        = &iniFile
 	cfgWrap     = config.NewConfigs()
-	fakeServer  = New("test", cfgWrap.New("test", *path))
-	fakeServer2 = New("test", cfgWrap.New("test", *path))
+	fakeServer  = New("test", cfgWrap.New("test", *path), false)
+	fakeServer2 = New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestStartStop(t *testing.T) {

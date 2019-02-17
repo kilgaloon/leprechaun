@@ -14,8 +14,8 @@ var (
 	iniFile     = "../tests/configs/config_regular.ini"
 	path        = &iniFile
 	cfgWrap     = config.NewConfigs()
-	fakeClient  = New("test", cfgWrap.New("test", *path))
-	fakeClient2 = New("test", cfgWrap.New("test", *path))
+	fakeClient  = New("test", cfgWrap.New("test", *path), false)
+	fakeClient2 = New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestMain(t *testing.T) {
@@ -35,8 +35,8 @@ func TestMain(t *testing.T) {
 			t.Error("Add to queue failed when client is running and new recipe is added")
 		}
 
-		_, err := fakeClient2.Stop(os.Stdin, "")
-		if err != nil {
+		fakeClient2.Stop()
+		if fakeClient2.stopped != true {
 			t.Fail()
 		}
 	})

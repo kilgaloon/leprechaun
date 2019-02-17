@@ -11,7 +11,7 @@ var (
 	iniFile  = "../tests/configs/config_regular.ini"
 	path     = &iniFile
 	cfgWrap  = config.NewConfigs()
-	fakeCron = New("test", cfgWrap.New("test", *path))
+	fakeCron = New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestStop(t *testing.T) {
