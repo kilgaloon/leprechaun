@@ -104,39 +104,6 @@ func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter
 	return cmds
 }
 
-// SetPID sets current PID of client
-func (client *Client) SetPID() {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
-
-	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to start client, can't save PID, reason: " + err.Error())
-	}
-
-	client.PID = os.Getpid()
-	pid := strconv.Itoa(client.PID)
-	_, err = f.WriteString(pid)
-	if err != nil {
-		panic("Failed to start client, can't save PID")
-	}
-}
-
-// GetPID gets current PID of client
-func (client *Client) GetPID() int {
-	data, err := ioutil.ReadFile(client.GetConfig().GetPIDFile())
-	if err != nil {
-		panic("Failed to get PID")
-	}
-
-	pid, err := strconv.Atoi(string(data))
-	if err != nil {
-		panic("Failed to get PID")
-	}
-
-	return pid
-}
-
 // Check does client is working on something
 // decide this in which status client resides
 func (client *Client) isWorking() bool {

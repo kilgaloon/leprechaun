@@ -12,7 +12,7 @@ const (
 	ErrorLog               = "/var/log/leprechaun/error.log"
 	InfoLog                = "/var/log/leprechaun/info.log"
 	RecipesPath            = "/etc/leprechaun/recipes"
-	PIDFile                = "/var/run/leprechaun/client.pid"
+	PIDFile                = "/var/run/leprechaun/.pid"
 	LockFile               = "/var/run/leprechaun/client.lock"
 	CommandSocket          = "/var/run/leprechaun/client.sock"
 	WorkerOutputDir        = "/var/log/leprechaun/workers.output"
@@ -90,11 +90,6 @@ func (ac AgentConfig) GetInfoLog() string {
 // GetRecipesPath returns path of config file
 func (ac AgentConfig) GetRecipesPath() string {
 	return ac.RecipesPath
-}
-
-// GetPIDFile returns path of config file
-func (ac AgentConfig) GetPIDFile() string {
-	return ac.PIDFile
 }
 
 // GetLockFile returns path of config file
@@ -200,11 +195,6 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(gWorkerOutputDir)
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
-	}
-
-	ac.PIDFile = cfg.Section("").Key(name + ".pid_file").MustString(PIDFile)
-	if !IsFileValid(ac.PIDFile, ".pid") {
-		ac.PIDFile = PIDFile
 	}
 
 	ac.LockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)

@@ -47,14 +47,13 @@ type StandardOutput interface {
 // Default represents default agent
 type Default struct {
 	Name    string
-	PID     int
 	Config  *config.AgentConfig
 	Mu      *sync.RWMutex
 	Context *context.Context
 	Stdin   io.Reader
 	Stdout  io.Writer
 	Event   *event.Handler
-	debug	bool
+	debug   bool
 
 	log.Logs
 	workers.Workers
@@ -138,7 +137,7 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent.Config = cfg
 	agent.Mu = new(sync.RWMutex)
 	agent.Logs = log.Logs{
-		Debug: debug,
+		Debug:    debug,
 		ErrorLog: cfg.GetErrorLog(),
 		InfoLog:  cfg.GetInfoLog(),
 	}

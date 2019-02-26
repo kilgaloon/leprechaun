@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -22,19 +21,10 @@ const (
 )
 
 func main() {
-	// basic leprechaun help
-	if len(os.Args) > 1 {
-		if os.Args[1] == "help" {
-			fmt.Printf("VERSION: %s\r\n", VERSION)
-			fmt.Printf("RELEASE: %s\r\n\r\n", RELEASE)
-
-			os.Exit(0)
-		}
-	}
-
 	shutdownSignal := make(chan os.Signal, 1)
 
-	iniPath := flag.String("ini_path", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
+	iniPath := flag.String("ini", "/etc/leprechaun/configs/config.ini", "Path to .ini configuration")
+	pidPath := flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
 	cmd := flag.String("cmd", "run", "Command for app to run")
 	debug := flag.Bool("debug", false, "Debug mode")
 	flag.Parse()
@@ -52,6 +42,13 @@ func main() {
 		a.Register(server.Agent)
 		a.Register(cron.Agent)
 		go a.Start()
+
+		d.New(
+			pidPath, 
+			os.Args, 
+			api,
+			[client.Agent, server.Agent, cron.Agent]
+		)
 	}
 
 	switch c {
