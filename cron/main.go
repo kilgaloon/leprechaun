@@ -6,15 +6,14 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/kilgaloon/leprechaun/agent"
+	"github.com/kilgaloon/leprechaun/daemon"
 
 	"github.com/kilgaloon/leprechaun/config"
 )
 
-// Agent holds instance of Client
-var Agent *Cron
-
 // Cron settings and configurations
 type Cron struct {
+	Name string
 	*agent.Default
 	Service *cron.Cron
 }
@@ -22,27 +21,28 @@ type Cron struct {
 // New create client
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig, debug bool) *Cron {
+func (c *Cron) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
 	cron := &Cron{
+		name,
 		agent.New(name, cfg, debug),
 		cron.New(),
 	}
 
-	Agent = cron
-
 	return cron
+}
+
+// GetName returns agent name
+func (c Cron) GetName() string {
+	return c.Name
 }
 
 // Start client
 func (c *Cron) Start() {
-	// build queue
-	c.GetMutex().Lock()
 	c.buildJobs()
-	c.GetMutex().Unlock()
 
 	c.Service.Start()
 
-	c.Event.Dispatch("cron:ready")
+	c.Info("Cron started")
 }
 
 // RegisterAPIHandles to be used in socket communication
@@ -58,4 +58,7 @@ func (c *Cron) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *ht
 // Stop client
 func (c *Cron) Stop() {
 	c.Service.Stop()
+	c.Status = daemon.Stopped
+
+	c.Info("Cron service stopped")
 }

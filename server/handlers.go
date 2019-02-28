@@ -20,7 +20,7 @@ func (server Server) webhook(w http.ResponseWriter, r *http.Request) {
 
 	_, err := w.Write([]byte("PONG"))
 	if err != nil {
-		server.GetLogs().Error("%s", err)
+		server.Error("%s", err)
 	}
 }
 
@@ -29,6 +29,6 @@ func (server Server) ping(w http.ResponseWriter, r *http.Request) {
 
 	_, err := w.Write([]byte("PONG"))
 	if err != nil {
-		server.GetLogs().Error("%s", err)
+		server.Error("%s", err)
 	}
 }

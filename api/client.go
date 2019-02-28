@@ -22,12 +22,20 @@ func (c Cmd) agent() string {
 
 func (c Cmd) command() string {
 	s := strings.Fields(string(c))
-	return s[1]
+	if len(s) > 1 {
+		return s[1]
+	}
+
+	return ""
 }
 
 func (c Cmd) args() []string {
 	s := strings.Fields(string(c))
-	return s[2:]
+	if len(s) > 2 {
+		return s[2:]
+	}
+
+	return []string{""}
 }
 
 const (
@@ -39,8 +47,9 @@ const (
 )
 
 var (
-	table      = tablewriter.NewWriter(os.Stdout)
-	httpClient = &http.Client{Timeout: 30 * time.Second}
+	table = tablewriter.NewWriter(os.Stdout)
+	// HTTPClient config
+	HTTPClient = &http.Client{Timeout: 30 * time.Second}
 )
 
 // Resolver has job to resolve which enpoint to ping and return information
@@ -56,17 +65,18 @@ func Resolver(c Cmd) {
 		WorkersKill(c)
 		break
 	default:
-		fmt.Println("No such command")
+		fmt.Println("No such command:", c.command())
 	}
 }
 
-func revealEndpoint(e string, c Cmd) string {
+// RevealEndpoint formats endpoint to be used for interal http api
+func RevealEndpoint(e string, c Cmd) string {
 	return host + strings.Replace(e, "{agent}", c.agent(), -1)
 }
 
 // Info display info for the agent
 func Info(c Cmd) {
-	r, err := httpClient.Get(revealEndpoint(infoEndpoint, c))
+	r, err := HTTPClient.Get(RevealEndpoint(infoEndpoint, c))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,15 +94,15 @@ func Info(c Cmd) {
 		log.Fatal(err)
 	}
 
-	table.SetHeader([]string{"PID", "Config file", "Recipes in queue", "Memory allocated"})
-	table.Append([]string{resp.PID, resp.ConfigFile, resp.RecipesInQueue, resp.MemoryAllocated})
+	table.SetHeader([]string{"Recipes in queue", "Memory allocated"})
+	table.Append([]string{resp.RecipesInQueue, resp.MemoryAllocated})
 
 	table.Render()
 }
 
 // WorkersList display info for the agent
 func WorkersList(c Cmd) {
-	r, err := httpClient.Get(revealEndpoint(workersListEndpoint, c))
+	r, err := HTTPClient.Get(RevealEndpoint(workersListEndpoint, c))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +134,7 @@ func WorkersList(c Cmd) {
 
 // WorkersKill display info for the agent
 func WorkersKill(c Cmd) {
-	r, err := httpClient.Get(revealEndpoint(workersKillEndpoint, c) + "?name=" + c.args()[0])
+	r, err := HTTPClient.Get(RevealEndpoint(workersKillEndpoint, c) + "?name=" + c.args()[0])
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -133,7 +143,7 @@ func WorkersKill(c Cmd) {
 		fmt.Println("No such command")
 		return
 	}
-	
+
 	defer r.Body.Close()
 
 	resp := &WorkersResponse{}
@@ -149,7 +159,7 @@ func WorkersKill(c Cmd) {
 
 // IsAPIRunning checks is http api running
 func IsAPIRunning() bool {
-	_, err := httpClient.Get(host)
+	_, err := HTTPClient.Get(host)
 	if err != nil {
 		return false
 	}

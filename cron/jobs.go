@@ -7,6 +7,7 @@ import (
 )
 
 func (c *Cron) buildJobs() {
+	c.Info("Cron buildJobs started")
 	files, err := ioutil.ReadDir(c.GetConfig().GetRecipesPath())
 	if err != nil {
 		panic(err)
@@ -26,6 +27,8 @@ func (c *Cron) buildJobs() {
 			})
 		}
 	}
+
+	c.Info("Cron buildJobs finished")
 }
 
 func (c *Cron) prepareAndRun(r *recipe.Recipe) {

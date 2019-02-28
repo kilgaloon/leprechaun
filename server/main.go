@@ -8,14 +8,13 @@ import (
 
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/mholt/certmagic"
 )
 
-// Agent holds instance of Server
-var Agent *Server
-
 // Server instance
 type Server struct {
+	Name string
 	*agent.Default
 	Pool
 	HTTP *http.Server
@@ -24,16 +23,20 @@ type Server struct {
 // New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig, debug bool) *Server {
-	server := &Server{
+func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	s := &Server{
+		name,
 		agent.New(name, cfg, debug),
 		Pool{},
 		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}
 
-	Agent = server
+	return s
+}
 
-	return server
+//GetName returns server name
+func (server *Server) GetName() string {
+	return server.Name
 }
 
 // Start server that will receive webhooks
@@ -41,9 +44,6 @@ func (server *Server) Start() {
 	server.BuildPool()
 	// register all routes
 	server.registerHandles()
-	// listen for port
-	server.Info("Server started")
-	// register server to command socket
 
 	if server.isTLS() {
 		certmagic.Agreed = true
@@ -58,7 +58,6 @@ func (server *Server) Start() {
 			server.Error("Httpserver: ListenAndServe() error: %s", err)
 		}
 	}
-
 }
 
 func (server *Server) registerHandles() {
@@ -70,13 +69,13 @@ func (server *Server) registerHandles() {
 }
 
 // Stop http server
-func (server *Server) Stop(args ...string) ([][]string, error) {
+func (server *Server) Stop() {
 	server.Info("Shutting down server")
 	if err := server.HTTP.Shutdown(con.Background()); err != nil {
-		return [][]string{}, err
+		server.Error(err.Error())
 	}
 
-	return [][]string{{"Server shutdown"}}, nil
+	server.Status = daemon.Stopped
 }
 
 // RegisterAPIHandles to be used in socket communication

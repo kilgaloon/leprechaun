@@ -12,7 +12,6 @@ const (
 	ErrorLog               = "/var/log/leprechaun/error.log"
 	InfoLog                = "/var/log/leprechaun/info.log"
 	RecipesPath            = "/etc/leprechaun/recipes"
-	PIDFile                = "/var/run/leprechaun/.pid"
 	LockFile               = "/var/run/leprechaun/client.lock"
 	CommandSocket          = "/var/run/leprechaun/client.sock"
 	WorkerOutputDir        = "/var/log/leprechaun/workers.output"
@@ -54,7 +53,6 @@ type AgentConfig struct {
 	ErrorLog               string
 	InfoLog                string
 	RecipesPath            string
-	PIDFile                string
 	LockFile               string
 	WorkerOutputDir        string
 	Port                   int

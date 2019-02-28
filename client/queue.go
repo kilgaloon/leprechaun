@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/kilgaloon/leprechaun/recipe"
 	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
 )
@@ -16,9 +17,7 @@ type Queue struct {
 
 // BuildQueue takes all recipes and put them in queue
 func (client *Client) BuildQueue() {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
-
+	client.Info("Scheduler BuildQueue started")
 	q := Queue{}
 
 	files, err := ioutil.ReadDir(client.GetConfig().GetRecipesPath())
@@ -40,12 +39,14 @@ func (client *Client) BuildQueue() {
 	}
 
 	client.Queue = q
+
+	client.Info("Scheduler BuildQueue finished")
 }
 
 // AddToQueue takes freshly created recipes and add them to queue
 func (client *Client) AddToQueue(stack *[]recipe.Recipe, path string) {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
+	client.Lock()
+	defer client.Unlock()
 
 	if filepath.Ext(path) == ".yml" {
 		r, err := recipe.Build(path)
@@ -73,11 +74,11 @@ func (client *Client) ProcessQueue() {
 		}
 
 		go func(r *recipe.Recipe) {
-			client.GetMutex().Lock()
-			defer client.GetMutex().Unlock()
+			client.Lock()
+			defer client.Unlock()
 
 			// if client is stopped reschedule recipe but don't run it
-			if client.stopped {
+			if client.Status == daemon.Paused {
 				r.StartAt = schedule.ScheduleToTime(r.Schedule)
 			} else {
 				if compare.Equal(r.StartAt) {

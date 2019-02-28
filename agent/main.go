@@ -8,18 +8,17 @@ import (
 
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
-	"github.com/kilgaloon/leprechaun/event"
+	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/workers"
 )
 
 // Agent interface defines service that can be started/stop
-// that has workers, config, context and logs
+// that has workers, config, context
 type Agent interface {
-	GetName() string
 	GetContext() *context.Context
 	GetConfig() *config.AgentConfig
-	GetLogs() log.Logs
+	GetStatus() daemon.ServiceStatus
 
 	StandardIO
 }
@@ -46,42 +45,28 @@ type StandardOutput interface {
 
 // Default represents default agent
 type Default struct {
-	Name    string
-	Config  *config.AgentConfig
-	Mu      *sync.RWMutex
-	Context *context.Context
-	Stdin   io.Reader
-	Stdout  io.Writer
-	Event   *event.Handler
-	debug   bool
+	Name     string
+	Config   *config.AgentConfig
+	Context  *context.Context
+	Stdin    io.Reader
+	Stdout   io.Writer
+	Debug    bool
+	Status   int
+	Pipeline chan string
 
+	*sync.RWMutex
 	log.Logs
 	workers.Workers
 }
 
-// GetName returns name of the client
+// GetName returns agent name
 func (d Default) GetName() string {
 	return d.Name
 }
 
-// GetContext returns context of agent
-func (d Default) GetContext() *context.Context {
-	return d.Context
-}
-
-// GetLogs returns instance of logs
-func (d Default) GetLogs() log.Logs {
-	return d.Logs
-}
-
 // GetConfig return current config for agent
-func (d Default) GetConfig() *config.AgentConfig {
+func (d *Default) GetConfig() *config.AgentConfig {
 	return d.Config
-}
-
-// GetMutex for agent
-func (d Default) GetMutex() *sync.RWMutex {
-	return d.Mu
 }
 
 func (d Default) Write(p []byte) (n int, err error) {
@@ -113,8 +98,34 @@ func (d *Default) SetStdout(w io.Writer) {
 }
 
 // IsDebug determines is agent in debug mode
-func (d Default) IsDebug() bool {
-	return d.debug
+func (d *Default) IsDebug() bool {
+	return d.Debug
+}
+
+// GetStatus returns status of agent expressed in int
+func (d Default) GetStatus() daemon.ServiceStatus {
+	return daemon.ServiceStatus(d.Status)
+}
+
+// SetPipeline set pipeline create string channel that
+// agent will use to send through
+func (d *Default) SetPipeline(pipe chan string) {
+	d.Pipeline = pipe
+}
+
+// Stop agent
+func (d *Default) Stop() {
+	d.Status = daemon.Stopped
+}
+
+// Pause agent
+func (d *Default) Pause() {
+	d.Status = daemon.Paused
+}
+
+// Unpause agent
+func (d *Default) Unpause() {
+	d.Status = daemon.Started
 }
 
 // DefaultAPIHandles to be used in socket communication
@@ -133,9 +144,8 @@ func (d *Default) DefaultAPIHandles() map[string]func(w http.ResponseWriter, r *
 // New default client
 func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent := &Default{}
-	agent.Name = name
 	agent.Config = cfg
-	agent.Mu = new(sync.RWMutex)
+	agent.RWMutex = new(sync.RWMutex)
 	agent.Logs = log.Logs{
 		Debug:    debug,
 		ErrorLog: cfg.GetErrorLog(),
@@ -147,13 +157,13 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 		cfg,
 		agent.Logs,
 		agent.Context,
-		agent.Mu,
+		agent.RWMutex,
 	)
 
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
-	agent.Event = event.NewHandler(agent.Logs)
-	agent.debug = debug
+	agent.Debug = debug
+	agent.Pipeline = make(chan string)
 
 	return agent
 }

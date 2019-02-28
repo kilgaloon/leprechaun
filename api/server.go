@@ -31,6 +31,11 @@ func (a *API) Register(r Registrator) *API {
 	return a
 }
 
+// RegisterHandle append handle before server is started
+func (a *API) RegisterHandle(e string, h func(w http.ResponseWriter, r *http.Request)) {
+	mux.HandleFunc("/"+e, h)
+}
+
 // Start api server
 func (a *API) Start() {
 	a.HTTP.Handler = mux
@@ -40,7 +45,7 @@ func (a *API) Start() {
 }
 
 // New creates new socket
-func New(socketPath string) *API {
+func New() *API {
 	api := &API{
 		&http.Server{
 			Addr: ":11401",

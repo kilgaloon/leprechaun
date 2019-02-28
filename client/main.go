@@ -1,61 +1,45 @@
 package client
 
 import (
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/agent"
-
 	"github.com/fsnotify/fsnotify"
+	"github.com/kilgaloon/leprechaun/agent"
+	"github.com/kilgaloon/leprechaun/daemon"
+
 	"github.com/kilgaloon/leprechaun/config"
 )
 
-// Agent holds instance of Client
-var Agent *Client
-
 // Client settings and configurations
 type Client struct {
+	Name string
 	*agent.Default
-	stopped bool
 	Queue
 }
 
-// New create client
-// Creating new agent will enable usage of Agent variable globally for packages
-// that use this package
-func New(name string, cfg *config.AgentConfig, debug bool) *Client {
-	client := &Client{
-		agent.New(name, cfg, debug),
-		false,
+// New create client as a service
+func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	a := agent.New(name, cfg, debug)
+	c := &Client{
+		name,
+		a,
 		Queue{},
 	}
 
-	Agent = client
-
-	return client
+	return c
 }
 
-// Start client
+// GetName returns agent name
+func (client Client) GetName() string {
+	return client.Name
+}
+
+// Start client+
 func (client *Client) Start() {
-	// if client is stopped/paused, just unpause it
-	client.GetMutex().Lock()
-	if client.stopped {
-		client.stopped = false
-		return
-	}
-	client.GetMutex().Unlock()
-	// remove hanging .lock file
-	os.Remove(client.GetConfig().GetLockFile())
-	// SetPID of client
-	client.SetPID()
 	// build queue
-	client.Lock()
 	client.BuildQueue()
-	client.Unlock()
 
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
@@ -79,14 +63,14 @@ func (client *Client) Start() {
 
 	err = watcher.Add(client.GetConfig().GetRecipesPath())
 	if err != nil {
-		fmt.Println(err)
+		client.Error("%s", err)
 	}
 
-	// dispatch event that client is ready
-	client.Event.Dispatch("client:ready")
+	client.Info("Scheduler ready")
 
 	for {
 		go client.ProcessQueue()
+		client.Info("Scheduler TICK")
 		time.Sleep(60 * time.Second)
 	}
 
@@ -113,24 +97,4 @@ func (client *Client) isWorking() bool {
 	}
 
 	return true
-}
-
-// Lock client to busy state
-func (client *Client) Lock() {
-	_, err := os.OpenFile(client.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to lock client in busy state")
-	}
-}
-
-// Unlock client to busy state
-func (client *Client) Unlock() {
-	os.Remove(client.GetConfig().GetLockFile())
-}
-
-// Stop client
-func (client *Client) Stop() bool {
-	client.stopped = true
-
-	return client.stopped
 }
