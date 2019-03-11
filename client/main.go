@@ -2,7 +2,6 @@ package client
 
 import (
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -11,6 +10,9 @@ import (
 
 	"github.com/kilgaloon/leprechaun/config"
 )
+
+// Agent holds client instance
+var Agent *Client
 
 // Client settings and configurations
 type Client struct {
@@ -28,15 +30,17 @@ func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daem
 		Queue{},
 	}
 
+	Agent = c
+
 	return c
 }
 
 // GetName returns agent name
-func (client Client) GetName() string {
+func (client *Client) GetName() string {
 	return client.Name
 }
 
-// Start client+
+// Start client
 func (client *Client) Start() {
 	// build queue
 	client.BuildQueue()
@@ -53,7 +57,7 @@ func (client *Client) Start() {
 			select {
 			case event := <-watcher.Events:
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					client.AddToQueue(&client.Queue.Stack, event.Name)
+					client.AddToQueue(event.Name)
 				}
 			case err := <-watcher.Errors:
 				client.Error("error: %s", err)
@@ -67,8 +71,13 @@ func (client *Client) Start() {
 	}
 
 	client.Info("Scheduler ready")
+	client.SetStatus(daemon.Started)
 
 	for {
+		if client.GetStatus() == daemon.Stopped {
+			continue
+		}
+
 		go client.ProcessQueue()
 		client.Info("Scheduler TICK")
 		time.Sleep(60 * time.Second)
@@ -76,25 +85,24 @@ func (client *Client) Start() {
 
 }
 
-// RegisterAPIHandles to be used in socket communication
-// If you want to takeover default commands from agent
-// call DefaultCommands from Agent which is same command
+// Stop client
+func (client *Client) Stop() {
+	client.Lock()
+	// reset queue
+	client.Queue.Stack = client.Queue.Stack[:0]
+	client.Unlock()
+	// set service status to stopped
+	client.SetStatus(daemon.Stopped)
+}
+
+// RegisterAPIHandles to be used in http communication
 func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
-	cmds["info"] = client.clientInfo
+	cmds["info"] = client.cmdinfo
 	cmds["stop"] = client.cmdstop
+	cmds["start"] = client.cmdstart
+	cmds["pause"] = client.cmdpause
 
 	return cmds
-}
-
-// Check does client is working on something
-// decide this in which status client resides
-func (client *Client) isWorking() bool {
-	// check does .lock file exists
-	if _, err := os.Stat(client.GetConfig().GetLockFile()); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
 }

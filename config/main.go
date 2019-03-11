@@ -85,6 +85,16 @@ func (ac AgentConfig) GetInfoLog() string {
 	return ac.InfoLog
 }
 
+// GetRecipesPathAbs returns absolute path of recipes
+func (ac AgentConfig) GetRecipesPathAbs() string {
+	p, err := filepath.Abs(ac.RecipesPath)
+	if err != nil {
+		return ac.RecipesPath
+	}
+
+	return p
+}
+
 // GetRecipesPath returns path of config file
 func (ac AgentConfig) GetRecipesPath() string {
 	return ac.RecipesPath

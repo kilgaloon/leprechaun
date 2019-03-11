@@ -11,6 +11,9 @@ import (
 	"github.com/kilgaloon/leprechaun/config"
 )
 
+// Agent holds instance of chrome
+var Agent *Cron
+
 // Cron settings and configurations
 type Cron struct {
 	Name string
@@ -28,6 +31,8 @@ func (c *Cron) New(name string, cfg *config.AgentConfig, debug bool) daemon.Serv
 		cron.New(),
 	}
 
+	Agent = cron
+
 	return cron
 }
 
@@ -41,6 +46,7 @@ func (c *Cron) Start() {
 	c.buildJobs()
 
 	c.Service.Start()
+	c.SetStatus(daemon.Started)
 
 	c.Info("Cron started")
 }
@@ -51,6 +57,11 @@ func (c *Cron) Start() {
 func (c *Cron) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
+	cmds["info"] = c.cmdinfo
+	cmds["stop"] = c.cmdstop
+	cmds["start"] = c.cmdstart
+	cmds["pause"] = c.cmdpause
+
 	// this function merge both maps and inject default commands from agent
 	return cmds
 }
@@ -58,7 +69,7 @@ func (c *Cron) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *ht
 // Stop client
 func (c *Cron) Stop() {
 	c.Service.Stop()
-	c.Status = daemon.Stopped
+	c.SetStatus(daemon.Stopped)
 
 	c.Info("Cron service stopped")
 }

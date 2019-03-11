@@ -1,4 +1,4 @@
-package client
+package cron
 
 import (
 	"encoding/json"
@@ -12,11 +12,11 @@ import (
 
 // this section is used for command responders
 
-func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
-	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
+func (c *Cron) cmdinfo(w http.ResponseWriter, r *http.Request) {
+	recipeQueueNum := strconv.Itoa(len(c.Service.Entries()))
 
 	resp := api.InfoResponse{
-		Status:         client.GetStatus().String(),
+		Status:         c.GetStatus().String(),
 		RecipesInQueue: recipeQueueNum,
 	}
 
@@ -32,18 +32,16 @@ func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
-	var resp struct {
-		Message string
-	}
+func (c *Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
+	resp := api.MessageResponse{}
 
-	client.Pause()
-	if client.GetStatus() == daemon.Paused {
+	c.Pause()
+	if c.GetStatus() == daemon.Paused {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client paused"
+		resp.Message = "Server paused"
 	} else {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to pause"
+		resp.Message = "Server failed to pause"
 	}
 
 	j, err := json.Marshal(resp)
@@ -54,21 +52,21 @@ func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
+func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := api.MessageResponse{}
 
-	if client.GetStatus() == daemon.Started {
+	if c.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client already started"
+		resp.Message = "Server already started"
 	}
 
-	go client.Start()
-	if client.GetStatus() == daemon.Started {
+	go c.Start()
+	if c.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client started"
+		resp.Message = "Server started"
 	} else {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to start"
+		resp.Message = "Server failed to start"
 	}
 
 	j, err := json.Marshal(resp)
@@ -79,16 +77,16 @@ func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (client *Client) cmdstop(w http.ResponseWriter, r *http.Request) {
+func (c *Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := api.MessageResponse{}
 
-	client.Stop()
-	if client.GetStatus() == daemon.Stopped {
+	c.Stop()
+	if c.GetStatus() == daemon.Stopped {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client stopped"
+		resp.Message = "Server stopped"
 	} else {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to stop"
+		resp.Message = "Server failed to stop"
 	}
 
 	j, err := json.Marshal(resp)

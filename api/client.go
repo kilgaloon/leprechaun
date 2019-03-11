@@ -15,12 +15,14 @@ import (
 // Cmd is type of command that is passed to resolver
 type Cmd string
 
-func (c Cmd) agent() string {
+// Agent returns to which agent is command refered to
+func (c Cmd) Agent() string {
 	s := strings.Fields(string(c))
 	return s[0]
 }
 
-func (c Cmd) command() string {
+// Command is what command agent needs to execute
+func (c Cmd) Command() string {
 	s := strings.Fields(string(c))
 	if len(s) > 1 {
 		return s[1]
@@ -28,8 +30,8 @@ func (c Cmd) command() string {
 
 	return ""
 }
-
-func (c Cmd) args() []string {
+// Args is which args are passed to command
+func (c Cmd) Args() []string {
 	s := strings.Fields(string(c))
 	if len(s) > 2 {
 		return s[2:]
@@ -49,12 +51,17 @@ const (
 var (
 	table = tablewriter.NewWriter(os.Stdout)
 	// HTTPClient config
-	HTTPClient = &http.Client{Timeout: 30 * time.Second}
+	HTTPClient  = &http.Client{Timeout: 30 * time.Second}
+	processCmds = map[string]string{
+		"start": "/{agent}/start",
+		"stop":  "/{agent}/stop",
+		"pause": "/{agent}/pause",
+	}
 )
 
 // Resolver has job to resolve which enpoint to ping and return information
 func Resolver(c Cmd) {
-	switch c.command() {
+	switch c.Command() {
 	case "info":
 		Info(c)
 		break
@@ -65,13 +72,14 @@ func Resolver(c Cmd) {
 		WorkersKill(c)
 		break
 	default:
-		fmt.Println("No such command:", c.command())
+		Process(c)
+		break
 	}
 }
 
 // RevealEndpoint formats endpoint to be used for interal http api
 func RevealEndpoint(e string, c Cmd) string {
-	return host + strings.Replace(e, "{agent}", c.agent(), -1)
+	return host + strings.Replace(e, "{agent}", c.Agent(), -1)
 }
 
 // Info display info for the agent
@@ -94,9 +102,33 @@ func Info(c Cmd) {
 		log.Fatal(err)
 	}
 
-	table.SetHeader([]string{"Recipes in queue", "Memory allocated"})
-	table.Append([]string{resp.RecipesInQueue, resp.MemoryAllocated})
+	table.SetHeader([]string{"Status", "Recipes in queue"})
+	table.Append([]string{resp.Status, resp.RecipesInQueue})
 
+	table.Render()
+}
+
+// Process command handles those endpoints that start, stop and pause
+func Process(c Cmd) {
+	r, err := HTTPClient.Get(RevealEndpoint(processCmds[c.Command()], c))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if r.StatusCode != 200 {
+		fmt.Println("No such command " + c.Command())
+		return
+	}
+
+	defer r.Body.Close()
+
+	resp := &WorkersResponse{}
+	err = json.NewDecoder(r.Body).Decode(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	table.Append([]string{resp.Message})
 	table.Render()
 }
 
@@ -134,7 +166,7 @@ func WorkersList(c Cmd) {
 
 // WorkersKill display info for the agent
 func WorkersKill(c Cmd) {
-	r, err := HTTPClient.Get(RevealEndpoint(workersKillEndpoint, c) + "?name=" + c.args()[0])
+	r, err := HTTPClient.Get(RevealEndpoint(workersKillEndpoint, c) + "?name=" + c.Args()[0])
 	if err != nil {
 		log.Fatal(err)
 	}

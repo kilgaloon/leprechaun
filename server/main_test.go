@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
@@ -14,11 +15,16 @@ var (
 	iniFile     = "../tests/configs/config_regular.ini"
 	path        = &iniFile
 	cfgWrap     = config.NewConfigs()
-	fakeServer  = New("test", cfgWrap.New("test", *path), false)
-	fakeServer2 = New("test", cfgWrap.New("test", *path), false)
+	def         = &Server{}
+	fakeServer  = def.New("test", cfgWrap.New("test", *path), false)
+	fakeServer2 = def.New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestStartStop(t *testing.T) {
+	if fakeServer.GetName() != "test" {
+		t.Fail()
+	}
+
 	go fakeServer.Start()
 	// retry 5 times before failing
 	// this means server failed to start
@@ -43,6 +49,60 @@ func TestStartStop(t *testing.T) {
 			t.Fail()
 		}
 
+		cmds := fakeServer.RegisterAPIHandles()
+
+		if foo, ok := cmds["info"]; ok {
+			req, err := http.NewRequest("GET", "/server/info", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+
+			foo(rr, req)
+		} else {
+			t.Fail()
+		}
+
+		if foo, ok := cmds["stop"]; ok {
+			req, err := http.NewRequest("GET", "/server/stop", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+
+			foo(rr, req)
+		} else {
+			t.Fail()
+		}
+
+		if foo, ok := cmds["pause"]; ok {
+			req, err := http.NewRequest("GET", "/server/pause", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+
+			foo(rr, req)
+		} else {
+			t.Fail()
+		}
+
+		if foo, ok := cmds["start"]; ok {
+			req, err := http.NewRequest("GET", "/server/start", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+
+			foo(rr, req)
+		} else {
+			t.Fail()
+		}
+
 		fakeServer.Stop()
 		break
 	}
@@ -53,26 +113,29 @@ func TestStartStop(t *testing.T) {
 }
 
 func TestFindInPool(t *testing.T) {
-	fakeServer.BuildPool()
-	fakeServer.FindInPool("223344")
+	Agent.BuildPool()
+	Agent.FindInPool("223344")
 
-	recipe := fakeServer.Pool.Stack["223344"]
+	Agent.Lock()
+	recipe := Agent.Pool.Stack["223344"]
 	recipe.Err = errors.New("Some random error")
+	Agent.Unlock()
 
-	fakeServer.FindInPool("223344")
+	Agent.FindInPool("223344")
 
-	fakeServer.BuildPool()
+	Agent.BuildPool()
 }
 
 func TestIsTLS(t *testing.T) {
-	if fakeServer.isTLS() {
+	fakeServer2.GetConfig().Domain = "localhost"
+	if Agent.isTLS() {
 		t.Fail()
 	}
 }
 
 func TestRegisterAPIHandles(t *testing.T) {
 	cmds := fakeServer.RegisterAPIHandles()
-	if len(cmds) > 0 {
+	if len(cmds) > 4 {
 		t.Fail()
 	}
 }

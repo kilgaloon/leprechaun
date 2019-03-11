@@ -2,10 +2,12 @@ package daemon
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"os"
+	"strconv"
 
 	"github.com/kilgaloon/leprechaun/api"
+	"github.com/olekukonko/tablewriter"
 )
 
 // InfoResponse defines how response looks like when
@@ -15,18 +17,14 @@ type InfoResponse struct {
 	ConfigPath string
 	PidPath    string
 	Debug      bool
+	Memory     string
 }
 
 // GetInfo display info for running daemon
 func (d *Daemon) GetInfo() *InfoResponse {
-	r, err := api.HTTPClient.Get(api.RevealEndpoint("/{agent}", api.Cmd("daemon")))
+	r, err := api.HTTPClient.Get(api.RevealEndpoint("/{agent}/info", api.Cmd("daemon")))
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if r.StatusCode != 200 {
-		fmt.Println("No such command")
-		return &InfoResponse{}
 	}
 
 	defer r.Body.Close()
@@ -38,4 +36,25 @@ func (d *Daemon) GetInfo() *InfoResponse {
 	}
 
 	return resp
+}
+
+func (d *Daemon) renderInfo() {
+	table := tablewriter.NewWriter(os.Stdout)
+
+	resp := d.GetInfo()
+
+	pid := strconv.Itoa(resp.PID)
+	debug := "No"
+	if resp.Debug {
+		debug = "Yes"
+	}
+
+	table.SetHeader([]string{"PID", "Config path", "Pid path", "Debug", "Memory"})
+	table.Append([]string{pid, resp.ConfigPath, resp.PidPath, debug, resp.Memory})
+
+	table.Render()
+}
+
+func (d *Daemon) killDaemon() {
+	api.HTTPClient.Get(api.RevealEndpoint("/{agent}/kill", api.Cmd("daemon")))
 }

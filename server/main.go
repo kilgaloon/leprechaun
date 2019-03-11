@@ -12,6 +12,9 @@ import (
 	"github.com/mholt/certmagic"
 )
 
+// Agent holds instance of server client
+var Agent *Server
+
 // Server instance
 type Server struct {
 	Name string
@@ -31,6 +34,8 @@ func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daem
 		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}
 
+	Agent = s
+
 	return s
 }
 
@@ -44,6 +49,7 @@ func (server *Server) Start() {
 	server.BuildPool()
 	// register all routes
 	server.registerHandles()
+	server.SetStatus(daemon.Started)
 
 	if server.isTLS() {
 		certmagic.Agreed = true
@@ -58,9 +64,13 @@ func (server *Server) Start() {
 			server.Error("Httpserver: ListenAndServe() error: %s", err)
 		}
 	}
+
 }
 
 func (server *Server) registerHandles() {
+	server.Lock()
+	defer server.Unlock()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc(WebhookEndpoint, server.webhook)
 	mux.HandleFunc(PingEndpoint, server.ping)
@@ -75,7 +85,7 @@ func (server *Server) Stop() {
 		server.Error(err.Error())
 	}
 
-	server.Status = daemon.Stopped
+	server.SetStatus(daemon.Stopped)
 }
 
 // RegisterAPIHandles to be used in socket communication
@@ -83,6 +93,11 @@ func (server *Server) Stop() {
 // call DefaultCommands from Agent which is same command
 func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
+
+	cmds["info"] = server.cmdinfo
+	cmds["stop"] = server.cmdstop
+	cmds["start"] = server.cmdstart
+	cmds["pause"] = server.cmdpause
 
 	// this function merge both maps and inject default commands from agent
 	return cmds

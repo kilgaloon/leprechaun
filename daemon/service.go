@@ -30,14 +30,25 @@ func (s ServiceStatus) String() string {
 	}
 }
 
+// StartStop defines service that can be started and stoped
+type StartStop interface {
+	Start()
+	Stop()
+}
+
+// Pause defines service that can be paused and unpaused
+type Pause interface {
+	Pause()
+}
+
 // Service struct define
 type Service interface {
 	api.Registrator
 	GetStatus() ServiceStatus
-	Start()
-	Stop()
-	Pause()
-	Unpause()
+	SetStatus(s int)
+	GetConfig() *config.AgentConfig
+	StartStop
+	Pause
 	IsDebug() bool
 	SetPipeline(chan string)
 	New(name string, cfg *config.AgentConfig, debug bool) Service

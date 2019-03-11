@@ -4,9 +4,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
 
@@ -20,15 +22,49 @@ var (
 func TestGetterers(t *testing.T) {
 	defaultAgent.GetName()
 	defaultAgent.GetContext()
-	defaultAgent.GetLogs()
 	defaultAgent.GetConfig()
-	defaultAgent.GetMutex()
 
 	defaultAgent.GetStdout()
 	defaultAgent.GetStdin()
 
 	defaultAgent.SetStdin(os.Stdin)
 	defaultAgent.SetStdout(os.Stdout)
+
+	msg := strings.NewReader("test")
+	go defaultAgent.Write([]byte("test"))
+
+	var p []byte
+	defaultAgent.SetStdin(msg)
+	defaultAgent.Read(p)
+	// if string(p) != "test" {
+	// 	t.Fail()
+	// }
+
+	if defaultAgent.IsDebug() != defaultAgent.Debug {
+		t.Fail()
+	}
+
+	defaultAgent.SetStatus(daemon.Stopped)
+	if defaultAgent.GetStatus() != daemon.Stopped {
+		t.Fail()
+	}
+
+	defaultAgent.SetPipeline(make(chan string))
+
+	defaultAgent.Stop()
+	if defaultAgent.GetStatus() != daemon.Stopped {
+		t.Fail()
+	}
+
+	defaultAgent.Pause()
+	if defaultAgent.GetStatus() != daemon.Paused {
+		t.Fail()
+	}
+
+	defaultAgent.Unpause()
+	if defaultAgent.GetStatus() != daemon.Started {
+		t.Fail()
+	}
 
 	h := defaultAgent.DefaultAPIHandles()
 	if len(h) > 2 {

@@ -19,6 +19,7 @@ type Agent interface {
 	GetContext() *context.Context
 	GetConfig() *config.AgentConfig
 	GetStatus() daemon.ServiceStatus
+	SetStatus(s int)
 
 	StandardIO
 }
@@ -64,6 +65,11 @@ func (d Default) GetName() string {
 	return d.Name
 }
 
+// GetContext returns context
+func (d *Default) GetContext() *context.Context {
+	return d.Context
+}
+
 // GetConfig return current config for agent
 func (d *Default) GetConfig() *config.AgentConfig {
 	return d.Config
@@ -88,12 +94,12 @@ func (d Default) GetStdin() io.Reader {
 }
 
 // SetStdin ability to change standard input for agent
-func (d *Default) SetStdin(r io.Reader) {
+func (d Default) SetStdin(r io.Reader) {
 	d.Stdin = r
 }
 
 // SetStdout ability to change standard input for agent
-func (d *Default) SetStdout(w io.Writer) {
+func (d Default) SetStdout(w io.Writer) {
 	d.Stdout = w
 }
 
@@ -102,8 +108,18 @@ func (d *Default) IsDebug() bool {
 	return d.Debug
 }
 
-// GetStatus returns status of agent expressed in int
-func (d Default) GetStatus() daemon.ServiceStatus {
+// SetStatus set status of agent
+func (d *Default) SetStatus(s int) {
+	d.Lock()
+	d.Status = s
+	d.Unlock()
+}
+
+// GetStatus returns status of agent
+func (d *Default) GetStatus() daemon.ServiceStatus {
+	d.Lock()
+	defer d.Unlock()
+
 	return daemon.ServiceStatus(d.Status)
 }
 
@@ -115,17 +131,17 @@ func (d *Default) SetPipeline(pipe chan string) {
 
 // Stop agent
 func (d *Default) Stop() {
-	d.Status = daemon.Stopped
+	d.SetStatus(daemon.Stopped)
 }
 
 // Pause agent
 func (d *Default) Pause() {
-	d.Status = daemon.Paused
+	d.SetStatus(daemon.Paused)
 }
 
 // Unpause agent
 func (d *Default) Unpause() {
-	d.Status = daemon.Started
+	d.SetStatus(daemon.Started)
 }
 
 // DefaultAPIHandles to be used in socket communication
@@ -157,7 +173,6 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 		cfg,
 		agent.Logs,
 		agent.Context,
-		agent.RWMutex,
 	)
 
 	agent.Stdin = os.Stdin
