@@ -17,6 +17,9 @@ type Queue struct {
 
 // BuildQueue takes all recipes and put them in queue
 func (client *Client) BuildQueue() {
+	client.Lock()
+	defer client.Unlock()
+
 	client.Info("Scheduler BuildQueue started")
 	q := Queue{}
 
@@ -38,9 +41,7 @@ func (client *Client) BuildQueue() {
 		}
 	}
 
-	client.Lock()
 	client.Queue = q
-	client.Unlock()
 
 	client.Info("Scheduler BuildQueue finished")
 }
