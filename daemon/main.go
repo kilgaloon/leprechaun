@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -123,6 +124,24 @@ func (d *Daemon) Kill() {
 }
 
 func init() {
+	if os.Args[1] == "help" {
+		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
+			"====== \n" +
+			"daemon info - Display basic informations about daemon. \n" +
+			"daemon kill - Kills process. \n" +
+			"====== \n" +
+			"{agent} info - Display basic info about agent.\n" +
+			"{agent} start - Start agent if its stopped/paused.\n" +
+			"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
+			"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
+			"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
+			"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+
+		fmt.Println(help)
+
+		return
+	}
+
 	var configPath, pidPath *string
 	var debug *bool
 	var pid int
@@ -159,7 +178,7 @@ func init() {
 	d.PidFile = f
 	d.PidPath = *pidPath
 	if err != nil {
-		panic("Failed to start client, can't save PID, reason: " + err.Error())
+		log.Fatal("Failed to start client, can't save PID. Directory for pid file doesn't exist or pid file not valid")
 	}
 
 	if pid == 0 {
@@ -167,7 +186,7 @@ func init() {
 		pid := strconv.Itoa(d.PID)
 		_, err = d.PidFile.WriteString(pid)
 		if err != nil {
-			panic("Failed to start client, can't save PID")
+			log.Fatal("Failed to start client, can't save PID")
 		}
 	}
 
