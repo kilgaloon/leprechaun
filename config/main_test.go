@@ -20,11 +20,12 @@ func TestBuildWithoutSettings(t *testing.T) {
 	cfg := ConfigWithoutDefaultSettings
 
 	p, _ := filepath.Abs("../tests/configs/config_without_default_values.ini")
+	rp, _ := filepath.Abs(RecipesPath)
 	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
 	assert.Equal(t, InfoLog, cfg.GetInfoLog())
 	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
-	assert.Equal(t, PIDFile, cfg.GetPIDFile())
+	assert.Equal(t, rp, cfg.GetRecipesPathAbs())
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())
@@ -41,11 +42,12 @@ func TestBuildGlobalFallback(t *testing.T) {
 	cfg := ConfigGlobalFb
 
 	p, _ := filepath.Abs("../tests/configs/config_global_fb.ini")
+	rp, _ := filepath.Abs("../tests/etc/leprechaun/recipes")
 	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
 	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
-	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
+	assert.Equal(t, rp, cfg.GetRecipesPathAbs())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
@@ -60,11 +62,12 @@ func TestBuildWithSettings(t *testing.T) {
 	cfg := ConfigWithSettings
 
 	p, _ := filepath.Abs("../tests/configs/config_regular.ini")
+	rp, _ := filepath.Abs("../tests/etc/leprechaun/recipes")
 	assert.Equal(t, p, cfg.GetPath())
 	assert.Equal(t, "../tests/var/log/leprechaun/error.log", cfg.GetErrorLog())
 	assert.Equal(t, "../tests/var/log/leprechaun/info.log", cfg.GetInfoLog())
 	assert.Equal(t, "../tests/etc/leprechaun/recipes", cfg.GetRecipesPath())
-	assert.Equal(t, "../tests/var/run/leprechaun/.pid", cfg.GetPIDFile())
+	assert.Equal(t, rp, cfg.GetRecipesPathAbs())
 	assert.Equal(t, "../tests/var/run/leprechaun/.lock", cfg.GetLockFile())
 	assert.Equal(t, "../tests/var/log/leprechaun/workers.output", cfg.GetWorkerOutputDir())
 	assert.Equal(t, 5, cfg.GetMaxAllowedWorkers())
@@ -82,7 +85,6 @@ func TestBuildWithInvalidValues(t *testing.T) {
 	assert.Equal(t, ErrorLog, cfg.GetErrorLog())
 	assert.Equal(t, InfoLog, cfg.GetInfoLog())
 	assert.Equal(t, RecipesPath, cfg.GetRecipesPath())
-	assert.Equal(t, PIDFile, cfg.GetPIDFile())
 	assert.Equal(t, LockFile, cfg.GetLockFile())
 	assert.Equal(t, MaxAllowedWorkers, cfg.GetMaxAllowedWorkers())
 	assert.Equal(t, MaxAllowedQueueWorkers, cfg.GetMaxAllowedQueueWorkers())

@@ -1,61 +1,49 @@
 package client
 
 import (
-	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 
-	"github.com/kilgaloon/leprechaun/agent"
-
 	"github.com/fsnotify/fsnotify"
+	"github.com/kilgaloon/leprechaun/agent"
+	"github.com/kilgaloon/leprechaun/daemon"
+
 	"github.com/kilgaloon/leprechaun/config"
 )
 
-// Agent holds instance of Client
+// Agent holds client instance
 var Agent *Client
 
 // Client settings and configurations
 type Client struct {
+	Name string
 	*agent.Default
-	stopped bool
 	Queue
 }
 
-// New create client
-// Creating new agent will enable usage of Agent variable globally for packages
-// that use this package
-func New(name string, cfg *config.AgentConfig, debug bool) *Client {
-	client := &Client{
-		agent.New(name, cfg, debug),
-		false,
+// New create client as a service
+func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	a := agent.New(name, cfg, debug)
+	c := &Client{
+		name,
+		a,
 		Queue{},
 	}
 
-	Agent = client
+	Agent = c
 
-	return client
+	return c
+}
+
+// GetName returns agent name
+func (client *Client) GetName() string {
+	return client.Name
 }
 
 // Start client
 func (client *Client) Start() {
-	// if client is stopped/paused, just unpause it
-	client.GetMutex().Lock()
-	if client.stopped {
-		client.stopped = false
-		return
-	}
-	client.GetMutex().Unlock()
-	// remove hanging .lock file
-	os.Remove(client.GetConfig().GetLockFile())
-	// SetPID of client
-	client.SetPID()
 	// build queue
-	client.Lock()
 	client.BuildQueue()
-	client.Unlock()
 
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
@@ -69,7 +57,7 @@ func (client *Client) Start() {
 			select {
 			case event := <-watcher.Events:
 				if event.Op&fsnotify.Create == fsnotify.Create {
-					client.AddToQueue(&client.Queue.Stack, event.Name)
+					client.AddToQueue(event.Name)
 				}
 			case err := <-watcher.Errors:
 				client.Error("error: %s", err)
@@ -79,91 +67,42 @@ func (client *Client) Start() {
 
 	err = watcher.Add(client.GetConfig().GetRecipesPath())
 	if err != nil {
-		fmt.Println(err)
+		client.Error("%s", err)
 	}
 
-	// dispatch event that client is ready
-	client.Event.Dispatch("client:ready")
+	client.Info("Scheduler ready")
+	client.SetStatus(daemon.Started)
 
 	for {
+		if client.GetStatus() == daemon.Stopped {
+			continue
+		}
+
 		go client.ProcessQueue()
+		client.Info("Scheduler TICK")
 		time.Sleep(60 * time.Second)
 	}
 
 }
 
-// RegisterAPIHandles to be used in socket communication
-// If you want to takeover default commands from agent
-// call DefaultCommands from Agent which is same command
+// Stop client
+func (client *Client) Stop() {
+	client.Lock()
+	// reset queue
+	client.Queue.Stack = client.Queue.Stack[:0]
+	client.Unlock()
+	// set service status to stopped
+	client.SetStatus(daemon.Stopped)
+}
+
+// RegisterAPIHandles to be used in http communication
 func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
-	cmds["info"] = client.clientInfo
+	cmds["info"] = client.cmdinfo
 	cmds["stop"] = client.cmdstop
+	cmds["start"] = client.cmdstart
+	cmds["pause"] = client.cmdpause
 
 	return cmds
-}
-
-// SetPID sets current PID of client
-func (client *Client) SetPID() {
-	client.GetMutex().Lock()
-	defer client.GetMutex().Unlock()
-
-	f, err := os.OpenFile(client.GetConfig().GetPIDFile(), os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to start client, can't save PID, reason: " + err.Error())
-	}
-
-	client.PID = os.Getpid()
-	pid := strconv.Itoa(client.PID)
-	_, err = f.WriteString(pid)
-	if err != nil {
-		panic("Failed to start client, can't save PID")
-	}
-}
-
-// GetPID gets current PID of client
-func (client *Client) GetPID() int {
-	data, err := ioutil.ReadFile(client.GetConfig().GetPIDFile())
-	if err != nil {
-		panic("Failed to get PID")
-	}
-
-	pid, err := strconv.Atoi(string(data))
-	if err != nil {
-		panic("Failed to get PID")
-	}
-
-	return pid
-}
-
-// Check does client is working on something
-// decide this in which status client resides
-func (client *Client) isWorking() bool {
-	// check does .lock file exists
-	if _, err := os.Stat(client.GetConfig().GetLockFile()); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
-}
-
-// Lock client to busy state
-func (client *Client) Lock() {
-	_, err := os.OpenFile(client.GetConfig().GetLockFile(), os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		panic("Failed to lock client in busy state")
-	}
-}
-
-// Unlock client to busy state
-func (client *Client) Unlock() {
-	os.Remove(client.GetConfig().GetLockFile())
-}
-
-// Stop client
-func (client *Client) Stop() bool {
-	client.stopped = true
-
-	return client.stopped
 }

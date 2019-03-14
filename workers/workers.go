@@ -47,19 +47,25 @@ type Workers struct {
 	Context          *context.Context
 	Logs             log.Logs
 	DoneChan         chan string
-	ErrorChan        chan *Worker
+	ErrorChan        chan Worker
 	*notifier.Notifier
-	mu *sync.RWMutex
+	*sync.RWMutex
 }
 
 // NumOfWorkers returns size of stack/number of workers
-func (w Workers) NumOfWorkers() int {
+func (w *Workers) NumOfWorkers() int {
+	w.Lock()
+	defer w.Unlock()
+
 	return len(w.stack)
 }
 
 // PushToStack places worker on stack
 func (w *Workers) PushToStack(worker *Worker) {
-	w.stack[worker.Recipe.Name] = *worker
+	w.Lock()
+	defer w.Unlock()
+
+	w.stack[worker.Recipe.GetName()] = *worker
 }
 
 // GetAllWorkers workers from stack
@@ -69,9 +75,9 @@ func (w Workers) GetAllWorkers() map[string]Worker {
 
 // GetWorkerByName gets worker by provided name
 func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	
+	w.Lock()
+	defer w.Unlock()
+
 	var worker Worker
 	if worker, ok := w.stack[name]; ok {
 		return &worker, nil
@@ -84,15 +90,15 @@ func (w *Workers) GetWorkerByName(name string) (*Worker, error) {
 func (w *Workers) DeleteWorkerByName(name string) {
 	_, err := w.GetWorkerByName(name)
 	if err == nil {
-		w.mu.Lock()
+		w.Lock()
 		delete(w.stack, name)
-		w.mu.Unlock()
+		w.Unlock()
 	}
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
 func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
-	if _, ok := w.GetWorkerByName(r.Name); ok == nil {
+	if _, ok := w.GetWorkerByName(r.GetName()); ok == nil {
 		return nil, ErrStillActive
 	}
 
@@ -104,11 +110,11 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		ErrorChan: w.ErrorChan,
 		Recipe:    r,
 		Cmd:       make(map[string]*exec.Cmd),
-		mu:        w.mu,
+		mu:        new(sync.RWMutex),
 	}
 
 	var err error
-	worker.Stdout, err = os.Create(w.OutputDir + "/" + worker.Recipe.Name + ".out") // For read access.
+	worker.Stdout, err = os.Create(w.OutputDir + "/" + worker.Recipe.GetName() + ".out") // For read access.
 	if err != nil {
 		w.Logs.Error("%s", err)
 	}
@@ -117,7 +123,7 @@ func (w *Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		// move to stack
 		w.PushToStack(worker)
 
-		w.Logs.Info("Worker with NAME: %s created", worker.Recipe.Name)
+		w.Logs.Info("Worker with NAME: %s created", worker.Recipe.GetName())
 
 		return worker, nil
 	}
@@ -152,22 +158,22 @@ func (w Workers) listener() {
 			case worker := <-w.ErrorChan:
 				// send notifications
 				go w.NotifyWithOptions(notifications.Options{
-					Body: "Your recipe '" + worker.Recipe.Name +
+					Body: "Your recipe '" + worker.Recipe.GetName() +
 						"' failed on step '" + worker.WorkingOn +
 						"' because of error '" + worker.Err.Error() + "'",
 				})
 				// when worker gets to error, log it
 				// and delete it from stack of workers
 				// otherwise it will populate stack and pretend to be active
-				w.DeleteWorkerByName(worker.Recipe.Name)
-				w.Logs.Error("Worker %s: %s", worker.Recipe.Name, worker.Err)
+				w.DeleteWorkerByName(worker.Recipe.GetName())
+				w.Logs.Error("Worker %s: %s", worker.Recipe.GetName(), worker.Err)
 			}
 		}
 	}()
 }
 
 // New create Workers struct instance
-func New(cfg Config, logs log.Logs, ctx *context.Context, mu *sync.RWMutex) Workers {
+func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
 	workers := Workers{
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
@@ -175,10 +181,10 @@ func New(cfg Config, logs log.Logs, ctx *context.Context, mu *sync.RWMutex) Work
 		Logs:             logs,
 		Context:          ctx,
 		DoneChan:         make(chan string),
-		ErrorChan:        make(chan *Worker),
+		ErrorChan:        make(chan Worker),
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
-		mu:               mu,
+		RWMutex:          new(sync.RWMutex),
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors

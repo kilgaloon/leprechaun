@@ -20,15 +20,15 @@ func CheckRecipe(path string) {
 	}
 
 	jobName := filepath.Base(path)
-	if r.Name == "" {
+	if r.GetName() == "" {
 		log.Fatal("Name not specified")
 	}
 
-	if r.Name+".yml" != jobName {
+	if r.GetName()+".yml" != jobName {
 		fmt.Print("It is good practice that you job name is same like file name {name}.yml\n")
 	}
 
-	if len(r.Steps) < 1 {
+	if len(r.GetSteps()) < 1 {
 		log.Fatal("Steps definition is either missing or in wrong format")
 	}
 

@@ -3,7 +3,6 @@ package server
 import (
 	"io/ioutil"
 
-	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
 
@@ -14,32 +13,39 @@ type Pool struct {
 
 // BuildPool takes all recipes and put them in pool
 func (server *Server) BuildPool() {
-	server.GetMutex().Lock()
-	defer server.GetMutex().Unlock()
+	server.Lock()
+	defer server.Unlock()
+	// mostly used for debug
+	server.Info("BuildPool started")
 
 	q := Pool{}
 	q.Stack = make(map[string]*recipe.Recipe)
 
 	files, err := ioutil.ReadDir(server.GetConfig().GetRecipesPath())
 	if err != nil {
-		server.GetLogs().Error("%s", err)
+		server.Error("%s", err)
 	}
 
 	for _, file := range files {
 		fullFilepath := server.GetConfig().GetRecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
-			server.GetLogs().Error(err.Error())
+			server.Error("%s", err)
 		}
 		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
 		if recipe.Definition == "hook" {
+			recipe.Lock()
 			q.Stack[recipe.ID] = &recipe
+			recipe.Unlock()
 		}
 
 	}
 
 	server.Pool = q
+
+	// mostly used for debug
+	server.Info("BuildPool finished")
 }
 
 // FindInPool Find recipe in pool and run it
@@ -52,8 +58,8 @@ func (server Server) FindInPool(id string) {
 		return
 	}
 
-	log.Logger.Info("%s file is in progress... \n", recipe.Name)
-	
+	server.Info("%s file is in progress... \n", recipe.GetName())
+
 	worker, err := server.CreateWorker(recipe)
 	if err == nil {
 		worker.Run()

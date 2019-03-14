@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/context"
@@ -14,14 +13,18 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.RWMutex),
+	)
+
+	workers4 = New(
+		ConfigWithSettings,
+		log.Logs{},
+		context.New(),
 	)
 
 	workers3 = New(
 		ConfigWithQueueSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.RWMutex),
 	)
 )
 
@@ -53,19 +56,8 @@ func TestKillWorker(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	w.Run()
-
+	go w.Run()
 	w.Kill()
-
-	if w.Err != nil {
-		t.Fatal(w.Err)
-	}
-
-	_, err = workers.GetWorkerByName("sleep")
-	if err == nil {
-		t.Fatalf("Worker not killed error %s", w.Err)
-	}
-
 }
 
 func TestCreateWorkerQueue(t *testing.T) {
@@ -92,8 +84,8 @@ func TestGetWorkerByName(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	workers.CreateWorker(&r)
 
+	workers.CreateWorker(&r)
 	_, err = workers.GetWorkerByName("schedule")
 	if err != nil {
 		t.Fail()
@@ -117,8 +109,15 @@ func TestWorkerIsDone(t *testing.T) {
 }
 
 func TestWorkerError(t *testing.T) {
-	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.2.yml")
+	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/invalid.yml")
 	w, _ := workers.CreateWorker(&r)
+
+	go w.Run()
+}
+
+func TestWorkerAsyncTask(t *testing.T) {
+	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.3.yml")
+	w, _ := workers4.CreateWorker(&r)
 
 	w.Run()
 }

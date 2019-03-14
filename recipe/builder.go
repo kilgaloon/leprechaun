@@ -2,6 +2,7 @@ package recipe
 
 import (
 	"io/ioutil"
+	"sync"
 	"time"
 
 	scheduler "github.com/kilgaloon/leprechaun/recipe/schedule"
@@ -18,11 +19,36 @@ type Recipe struct {
 	Steps      []string
 	Pattern    string
 	Err        error
+	*sync.Mutex
+}
+
+// GetName returns name of recipe
+func (r *Recipe) GetName() string {
+	return r.Name
+}
+
+// SetStartAt modifies time when recipe will be started
+func (r *Recipe) SetStartAt(t time.Time) {
+	r.Lock()
+	defer r.Unlock()
+
+	r.StartAt = t
+}
+
+// GetStartAt get time when recipe will be started
+func (r *Recipe) GetStartAt() time.Time {
+	return r.StartAt
+}
+
+// GetSteps return array of steps that recipe needs to work on
+func (r *Recipe) GetSteps() []string {
+	return r.Steps
 }
 
 // Build recipe for use
 func Build(file string) (Recipe, error) {
 	r := Recipe{}
+	r.Mutex = new(sync.Mutex)
 
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
