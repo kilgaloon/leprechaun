@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -18,26 +17,10 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
-		new(sync.RWMutex),
 	)
 	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	worker, errr = workers2.CreateWorker(&r)
 )
-
-func TestRun(t *testing.T) {
-	//steps := []string{"echo 'test output to file' > ../tests/test.txt"}
-	//var wg sync.WaitGroup
-	//wg.Add(1)
-
-	worker.Run()
-
-	// //steps = []string{"-> echo 'test output to file' > ../tests/test.txt"}
-	// go worker.Run()
-	//wg.Wait()
-
-	//os.Remove("../tests/test.txt")
-
-}
 
 func TestQueue(t *testing.T) {
 	workers2.Queue.empty()

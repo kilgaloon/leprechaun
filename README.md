@@ -10,7 +10,7 @@
 
   
 
-Current Version: **1.0.0-rc**
+Current Version: **1.0.0**
 
 Current Release: **Calimero**
 
@@ -110,8 +110,6 @@ Go to `leprechaun` directory and run `make install`, you will need sudo privileg
 
   
 To start leprechaun just simply run it in background like this : `leprechaun &`
-
-Starting just specific: `leprechaun --cmd='client:start' &`, `leprechaun --cmd='server:start' &`, `leprechaun --cmd='cron:start' &`, to stop `{agent}:stop`
 
 For more available commands run `leprechaun help`
 

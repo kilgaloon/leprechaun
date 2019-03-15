@@ -1,4 +1,4 @@
-name: sleep # name of recipe
+name: invalid # name of recipe
 definition: schedule
 schedule: 
     min: 0
@@ -6,4 +6,4 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - -> sleep 5s
+    - asdass

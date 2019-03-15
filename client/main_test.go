@@ -8,19 +8,19 @@ import (
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/daemon"
 )
 
 var (
-	iniFile     = "../tests/configs/config_regular.ini"
-	path        = &iniFile
-	cfgWrap     = config.NewConfigs()
-	fakeClient  = New("test", cfgWrap.New("test", *path), false)
-	fakeClient2 = New("test", cfgWrap.New("test", *path), false)
+	iniFile    = "../tests/configs/config_regular.ini"
+	path       = &iniFile
+	cfgWrap    = config.NewConfigs()
+	def        = &Client{}
+	fakeClient = def.New("test", cfgWrap.New("test", *path), false)
 )
 
 func TestMain(t *testing.T) {
 	go fakeClient.Start()
-	go fakeClient2.Start()
 
 	for {
 		if fakeClient.GetStatus() == daemon.Started {
@@ -112,28 +112,5 @@ func TestMain(t *testing.T) {
 
 			break
 		}
-
-		fakeClient.GetPID()
-
-		fakeClient.Unlock()
-	})
-
-	cmds := fakeClient.RegisterAPIHandles()
-
-	fakeClient.Mu.Lock()
-
-	if foo, ok := cmds["info"]; ok {
-		req, err := http.NewRequest("GET", "/client/info", nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		rr := httptest.NewRecorder()
-
-		foo(rr, req)
-	} else {
-		t.Fail()
 	}
-
-	fakeClient.Mu.Unlock()
 }

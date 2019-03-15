@@ -29,7 +29,7 @@ func (l Logs) Error(message string, v ...interface{}) {
 	log.Printf(message, v...)
 
 	if l.Debug {
-		fmt.Printf(message, v...)
+		fmt.Printf(message+"\n", v...)
 	}
 }
 
@@ -49,7 +49,7 @@ func (l Logs) Info(message string, v ...interface{}) {
 	log.Printf(message, v...)
 
 	if l.Debug {
-		fmt.Printf(message, v...)
+		fmt.Printf(message+"\n", v...)
 	}
 }
 

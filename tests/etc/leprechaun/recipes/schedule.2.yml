@@ -6,4 +6,5 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - this is step 2
+    - echo "this is step 21" > test1.txt
+    - rm -rf test1.txt

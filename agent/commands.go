@@ -5,14 +5,13 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/kilgaloon/leprechaun/api"
 )
 
 // WorkersList is default command for agents
-func (d Default) WorkersList(w http.ResponseWriter, r *http.Request) {
-	var resp struct {
-		Message string
-		List    [][]string `json:"list,omitempty"`
-	}
+func (d *Default) WorkersList(w http.ResponseWriter, r *http.Request) {
+	resp := api.WorkersResponse{}
 
 	if d.NumOfWorkers() < 1 {
 		resp.Message = "No workers currently active!"
@@ -33,11 +32,8 @@ func (d Default) WorkersList(w http.ResponseWriter, r *http.Request) {
 }
 
 // KillWorker kills worker by provided name
-func (d Default) KillWorker(w http.ResponseWriter, r *http.Request) {
-	var resp struct {
-		Message string
-		List    [][]string `json:"list,omitempty"`
-	}
+func (d *Default) KillWorker(w http.ResponseWriter, r *http.Request) {
+	resp := api.WorkersResponse{}
 
 	worker, err := d.GetWorkerByName(r.URL.Query()["name"][0])
 	if err != nil {

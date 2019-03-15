@@ -26,7 +26,7 @@ type Worker struct {
 	Context        *context.Context
 	Logs           log.Logs
 	DoneChan       chan string
-	ErrorChan      chan *Worker
+	ErrorChan      chan Worker
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
 	Stdout         *os.File
@@ -37,10 +37,9 @@ type Worker struct {
 
 // Run starts worker
 func (w *Worker) Run() {
-	w.Steps = w.Recipe.Steps
 	w.StartedAt = time.Now()
 
-	for _, step := range w.Steps {
+	for _, step := range w.Recipe.GetSteps() {
 		w.Logs.Info("Step %s is in progress... \n", step)
 		// replace variables
 		parts := strings.Fields(step)
@@ -57,32 +56,47 @@ func (w *Worker) Run() {
 
 func (w *Worker) workOnStep(step string) {
 	w.mu.Lock()
-	defer w.mu.Unlock()
-
 	cmd := exec.Command("bash", "-c", step)
-	w.Cmd[step] = cmd
 
 	var stderr bytes.Buffer
 	cmd.Stdout = w.Stdout
 	cmd.Stderr = &stderr
 
 	w.WorkingOn = step
-	w.Err = cmd.Run()
-	if w.Err != nil {
-		w.ErrorChan <- w
-		w.Recipe.Err = w.Err
+	w.Cmd[step] = cmd
+	w.mu.Unlock()
+
+	err := cmd.Run()
+
+	if err != nil {
+		w.mu.Lock()
+
+		w.Err = err
+		w.Recipe.Err = err
+
+		w.ErrorChan <- *w
+
+		w.Logs.Error(w.Err.Error())
+
+		w.mu.Unlock()
 		return
 	}
 
 	w.Logs.Info("Step %s finished... \n\n", step)
 	// command finished executing
 	// delete it, and let it rest in pepperonies
+	w.mu.Lock()
 	delete(w.Cmd, step)
+	w.mu.Unlock()
+
 	w.Done()
 }
 
 // Kill all commands that worker is working on
-func (w Worker) Kill() {
+func (w *Worker) Kill() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	for step, cmd := range w.Cmd {
 		if err := cmd.Process.Kill(); err != nil {
 			w.Logs.Error("Failed to kill process on step %s: %s", step, err)
@@ -92,14 +106,17 @@ func (w Worker) Kill() {
 		}
 	}
 
-	w.DoneChan <- w.Recipe.Name
+	w.DoneChan <- w.Recipe.GetName()
 }
 
 // Done signals that this worker is done and send his id for cleaner
 func (w *Worker) Done() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
 	w.TasksPerformed++
 	// worker performed all tasks, and can be done
-	if w.TasksPerformed == len(w.Steps) {
-		w.DoneChan <- w.Recipe.Name
+	if w.TasksPerformed == len(w.Recipe.GetSteps()) {
+		w.DoneChan <- w.Recipe.GetName()
 	}
 }

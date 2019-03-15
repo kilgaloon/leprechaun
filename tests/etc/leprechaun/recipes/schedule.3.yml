@@ -6,4 +6,5 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - this is step 3
+    - -> echo "this is async task"
+    - echo "not gonna wait for ping"

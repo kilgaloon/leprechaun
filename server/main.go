@@ -8,14 +8,16 @@ import (
 
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/mholt/certmagic"
 )
 
-// Agent holds instance of Server
+// Agent holds instance of server client
 var Agent *Server
 
 // Server instance
 type Server struct {
+	Name string
 	*agent.Default
 	Pool
 	HTTP *http.Server
@@ -24,16 +26,22 @@ type Server struct {
 // New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func New(name string, cfg *config.AgentConfig, debug bool) *Server {
-	server := &Server{
+func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	s := &Server{
+		name,
 		agent.New(name, cfg, debug),
 		Pool{},
 		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
 	}
 
-	Agent = server
+	Agent = s
 
-	return server
+	return s
+}
+
+//GetName returns server name
+func (server *Server) GetName() string {
+	return server.Name
 }
 
 // Start server that will receive webhooks
@@ -41,9 +49,7 @@ func (server *Server) Start() {
 	server.BuildPool()
 	// register all routes
 	server.registerHandles()
-	// listen for port
-	server.Info("Server started")
-	// register server to command socket
+	server.SetStatus(daemon.Started)
 
 	if server.isTLS() {
 		certmagic.Agreed = true
@@ -62,6 +68,9 @@ func (server *Server) Start() {
 }
 
 func (server *Server) registerHandles() {
+	server.Lock()
+	defer server.Unlock()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc(WebhookEndpoint, server.webhook)
 	mux.HandleFunc(PingEndpoint, server.ping)
@@ -70,13 +79,13 @@ func (server *Server) registerHandles() {
 }
 
 // Stop http server
-func (server *Server) Stop(args ...string) ([][]string, error) {
+func (server *Server) Stop() {
 	server.Info("Shutting down server")
 	if err := server.HTTP.Shutdown(con.Background()); err != nil {
-		return [][]string{}, err
+		server.Error(err.Error())
 	}
 
-	return [][]string{{"Server shutdown"}}, nil
+	server.SetStatus(daemon.Stopped)
 }
 
 // RegisterAPIHandles to be used in socket communication
@@ -84,6 +93,11 @@ func (server *Server) Stop(args ...string) ([][]string, error) {
 // call DefaultCommands from Agent which is same command
 func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
+
+	cmds["info"] = server.cmdinfo
+	cmds["stop"] = server.cmdstop
+	cmds["start"] = server.cmdstart
+	cmds["pause"] = server.cmdpause
 
 	// this function merge both maps and inject default commands from agent
 	return cmds
