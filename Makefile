@@ -4,9 +4,9 @@ install:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
 	cp -r dist/configs /etc/leprechaun/configs
+	mkdir /var/run/leprechaun/
 	mkdir /var/log/leprechaun/
-	mkdir /var/log/leprechaun/server
-	mkdir /var/run/leprechaun/workers.output
+	mkdir /var/log/leprechaun/workers.output
 	touch /var/log/leprechaun/info.log
 	touch /var/log/leprechaun/error.log
 	go install ./cmd/leprechaun

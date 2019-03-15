@@ -22,31 +22,95 @@ func TestMain(t *testing.T) {
 	go fakeClient.Start()
 	go fakeClient2.Start()
 
-	fakeClient2.Event.Subscribe("client:ready", func() {
-		dat, _ := ioutil.ReadFile(fakeClient2.GetConfig().GetRecipesPath() + "/schedule.yml")
-		ioutil.WriteFile(fakeClient2.GetConfig().GetRecipesPath()+"/test.yml", dat, 0644)
+	for {
+		if fakeClient.GetStatus() == daemon.Started {
+			//lookup := 0
+			for {
+				// if lookup > 50 {
+				// 	t.Fatal("Lookup exceeded")
+				// 	break
+				// }
 
-		os.Remove(fakeClient2.GetConfig().GetRecipesPath() + "/test.yml")
+				// lookup++
+				if Agent.FindRecipe("test") == nil {
+					dat, _ := ioutil.ReadFile(fakeClient.GetConfig().GetRecipesPathAbs() + "/../recipe.test")
+					ioutil.WriteFile(fakeClient.GetConfig().GetRecipesPathAbs()+"/test.yml", dat, 0777)
+				} else {
+					os.Remove(fakeClient.GetConfig().GetRecipesPathAbs() + "/test.yml")
 
-		fakeClient2.GetMutex().Lock()
-		defer fakeClient2.GetMutex().Unlock()
+					break
+				}
 
-		if len(fakeClient2.Queue.Stack) < 1 {
-			t.Error("Add to queue failed when client is running and new recipe is added")
-		}
+			}
 
-		fakeClient2.Stop()
-		if fakeClient2.stopped != true {
-			t.Fail()
-		}
-	})
+			if Agent.GetName() != "test" {
+				t.Fail()
+			}
 
-	//event.EventHandler.Subscribe("client:ready", func() {
-	fakeClient.Event.Subscribe("client:ready", func() {
-		fakeClient.Lock()
-		if !fakeClient.isWorking() {
-			t.Fail()
-			return
+			cmds := fakeClient.RegisterAPIHandles()
+
+			if foo, ok := cmds["info"]; ok {
+				req, err := http.NewRequest("GET", "/scheduler/info", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			fakeClient.Stop()
+			if fakeClient.GetStatus() != daemon.Stopped {
+				t.Fail()
+			}
+
+			if len(Agent.Queue.Stack) > 0 {
+				t.Fail()
+			}
+
+			if foo, ok := cmds["stop"]; ok {
+				req, err := http.NewRequest("GET", "/scheduler/stop", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			if foo, ok := cmds["pause"]; ok {
+				req, err := http.NewRequest("GET", "/scheduler/pause", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			if foo, ok := cmds["start"]; ok {
+				req, err := http.NewRequest("GET", "/scheduler/start", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			break
 		}
 
 		fakeClient.GetPID()
