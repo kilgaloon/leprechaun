@@ -2,6 +2,8 @@ package client
 
 import (
 	"testing"
+
+	"github.com/kilgaloon/leprechaun/daemon"
 )
 
 func TestBuildQueue(t *testing.T) {
@@ -40,4 +42,18 @@ func TestQueue(t *testing.T) {
 
 	Agent.Pause()
 	Agent.ProcessQueue()
+
+	Agent.SetStatus(daemon.Started)
+	Agent.ProcessQueue()
+}
+
+func TestFindInRecipe(t *testing.T) {
+	// reset queue to 0 to test AddToQueue
+	if Agent.FindRecipe("schedule") == nil {
+		t.Fail()
+	}
+
+	if Agent.FindRecipe("random_name") != nil {
+		t.Fail()
+	}
 }
