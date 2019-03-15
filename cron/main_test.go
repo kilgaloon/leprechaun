@@ -87,6 +87,18 @@ func TestStartStop(t *testing.T) {
 				t.Fail()
 			}
 
+			// test that cron is started again if its already started
+			if foo, ok := cmds["start"]; ok {
+				req, err := http.NewRequest("GET", "/cron/start", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			}
+
 			fakeCron.Stop()
 			if fakeCron.GetStatus() != daemon.Stopped {
 				t.Fail()

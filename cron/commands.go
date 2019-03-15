@@ -39,9 +39,6 @@ func (c *Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
 	if c.GetStatus() == daemon.Paused {
 		w.WriteHeader(http.StatusOK)
 		resp.Message = "Server paused"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Server failed to pause"
 	}
 
 	j, err := json.Marshal(resp)
@@ -61,12 +58,14 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 	}
 
 	go c.Start()
-	if c.GetStatus() == daemon.Started {
-		w.WriteHeader(http.StatusOK)
-		resp.Message = "Server started"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Server failed to start"
+	// update methodology
+	for {
+		if c.GetStatus() == daemon.Started {
+			w.WriteHeader(http.StatusOK)
+			resp.Message = "Server started"
+
+			break
+		}
 	}
 
 	j, err := json.Marshal(resp)
@@ -84,9 +83,6 @@ func (c *Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
 	if c.GetStatus() == daemon.Stopped {
 		w.WriteHeader(http.StatusOK)
 		resp.Message = "Server stopped"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Server failed to stop"
 	}
 
 	j, err := json.Marshal(resp)
