@@ -128,27 +128,11 @@ func (d *Daemon) Kill() {
 }
 
 func init() {
-	if os.Args[1] == "help" {
-		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
-			"====== \n" +
-			"daemon info - Display basic informations about daemon. \n" +
-			"daemon kill - Kills process. \n" +
-			"====== \n" +
-			"{agent} info - Display basic info about agent.\n" +
-			"{agent} start - Start agent if its stopped/paused.\n" +
-			"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
-			"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
-			"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
-			"{agent} workers:kill {name} - Kill worker that match name provided.\n"
-
-		fmt.Println(help)
-
-		return
-	}
-
 	var configPath, pidPath *string
-	var debug *bool
+	var debug, helpFlag *bool
 	var pid int
+
+	helpFlag = flag.Bool("help", false, "Display helpfull info")
 
 	if api.IsAPIRunning() {
 		resp := Srv.GetInfo()
@@ -176,6 +160,24 @@ func init() {
 
 	cmd := flag.String("cmd", "run", "Send commands to agents and they will respond")
 	flag.Parse()
+
+	if *helpFlag {
+		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
+			"====== \n" +
+			"daemon info - Display basic informations about daemon. \n" +
+			"daemon kill - Kills process. \n" +
+			"====== \n" +
+			"{agent} info - Display basic info about agent.\n" +
+			"{agent} start - Start agent if its stopped/paused.\n" +
+			"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
+			"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
+			"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
+			"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+
+		fmt.Println(help)
+
+		os.Exit(1)
+	}
 
 	d := new(Daemon)
 	f, err := os.OpenFile(*pidPath, os.O_RDWR|os.O_CREATE, 0644)

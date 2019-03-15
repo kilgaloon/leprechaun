@@ -3,7 +3,7 @@ export GO111MODULE=on
 install:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
-	cp -r dist/configs /etc/leprechaun/configs
+	cp dist/configs/config.ini /etc/leprechaun
 	mkdir /var/run/leprechaun/
 	mkdir /var/log/leprechaun/
 	mkdir /var/log/leprechaun/workers.output
