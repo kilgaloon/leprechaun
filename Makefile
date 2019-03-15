@@ -28,6 +28,10 @@ rebuild:
 format:
 	gofmt -s -w .
 
+test-package:
+	RUN_MODE=test go test -race ./${package} -coverprofile coverprofile/${package}.out
+	go tool cover -html=coverprofile/${package}.out -o coverprofile/${package}.html
+
 test:
 	go vet ./cmd/leprechaun
 	go vet ./cmd/lepretools

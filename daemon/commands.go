@@ -53,3 +53,22 @@ func (d *Daemon) daemonKill(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(j)
 }
+
+func (d *Daemon) servicesList(w http.ResponseWriter, r *http.Request) {
+	resp := ServicesListResponse{}
+
+	for agent, service := range d.services {
+		resp.List = append(resp.List, []string{agent, service.GetStatus().String()})
+	}
+
+	w.WriteHeader(http.StatusOK)
+
+	j, err := json.Marshal(resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	w.Write(j)
+
+	return
+}

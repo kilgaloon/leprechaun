@@ -80,6 +80,9 @@ func (d *Daemon) Run() {
 			case "kill":
 				d.killDaemon()
 				break
+			case "services":
+				d.daemonServices()
+				break
 			}
 
 			return
@@ -95,6 +98,7 @@ func (d *Daemon) Run() {
 
 			d.API.RegisterHandle("daemon/info", d.daemonInfo)
 			d.API.RegisterHandle("daemon/kill", d.daemonKill)
+			d.API.RegisterHandle("daemon/services", d.servicesList)
 			d.API.Start()
 		}()
 

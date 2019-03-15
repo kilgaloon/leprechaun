@@ -90,27 +90,57 @@ func TestRun(t *testing.T) {
 		Srv.GetInfo()
 		Srv.renderInfo()
 		Srv.killDaemon()
+		Srv.daemonServices()
 
 	}
 
 	//Srv.Kill()
 }
 
-func TestRunning(t *testing.T) {
-	// Srv.Cmd = "daemon info"
-	// go Srv.Run()
-	// for i := 0; i < 5; i++ {
-	// 	_, err := http.Get("http://localhost:11401")
-	// 	if err != nil {
-	// 		// handle error
-	// 		Srv.API.Start()
-	// 		time.Sleep(2 * time.Second)
-	// 		continue
-	// 	}
+func TestRunningDaemonInfo(t *testing.T) {
+	Srv.Cmd = "daemon info"
+	Srv.Run()
+	for i := 0; i < 5; i++ {
+		_, err := http.Get("http://localhost:11401")
+		if err != nil {
+			// handle error
+			Srv.API.Start()
+			time.Sleep(2 * time.Second)
+			continue
+		}
 
-	// 	go Srv.Run()
-	// 	break
-	// }
+		break
+	}
+}
 
-	// Srv.Kill()
+func TestRunningDaemonServices(t *testing.T) {
+	Srv.Cmd = "daemon services"
+	Srv.Run()
+	for i := 0; i < 5; i++ {
+		_, err := http.Get("http://localhost:11401")
+		if err != nil {
+			// handle error
+			Srv.API.Start()
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		break
+	}
+}
+
+func TestRunningDaemonKill(t *testing.T) {
+	Srv.Cmd = "daemon kill"
+	Srv.Run()
+	for i := 0; i < 5; i++ {
+		_, err := http.Get("http://localhost:11401")
+		if err != nil {
+			// handle error
+			Srv.API.Start()
+			time.Sleep(2 * time.Second)
+			continue
+		}
+
+		break
+	}
 }
