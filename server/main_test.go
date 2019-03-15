@@ -107,7 +107,10 @@ func TestStartStop(t *testing.T) {
 		break
 	}
 
+	Agent.Lock()
 	fakeServer2.GetConfig().Domain = "https://localhost"
+	Agent.Unlock()
+
 	go fakeServer2.Start()
 
 }
@@ -127,7 +130,10 @@ func TestFindInPool(t *testing.T) {
 }
 
 func TestIsTLS(t *testing.T) {
+	Agent.Lock()
 	fakeServer2.GetConfig().Domain = "localhost"
+	Agent.Unlock()
+
 	if Agent.isTLS() {
 		t.Fail()
 	}
