@@ -1,8 +1,10 @@
 package client
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 
@@ -24,25 +26,6 @@ func TestMain(t *testing.T) {
 
 	for {
 		if fakeClient.GetStatus() == daemon.Started {
-			// lookup := 0
-			// for {
-			// 	if lookup > 50 {
-			// 		t.Fatal("Lookup exceeded")
-			// 		break
-			// 	}
-
-			// 	lookup++
-			// 	if Agent.FindRecipe("test") == nil {
-			// 		dat, _ := ioutil.ReadFile(fakeClient.GetConfig().GetRecipesPathAbs() + "/../recipe.test")
-			// 		ioutil.WriteFile(fakeClient.GetConfig().GetRecipesPathAbs()+"/test.yml", dat, 0777)
-			// 	} else {
-			// 		os.Remove(fakeClient.GetConfig().GetRecipesPathAbs() + "/test.yml")
-
-			// 		break
-			// 	}
-
-			// }
-
 			if Agent.GetName() != "test" {
 				t.Fail()
 			}
@@ -69,6 +52,25 @@ func TestMain(t *testing.T) {
 
 			if len(Agent.Queue.Stack) > 0 {
 				t.Fail()
+			}
+
+			lookup := 0
+			for {
+				if lookup > 50 {
+					t.Fatal("Lookup exceeded")
+					break
+				}
+
+				lookup++
+				if Agent.FindRecipe("test") == nil {
+					dat, _ := ioutil.ReadFile(fakeClient.GetConfig().GetRecipesPathAbs() + "/../recipe.test")
+					ioutil.WriteFile(fakeClient.GetConfig().GetRecipesPathAbs()+"/test.yml", dat, 0777)
+				} else {
+					os.Remove(fakeClient.GetConfig().GetRecipesPathAbs() + "/test.yml")
+
+					break
+				}
+
 			}
 
 			if foo, ok := cmds["stop"]; ok {
