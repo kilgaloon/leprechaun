@@ -48,8 +48,10 @@ func (server *Server) BuildPool() {
 
 // FindInPool Find recipe in pool and run it
 // **TODO**: Rename this method to something more descriptive
-func (server Server) FindInPool(id string) {
+func (server *Server) FindInPool(id string) {
+	server.Lock()
 	recipe := server.Pool.Stack[id]
+	server.Unlock()
 
 	// Recipe has some error, don't execute it
 	if recipe.Err != nil {
