@@ -69,7 +69,10 @@ func (w *Workers) PushToStack(worker *Worker) {
 }
 
 // GetAllWorkers workers from stack
-func (w Workers) GetAllWorkers() map[string]Worker {
+func (w *Workers) GetAllWorkers() map[string]Worker {
+	w.Lock()
+	defer w.Unlock()
+
 	return w.stack
 }
 
