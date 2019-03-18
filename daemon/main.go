@@ -132,7 +132,7 @@ func init() {
 	var debug, helpFlag *bool
 	var pid int
 
-	helpFlag = flag.Bool("help", false, "Display helpfull info")
+	helpFlag = flag.Bool("commands", false, "Display helpful info")
 
 	if api.IsAPIRunning() {
 		resp := Srv.GetInfo()
@@ -165,6 +165,7 @@ func init() {
 		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
 			"====== \n" +
 			"daemon info - Display basic informations about daemon. \n" +
+			"daemon services - List all services with their names and status. \n" +
 			"daemon kill - Kills process. \n" +
 			"====== \n" +
 			"{agent} info - Display basic info about agent.\n" +

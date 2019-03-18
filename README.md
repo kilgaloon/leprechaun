@@ -111,7 +111,7 @@ Go to `leprechaun` directory and run `make install`, you will need sudo privileg
   
 To start leprechaun just simply run it in background like this : `leprechaun &`
 
-For more available commands run `leprechaun help`
+For more available commands run `leprechaun --help`
 
 # Lepretools
 

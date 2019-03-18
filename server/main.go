@@ -103,6 +103,9 @@ func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter
 	return cmds
 }
 
-func (server Server) isTLS() bool {
+func (server *Server) isTLS() bool {
+	server.Lock()
+	defer server.Unlock()
+
 	return strings.Contains(server.GetConfig().Domain, "https://")
 }

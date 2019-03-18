@@ -1,10 +1,8 @@
 package client
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"sync"
 	"testing"
 
