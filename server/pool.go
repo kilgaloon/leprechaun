@@ -13,8 +13,6 @@ type Pool struct {
 
 // BuildPool takes all recipes and put them in pool
 func (server *Server) BuildPool() {
-	server.Lock()
-	defer server.Unlock()
 	// mostly used for debug
 	server.Info("BuildPool started")
 
@@ -35,14 +33,14 @@ func (server *Server) BuildPool() {
 		// recipes that needs to be pushed to pool
 		// needs to be schedule by definition
 		if recipe.Definition == "hook" {
-			recipe.Lock()
 			q.Stack[recipe.ID] = &recipe
-			recipe.Unlock()
 		}
 
 	}
 
+	server.Lock()
 	server.Pool = q
+	server.Unlock()
 
 	// mostly used for debug
 	server.Info("BuildPool finished")
