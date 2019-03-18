@@ -99,7 +99,12 @@ func TestGetWorkerByName(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	w := workers.GetAllWorkers()
-	if workers.NumOfWorkers() != len(w) {
+
+	workers.Lock()
+	l := len(w)
+	workers.Unlock()
+
+	if workers.NumOfWorkers() != l {
 		t.Fail()
 	}
 }
