@@ -46,7 +46,7 @@ type Service interface {
 	api.Registrator
 	GetStatus() ServiceStatus
 	SetStatus(s int)
-	GetConfig() *config.AgentConfig
+	GetConfig() config.AgentConfig
 	StartStop
 	Pause
 	IsDebug() bool

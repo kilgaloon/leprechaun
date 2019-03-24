@@ -41,8 +41,8 @@ func (fs *fakeService) GetStatus() ServiceStatus {
 	return ServiceStatus(1)
 }
 
-func (fs *fakeService) GetConfig() *config.AgentConfig {
-	return ConfigWithSettings
+func (fs *fakeService) GetConfig() config.AgentConfig {
+	return *ConfigWithSettings
 }
 
 func (fs *fakeService) IsDebug() bool {
