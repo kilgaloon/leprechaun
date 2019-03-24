@@ -30,6 +30,7 @@ func (c Cmd) Command() string {
 
 	return ""
 }
+
 // Args is which args are passed to command
 func (c Cmd) Args() []string {
 	s := strings.Fields(string(c))
@@ -116,7 +117,7 @@ func Process(c Cmd) {
 	}
 
 	if r.StatusCode != 200 {
-		fmt.Println("No such command " + c.Command())
+		fmt.Println("Invalid command")
 		return
 	}
 

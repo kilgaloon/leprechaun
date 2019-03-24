@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/config"
@@ -90,10 +91,21 @@ func (d *Daemon) Run() {
 
 		api.Resolver(d.Cmd)
 	} else {
+		var servicesToStart []string
+		if d.Cmd.Agent() == "run" {
+			servicesToStart = strings.Split(d.Cmd.Command(), ",")
+		}
+
 		go func() {
 			for _, s := range d.services {
-				log.Printf("Starting service %s", s.GetName())
-				go s.Start()
+				for _, srv := range servicesToStart {
+					if srv == s.GetName() {
+						log.Printf("Starting service %s", s.GetName())
+						go s.Start()
+
+						break
+					}
+				}
 			}
 
 			d.API.RegisterHandle("daemon/info", d.daemonInfo)
@@ -158,7 +170,7 @@ func init() {
 
 	}
 
-	cmd := flag.String("cmd", "run", "Send commands to agents and they will respond")
+	cmd := flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
 	flag.Parse()
 
 	if *helpFlag {

@@ -60,6 +60,8 @@ func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	if client.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
 		resp.Message = "Client already started"
+
+		return
 	}
 
 	go client.Start()

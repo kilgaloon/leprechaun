@@ -58,6 +58,8 @@ func (server *Server) cmdstart(w http.ResponseWriter, r *http.Request) {
 	if server.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
 		resp.Message = "Server already started"
+
+		return
 	}
 
 	go server.Start()
