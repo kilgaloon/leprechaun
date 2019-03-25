@@ -1,8 +1,10 @@
 module github.com/kilgaloon/leprechaun
 
 require (
+	github.com/certifi/gocertifi v0.0.0-20190105021004-abcd57078448 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
+	github.com/getsentry/raven-go v0.2.0
 	github.com/gopherjs/gopherjs v0.0.0-20181004151105-1babbf986f6f // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/klauspost/cpuid v1.2.0 // indirect
@@ -10,6 +12,7 @@ require (
 	github.com/mholt/certmagic v0.0.0-20190122014809-c1d472b46046
 	github.com/miekg/dns v1.1.3 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+	github.com/pkg/errors v0.8.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron v0.0.0-20180505203441-b41be1df6967
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect

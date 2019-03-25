@@ -26,7 +26,11 @@ install: true
 
 # Don't email me the results of the test runs.
 notifications:
-  email: false
+  email:
+    recipients:
+      - radju22@gmail.com
+    on_success: never # default: change
+    on_failure: always # default: always
 
 before_install:
   - go get -t ./...

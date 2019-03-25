@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 )
 
@@ -25,6 +26,7 @@ func (d *Default) WorkersList(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -47,6 +49,7 @@ func (d *Default) KillWorker(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
 )
@@ -38,7 +39,7 @@ func (c *Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
 	c.Pause()
 	if c.GetStatus() == daemon.Paused {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Server paused"
+		resp.Message = "Cron paused"
 	}
 
 	j, err := json.Marshal(resp)
@@ -54,7 +55,9 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 
 	if c.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Server already started"
+		resp.Message = "Cron already started"
+
+		return
 	}
 
 	go c.Start()
@@ -62,7 +65,7 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 	for {
 		if c.GetStatus() == daemon.Started {
 			w.WriteHeader(http.StatusOK)
-			resp.Message = "Server started"
+			resp.Message = "Cron started"
 
 			break
 		}
@@ -70,6 +73,7 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -82,11 +86,12 @@ func (c *Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
 	c.Stop()
 	if c.GetStatus() == daemon.Stopped {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Server stopped"
+		resp.Message = "Cron stopped"
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

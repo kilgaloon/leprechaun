@@ -23,7 +23,8 @@ const (
 	SMTPHost               = ""
 	SMTPUsername           = ""
 	SMTPPassword           = ""
-	ServerDomain           = ""
+	ServerDomain           = "localhost"
+	ErrorReporting         = true
 )
 
 // Configs for different agents
@@ -63,6 +64,7 @@ type AgentConfig struct {
 	SMTPUsername           string
 	SMTPPassword           string
 	Domain                 string
+	ErrorReporting         bool
 }
 
 // GetPath returns path of config file
@@ -172,6 +174,11 @@ func (ac AgentConfig) GetServerDomain() []string {
 	return []string{domain, wwwdomain}
 }
 
+// GetErrorReporting returns flag to decide is remote reporting enabled or not
+func (ac AgentConfig) GetErrorReporting() bool {
+	return ac.ErrorReporting
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -231,6 +238,9 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
 
 	ac.Domain = cfg.Section("").Key(name + ".domain").MustString(ServerDomain)
+
+	gErrorReporting := cfg.Section("").Key("error_reporting").MustBool(ErrorReporting)
+	ac.ErrorReporting = cfg.Section("").Key(name + ".error_reporting").MustBool(gErrorReporting)
 
 	c.cfgs[name] = ac
 	return ac

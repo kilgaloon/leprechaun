@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/daemon"
 
@@ -48,6 +49,7 @@ func (client *Client) Start() {
 	// watch for new recipes
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
+		raven.CaptureError(err, nil)
 		panic("Failed to create watcher")
 	}
 

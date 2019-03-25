@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
 )
@@ -24,6 +25,7 @@ func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -41,13 +43,11 @@ func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 	if client.GetStatus() == daemon.Paused {
 		w.WriteHeader(http.StatusOK)
 		resp.Message = "Client paused"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to pause"
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -60,19 +60,19 @@ func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	if client.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
 		resp.Message = "Client already started"
+
+		return
 	}
 
 	go client.Start()
 	if client.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusOK)
 		resp.Message = "Client started"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to start"
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -86,13 +86,11 @@ func (client *Client) cmdstop(w http.ResponseWriter, r *http.Request) {
 	if client.GetStatus() == daemon.Stopped {
 		w.WriteHeader(http.StatusOK)
 		resp.Message = "Client stopped"
-	} else {
-		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client failed to stop"
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

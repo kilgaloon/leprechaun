@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/getsentry/raven-go"
 	scheduler "github.com/kilgaloon/leprechaun/recipe/schedule"
 	"gopkg.in/yaml.v2"
 )
@@ -52,11 +53,13 @@ func Build(file string) (Recipe, error) {
 
 	data, err := ioutil.ReadFile(file)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		return r, err
 	}
 
 	error := yaml.Unmarshal(data, &r)
 	if error != nil {
+		raven.CaptureError(err, nil)
 		return r, err
 	}
 

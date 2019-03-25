@@ -71,8 +71,8 @@ func (d *Default) GetContext() *context.Context {
 }
 
 // GetConfig return current config for agent
-func (d *Default) GetConfig() *config.AgentConfig {
-	return d.Config
+func (d *Default) GetConfig() config.AgentConfig {
+	return *d.Config
 }
 
 func (d Default) Write(p []byte) (n int, err error) {
