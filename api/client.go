@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/getsentry/raven-go"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -87,6 +88,7 @@ func RevealEndpoint(e string, c Cmd) string {
 func Info(c Cmd) {
 	r, err := HTTPClient.Get(RevealEndpoint(infoEndpoint, c))
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -100,6 +102,7 @@ func Info(c Cmd) {
 	resp := &InfoResponse{}
 	err = json.NewDecoder(r.Body).Decode(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -113,6 +116,7 @@ func Info(c Cmd) {
 func Process(c Cmd) {
 	r, err := HTTPClient.Get(RevealEndpoint(processCmds[c.Command()], c))
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -126,6 +130,7 @@ func Process(c Cmd) {
 	resp := &WorkersResponse{}
 	err = json.NewDecoder(r.Body).Decode(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -137,6 +142,7 @@ func Process(c Cmd) {
 func WorkersList(c Cmd) {
 	r, err := HTTPClient.Get(RevealEndpoint(workersListEndpoint, c))
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -150,6 +156,7 @@ func WorkersList(c Cmd) {
 	resp := &WorkersResponse{}
 	err = json.NewDecoder(r.Body).Decode(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -169,6 +176,7 @@ func WorkersList(c Cmd) {
 func WorkersKill(c Cmd) {
 	r, err := HTTPClient.Get(RevealEndpoint(workersKillEndpoint, c) + "?name=" + c.Args()[0])
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -182,6 +190,7 @@ func WorkersKill(c Cmd) {
 	resp := &WorkersResponse{}
 	err = json.NewDecoder(r.Body).Decode(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

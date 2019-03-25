@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
 )
@@ -72,6 +73,7 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -89,6 +91,7 @@ func (c *Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
+		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

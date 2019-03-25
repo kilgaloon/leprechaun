@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/daemon"
 	"github.com/kilgaloon/leprechaun/recipe"
 	schedule "github.com/kilgaloon/leprechaun/recipe/schedule"
@@ -22,6 +23,7 @@ func (client *Client) BuildQueue() {
 
 	files, err := ioutil.ReadDir(client.GetConfig().GetRecipesPath())
 	if err != nil {
+		raven.CaptureError(err, nil)
 		panic(err)
 	}
 
