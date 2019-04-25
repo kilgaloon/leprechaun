@@ -1,0 +1,10 @@
+name: job4 # name of recipe
+definition: schedule
+schedule: 
+    min: 0
+    hour: 0
+    day: 0
+
+steps: # steps are done from first to last
+    - echo "I like golang" }>
+    - cat > i_like_it.txt

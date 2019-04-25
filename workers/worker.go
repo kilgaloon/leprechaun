@@ -22,13 +22,13 @@ const AsyncMarker = "->"
 type Worker struct {
 	StartedAt      time.Time
 	WorkingOn      string
-	Steps          []string
 	Context        *context.Context
 	Logs           log.Logs
 	DoneChan       chan string
 	ErrorChan      chan Worker
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
+	steps          []*cmd
 	Stdout         *os.File
 	Recipe         *recipe.Recipe
 	Err            error
@@ -39,34 +39,48 @@ type Worker struct {
 func (w *Worker) Run() {
 	w.StartedAt = time.Now()
 
-	for _, step := range w.Recipe.GetSteps() {
+	for i, step := range w.Recipe.GetSteps() {
 		w.Logs.Info("Step %s is in progress... \n", step)
-		// replace variables
-		parts := strings.Fields(step)
 
+		if len(step) < 1 {
+			continue
+		}
+
+		parts := strings.Fields(step)
 		if parts[0] == AsyncMarker {
 			step = w.Context.Transpile(strings.Join(parts[1:], " "))
-			go w.workOnStep(step)
+			go w.workOnStep(i, step)
 		} else {
-			step = w.Context.Transpile(step)
-			w.workOnStep(step)
+			w.workOnStep(i, step)
 		}
 	}
 }
 
-func (w *Worker) workOnStep(step string) {
+func (w *Worker) workOnStep(i int, step string) {
 	w.mu.Lock()
-	cmd := exec.Command("bash", "-c", step)
 
-	var stderr bytes.Buffer
-	cmd.Stdout = w.Stdout
-	cmd.Stderr = &stderr
+	var in bytes.Buffer
+	if len(w.steps) > 0 {
+		ps := w.steps[i-1]
+		if ps.pipe {
+			in = ps.stdout
+		}
+	}
+
+	cmd, err := newCmd(step, in)
+	if err != nil {
+		w.Logs.Error(err.Error())
+	}
 
 	w.WorkingOn = step
-	w.Cmd[step] = cmd
+	w.Cmd[step] = cmd.cmd
 	w.mu.Unlock()
 
-	err := cmd.Run()
+	err = cmd.Run()
+
+	w.mu.Lock()
+	w.steps = append(w.steps, cmd)
+	w.mu.Unlock()
 
 	if err != nil {
 		w.mu.Lock()
