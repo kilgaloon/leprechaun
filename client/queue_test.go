@@ -10,8 +10,8 @@ func TestBuildQueue(t *testing.T) {
 	Agent.BuildQueue()
 
 	Agent.Lock()
-	if len(Agent.Queue.Stack) != 5 {
-		t.Errorf("Queue stack length expected to be 5, got %d", len(Agent.Queue.Stack))
+	if len(Agent.Queue.Stack) != 6 {
+		t.Errorf("Queue stack length expected to be 6, got %d", len(Agent.Queue.Stack))
 	}
 	Agent.Unlock()
 

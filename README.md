@@ -10,7 +10,7 @@
 
   
 
-Current Version: **1.1.0**
+Current Version: **1.2.0**
 
 Current Release: **Calimero**
 
@@ -101,6 +101,22 @@ but in this case for example first task will block performing on any task and al
 	- ping google.com
 	- -> echo "I need to wait above step to finish, then i can do my stuff"
 
+## Step Pipe
+
+Output from one step can be passed to input of next step:
+
+	name: job1 // name of recipe
+	definition: schedule
+	schedule:
+		min: 0 // every min
+		hour: 0 // every hour
+		day: 0 // every day
+	steps: // steps are done from first to last
+		- echo "Pipe this to next step" }>
+		- cat > piped.txt
+
+As you see, first step is using syntax `}>` at the end, which tells that this command output will be passed to next command input, you can chain like this how much you want.
+Although this is perfectly fine syntax for step `-> echo "Pipe this to next step" }>` (we added async syntax), next step will start even before first step finished and basically nothing will be piped.
   
 ## Installation
 
