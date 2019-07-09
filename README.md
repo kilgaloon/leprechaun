@@ -10,11 +10,8 @@
 
   
 
-Current Version: **1.2.0**
+Current Version: **1.3.0**
 
-Current Release: **Calimero**
-
-  
 
 **Leprechaun** is tool where you can schedule your recurring tasks to be performed over and over.
 
