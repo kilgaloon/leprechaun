@@ -5,7 +5,7 @@ type Queue struct {
 	elements []*Worker
 }
 
-func (q *Queue) len() int {
+func (q Queue) len() int {
 	return len(q.elements)
 }
 
@@ -13,7 +13,7 @@ func (q *Queue) empty() {
 	q.elements = q.elements[:0]
 }
 
-func (q *Queue) isEmpty() bool {
+func (q Queue) isEmpty() bool {
 	if q.len() < 1 {
 		return true
 	}
