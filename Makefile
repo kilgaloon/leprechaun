@@ -45,19 +45,19 @@ test:
 	cd server && go vet
 	cd agent && go vet
 	cd api && go vet
-	RUN_MODE=test go test -race ./client -coverprofile=./client/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./config -coverprofile=./config/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./context -coverprofile=./context/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./log -coverprofile=./log/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./workers -coverprofile=./workers/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./server -coverprofile=./server/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./api -coverprofile=./api/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./agent -coverprofile=./agent/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./recipe -coverprofile=./api/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./cron -coverprofile=./cron/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./notifier -coverprofile=./notifier/coverage.txt -covermode=atomic
-	RUN_MODE=test go test -race ./notifier/notifications -coverprofile=./notifier/notifications/coverage.txt
-	RUN_MODE=test go test -race ./daemon -coverprofile=./daemon/coverage.txt
+	RUN_MODE=test go test -race ./client -coverprofile=./client/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./config -coverprofile=./config/coverage.txt -covermode=atomic -v 
+	RUN_MODE=test go test -race ./context -coverprofile=./context/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./log -coverprofile=./log/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./workers -coverprofile=./workers/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./server -coverprofile=./server/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./api -coverprofile=./api/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./agent -coverprofile=./agent/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./recipe -coverprofile=./api/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./cron -coverprofile=./cron/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./notifier -coverprofile=./notifier/coverage.txt -covermode=atomic -v
+	RUN_MODE=test go test -race ./notifier/notifications -coverprofile=./notifier/notifications/coverage.txt -v
+	RUN_MODE=test go test -race ./daemon -coverprofile=./daemon/coverage.txt -v
 
 test-with-report:
 	go vet ./cmd/leprechaun
