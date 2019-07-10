@@ -93,9 +93,6 @@ func (client *Client) ProcessQueue() {
 		}
 
 		go func(r recipe.Recipe) {
-			r.Lock()
-			defer r.Unlock()
-			//defer r.Unlock()
 			// if client is paused reschedule recipe but don't run it
 			if client.GetStatus() == daemon.Paused {
 				r.SetStartAt(schedule.ScheduleToTime(r.Schedule))
