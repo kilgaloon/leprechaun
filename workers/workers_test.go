@@ -135,7 +135,7 @@ func TestWorkerAsyncTask(t *testing.T) {
 
 func TestWorkerPipeTask(t *testing.T) {
 	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.4.yml")
-	w, _ := workers.CreateWorker(&r)
+	w, _ := workers5.CreateWorker(&r)
 
 	w.Run()
 }
