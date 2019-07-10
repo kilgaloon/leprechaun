@@ -7,4 +7,4 @@ schedule:
 
 steps: # steps are done from first to last
     - echo "I like golang" }>
-    - cat | echo
+    - cat > /dev/null &
