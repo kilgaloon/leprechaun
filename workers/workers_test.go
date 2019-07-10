@@ -15,6 +15,12 @@ var (
 		context.New(),
 	)
 
+	workers5 = New(
+		ConfigWithSettings,
+		log.Logs{},
+		context.New(),
+	)
+
 	workers4 = New(
 		ConfigWithSettings,
 		log.Logs{},
