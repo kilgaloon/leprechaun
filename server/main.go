@@ -31,7 +31,7 @@ func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daem
 		name,
 		agent.New(name, cfg, debug),
 		Pool{},
-		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
+		&http.Server{Addr: ":" + strconv.Itoa(cfg.Port())},
 	}
 
 	Agent = s
@@ -53,10 +53,10 @@ func (server *Server) Start() {
 
 	if server.isTLS() {
 		certmagic.Agreed = true
-		certmagic.Email = server.GetConfig().GetNotificationsEmail()
+		certmagic.Email = server.GetConfig().NotificationsEmail()
 		certmagic.CA = certmagic.LetsEncryptStagingCA
 
-		if err := certmagic.HTTPS(server.GetConfig().GetServerDomain(), server.HTTP.Handler); err != nil {
+		if err := certmagic.HTTPS(server.GetConfig().ServerDomain(), server.HTTP.Handler); err != nil {
 			server.Error("Httpserver: ListenAndServe() error: %s", err)
 		}
 	} else {
@@ -107,5 +107,5 @@ func (server *Server) isTLS() bool {
 	server.Lock()
 	defer server.Unlock()
 
-	return strings.Contains(server.GetConfig().Domain, "https://")
+	return strings.Contains(server.GetConfig().ServerDomain()[0], "https://")
 }

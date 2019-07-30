@@ -67,7 +67,7 @@ func (client *Client) Start() {
 		}
 	}()
 
-	err = watcher.Add(client.GetConfig().GetRecipesPath())
+	err = watcher.Add(client.GetConfig().RecipesPath())
 	if err != nil {
 		client.Error("%s", err)
 	}

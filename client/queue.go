@@ -21,14 +21,14 @@ func (client *Client) BuildQueue() {
 	client.Info("Scheduler BuildQueue started")
 	q := Queue{}
 
-	files, err := ioutil.ReadDir(client.GetConfig().GetRecipesPath())
+	files, err := ioutil.ReadDir(client.GetConfig().RecipesPath())
 	if err != nil {
 		raven.CaptureError(err, nil)
 		panic(err)
 	}
 
 	for _, file := range files {
-		fullFilepath := client.GetConfig().GetRecipesPath() + "/" + file.Name()
+		fullFilepath := client.GetConfig().RecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
 			client.Error(err.Error())

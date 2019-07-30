@@ -18,10 +18,10 @@ type Email struct {
 
 // EmailConfig defines interface that satisfies NewEmail
 type EmailConfig interface {
-	GetSMTPHost() string
-	GetSMTPUsername() string
-	GetSMTPPassword() string
-	GetNotificationsEmail() string
+	SMTPHost() string
+	SMTPUsername() string
+	SMTPPassword() string
+	NotificationsEmail() string
 }
 
 // SetMessage will be used as body for email
@@ -73,10 +73,10 @@ func (e Email) Send() error {
 // params from this function is used to build smtp.Client
 func NewEmail(cfg EmailConfig) *Email {
 	e := &Email{
-		host:              cfg.GetSMTPHost(),
-		username:          cfg.GetSMTPUsername(),
-		password:          cfg.GetSMTPPassword(),
-		notificationEmail: cfg.GetNotificationsEmail(),
+		host:              cfg.SMTPHost(),
+		username:          cfg.SMTPUsername(),
+		password:          cfg.SMTPPassword(),
+		notificationEmail: cfg.NotificationsEmail(),
 	}
 
 	return e

@@ -8,13 +8,13 @@ import (
 
 func (c *Cron) buildJobs() {
 	c.Info("Cron buildJobs started")
-	files, err := ioutil.ReadDir(c.GetConfig().GetRecipesPath())
+	files, err := ioutil.ReadDir(c.GetConfig().RecipesPath())
 	if err != nil {
 		panic(err)
 	}
 
 	for _, file := range files {
-		fullFilepath := c.GetConfig().GetRecipesPath() + "/" + file.Name()
+		fullFilepath := c.GetConfig().RecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
 			c.Error(err.Error())

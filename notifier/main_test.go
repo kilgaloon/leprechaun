@@ -15,8 +15,8 @@ var (
 	cfgWrap = config.NewConfigs()
 	cfg     = cfgWrap.New("test", *path)
 	logger  = log.Logs{
-		ErrorLog: cfg.GetErrorLog(),
-		InfoLog:  cfg.GetInfoLog(),
+		ErrorLog: cfg.ErrorLog(),
+		InfoLog:  cfg.InfoLog(),
 	}
 	n = New(cfg, logger)
 )

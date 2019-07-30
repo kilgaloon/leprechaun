@@ -24,7 +24,7 @@ func TestQueue(t *testing.T) {
 	q.Stack = q.Stack[:0]
 	Agent.Unlock()
 
-	Agent.AddToQueue(Agent.GetConfig().GetRecipesPath() + "/schedule.yml")
+	Agent.AddToQueue(Agent.GetConfig().RecipesPath() + "/schedule.yml")
 
 	Agent.Lock()
 	if len(Agent.Queue.Stack) != 1 {
@@ -32,7 +32,7 @@ func TestQueue(t *testing.T) {
 	}
 	Agent.Unlock()
 
-	Agent.AddToQueue(Agent.GetConfig().GetRecipesPath() + "/hook.yml")
+	Agent.AddToQueue(Agent.GetConfig().RecipesPath() + "/hook.yml")
 
 	Agent.Lock()
 	if len(Agent.Queue.Stack) != 1 {

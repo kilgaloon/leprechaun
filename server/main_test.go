@@ -28,7 +28,7 @@ func TestStartStop(t *testing.T) {
 	go fakeServer.Start()
 	// retry 5 times before failing
 	// this means server failed to start
-	port := strconv.Itoa(fakeServer.GetConfig().GetPort())
+	port := strconv.Itoa(fakeServer.GetConfig().Port())
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost" + ":" + port)
 		if err != nil {

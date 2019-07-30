@@ -19,13 +19,13 @@ func (server *Server) BuildPool() {
 	q := Pool{}
 	q.Stack = make(map[string]*recipe.Recipe)
 
-	files, err := ioutil.ReadDir(server.GetConfig().GetRecipesPath())
+	files, err := ioutil.ReadDir(server.GetConfig().RecipesPath())
 	if err != nil {
 		server.Error("%s", err)
 	}
 
 	for _, file := range files {
-		fullFilepath := server.GetConfig().GetRecipesPath() + "/" + file.Name()
+		fullFilepath := server.GetConfig().RecipesPath() + "/" + file.Name()
 		recipe, err := recipe.Build(fullFilepath)
 		if err != nil {
 			server.Error("%s", err)

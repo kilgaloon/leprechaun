@@ -164,8 +164,8 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent.RWMutex = new(sync.RWMutex)
 	agent.Logs = log.Logs{
 		Debug:    debug,
-		ErrorLog: cfg.GetErrorLog(),
-		InfoLog:  cfg.GetInfoLog(),
+		ErrorLog: cfg.ErrorLog(),
+		InfoLog:  cfg.InfoLog(),
 	}
 
 	agent.Context = context.New()

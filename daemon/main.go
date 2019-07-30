@@ -220,7 +220,7 @@ func init() {
 	d.shutdownChan = make(chan bool, 1)
 
 	cfg := d.Configs.New("daemon", d.ConfigPath)
-	if cfg.GetErrorReporting() && os.Getenv("RUN_MODE") != "test" {
+	if cfg.ErrorReporting() && os.Getenv("RUN_MODE") != "test" {
 		raven.SetDSN("https://63f6916e9a4f4ae08853f5b1fe5eabda:a2abd1e7a4f944dca632f875279197f7@sentry.io/1422644")
 	}
 

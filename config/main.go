@@ -39,8 +39,8 @@ func NewConfigs() *Configs {
 	}
 }
 
-// GetConfig return config by name of the agent
-func (c *Configs) GetConfig(name string) *AgentConfig {
+// Config return config by name of the agent
+func (c *Configs) Config(name string) *AgentConfig {
 	if cfg, ok := c.cfgs[name]; ok {
 		return cfg
 	}
@@ -50,112 +50,112 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 
 // AgentConfig holds config for agents
 type AgentConfig struct {
-	Path                   string
-	ErrorLog               string
-	InfoLog                string
-	RecipesPath            string
-	LockFile               string
-	WorkerOutputDir        string
-	Port                   int
-	MaxAllowedWorkers      int
-	MaxAllowedQueueWorkers int
-	NotificationsEmail     string
-	SMTPHost               string
-	SMTPUsername           string
-	SMTPPassword           string
-	Domain                 string
-	ErrorReporting         bool
+	path                   string
+	errorLog               string
+	infoLog                string
+	recipesPath            string
+	lockFile               string
+	workerOutputDir        string
+	port                   int
+	maxAllowedWorkers      int
+	maxAllowedQueueWorkers int
+	notificationsEmail     string
+	sMTPHost               string
+	sMTPUsername           string
+	sMTPPassword           string
+	domain                 string
+	errorReporting         bool
 }
 
-// GetPath returns path of config file
-func (ac AgentConfig) GetPath() string {
-	p, err := filepath.Abs(ac.Path)
+// Path returns path of config file
+func (ac AgentConfig) Path() string {
+	p, err := filepath.Abs(ac.path)
 	if err != nil {
-		return ac.Path
+		return ac.path
 	}
 
 	return p
 }
 
-// GetErrorLog returns path of config file
-func (ac AgentConfig) GetErrorLog() string {
-	return ac.ErrorLog
+// ErrorLog returns path of config file
+func (ac AgentConfig) ErrorLog() string {
+	return ac.errorLog
 }
 
-// GetInfoLog returns path of config file
-func (ac AgentConfig) GetInfoLog() string {
-	return ac.InfoLog
+// InfoLog returns path of config file
+func (ac AgentConfig) InfoLog() string {
+	return ac.infoLog
 }
 
-// GetRecipesPathAbs returns absolute path of recipes
-func (ac AgentConfig) GetRecipesPathAbs() string {
-	p, err := filepath.Abs(ac.RecipesPath)
+// RecipesPathAbs returns absolute path of recipes
+func (ac AgentConfig) RecipesPathAbs() string {
+	p, err := filepath.Abs(ac.recipesPath)
 	if err != nil {
-		return ac.RecipesPath
+		return ac.recipesPath
 	}
 
 	return p
 }
 
-// GetRecipesPath returns path of config file
-func (ac AgentConfig) GetRecipesPath() string {
-	return ac.RecipesPath
+// RecipesPath returns path of config file
+func (ac AgentConfig) RecipesPath() string {
+	return ac.recipesPath
 }
 
-// GetLockFile returns path of config file
-func (ac AgentConfig) GetLockFile() string {
-	return ac.LockFile
+// LockFile returns path of config file
+func (ac AgentConfig) LockFile() string {
+	return ac.lockFile
 }
 
-// GetPort returns path of config file
-func (ac AgentConfig) GetPort() int {
-	return ac.Port
+// Port returns path of config file
+func (ac AgentConfig) Port() int {
+	return ac.port
 }
 
-// GetMaxAllowedWorkers defines how much workers are allowed to work in parallel
-func (ac AgentConfig) GetMaxAllowedWorkers() int {
-	return ac.MaxAllowedWorkers
+// MaxAllowedWorkers defines how much workers are allowed to work in parallel
+func (ac AgentConfig) MaxAllowedWorkers() int {
+	return ac.maxAllowedWorkers
 }
 
-// GetMaxAllowedQueueWorkers defines how much workers are allowed to sit in queue
-func (ac AgentConfig) GetMaxAllowedQueueWorkers() int {
-	return ac.MaxAllowedQueueWorkers
+// MaxAllowedQueueWorkers defines how much workers are allowed to sit in queue
+func (ac AgentConfig) MaxAllowedQueueWorkers() int {
+	return ac.maxAllowedQueueWorkers
 }
 
-// GetWorkerOutputDir returns path of workers output dir
-func (ac AgentConfig) GetWorkerOutputDir() string {
-	return ac.WorkerOutputDir
+// WorkerOutputDir returns path of workers output dir
+func (ac AgentConfig) WorkerOutputDir() string {
+	return ac.workerOutputDir
 }
 
-// GetNotificationsEmail returns path of workers output dir
-func (ac AgentConfig) GetNotificationsEmail() string {
-	return ac.NotificationsEmail
+//NotificationsEmail returns path of workers output dir
+func (ac AgentConfig) NotificationsEmail() string {
+	return ac.notificationsEmail
 }
 
-// GetSMTPHost returns path of workers output dir
-func (ac AgentConfig) GetSMTPHost() string {
-	return ac.SMTPHost
+// SMTPHost returns path of workers output dir
+func (ac AgentConfig) SMTPHost() string {
+	return ac.sMTPHost
 }
 
-// GetSMTPUsername returns path of workers output dir
-func (ac AgentConfig) GetSMTPUsername() string {
-	return ac.SMTPUsername
+// SMTPUsername returns path of workers output dir
+func (ac AgentConfig) SMTPUsername() string {
+	return ac.sMTPUsername
 }
 
-// GetSMTPPassword returns path of workers output dir
-func (ac AgentConfig) GetSMTPPassword() string {
-	return ac.SMTPPassword
+// SMTPPassword returns path of workers output dir
+func (ac AgentConfig) SMTPPassword() string {
+	return ac.sMTPPassword
 }
 
-// GetServerDomain returns domain of server
-func (ac AgentConfig) GetServerDomain() []string {
+// ServerDomain returns domain of server
+func (ac AgentConfig) ServerDomain() []string {
 	var domain string
 	var wwwdomain string
 	var d []string
-	if strings.Contains(ac.Domain, "://") {
-		d = strings.Split(ac.Domain, "://")
+	if strings.Contains(ac.domain, "://") {
+		d = strings.Split(ac.domain, "://")
 	} else {
-		d = []string{ac.Domain}
+		d = []string{ac.domain}
 	}
 
 	if len(d) > 1 {
@@ -174,9 +174,9 @@ func (ac AgentConfig) GetServerDomain() []string {
 	return []string{domain, wwwdomain}
 }
 
-// GetErrorReporting returns flag to decide is remote reporting enabled or not
-func (ac AgentConfig) GetErrorReporting() bool {
-	return ac.ErrorReporting
+// ErrorReporting returns flag to decide is remote reporting enabled or not
+func (ac AgentConfig) ErrorReporting() bool {
+	return ac.errorReporting
 }
 
 // New Create new config
@@ -187,60 +187,60 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	}
 
 	ac := &AgentConfig{}
-	ac.Path = path
+	ac.path = path
 	gErrorLog := cfg.Section("").Key("error_log").MustString(ErrorLog)
-	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(gErrorLog)
-	if !IsFileValid(ac.ErrorLog, ".log") {
-		ac.ErrorLog = ErrorLog
+	ac.errorLog = cfg.Section("").Key(name + ".error_log").MustString(gErrorLog)
+	if !IsFileValid(ac.errorLog, ".log") {
+		ac.errorLog = ErrorLog
 	}
 
 	gInfoLog := cfg.Section("").Key("info_log").MustString(InfoLog)
-	ac.InfoLog = cfg.Section("").Key(name + ".info_log").MustString(gInfoLog)
-	if !IsFileValid(ac.InfoLog, ".log") {
-		ac.InfoLog = InfoLog
+	ac.infoLog = cfg.Section("").Key(name + ".info_log").MustString(gInfoLog)
+	if !IsFileValid(ac.infoLog, ".log") {
+		ac.infoLog = InfoLog
 	}
 
 	gRecipesPath := cfg.Section("").Key("recipes_path").MustString(RecipesPath)
-	ac.RecipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(gRecipesPath)
-	if !IsDirValid(ac.RecipesPath) {
-		ac.RecipesPath = RecipesPath
+	ac.recipesPath = cfg.Section("").Key(name + ".recipes_path").MustString(gRecipesPath)
+	if !IsDirValid(ac.recipesPath) {
+		ac.recipesPath = RecipesPath
 	}
 
 	gWorkerOutputDir := cfg.Section("").Key("worker_output_dir").MustString(WorkerOutputDir)
-	ac.WorkerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(gWorkerOutputDir)
-	if !IsDirValid(ac.WorkerOutputDir) {
-		ac.WorkerOutputDir = WorkerOutputDir
+	ac.workerOutputDir = cfg.Section("").Key(name + ".worker_output_dir").MustString(gWorkerOutputDir)
+	if !IsDirValid(ac.workerOutputDir) {
+		ac.workerOutputDir = WorkerOutputDir
 	}
 
-	ac.LockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)
-	if !IsFileValid(ac.LockFile, ".lock") {
-		ac.LockFile = LockFile
+	ac.lockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)
+	if !IsFileValid(ac.lockFile, ".lock") {
+		ac.lockFile = LockFile
 	}
 
 	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
-	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
+	ac.maxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
 
 	gMaxAllowedQueueWorkers := cfg.Section("").Key("max_allowed_queue_workers").MustInt(MaxAllowedQueueWorkers)
-	ac.MaxAllowedQueueWorkers = cfg.Section("").Key(name + ".max_allowed_queue_workers").MustInt(gMaxAllowedQueueWorkers)
+	ac.maxAllowedQueueWorkers = cfg.Section("").Key(name + ".max_allowed_queue_workers").MustInt(gMaxAllowedQueueWorkers)
 
-	ac.Port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
+	ac.port = cfg.Section("").Key(name + ".port").MustInt(ServerPort)
 
 	gNotificationsEmail := cfg.Section("").Key("notifications_email").MustString(NotificationsEmail)
-	ac.NotificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(gNotificationsEmail)
+	ac.notificationsEmail = cfg.Section("").Key(name + ".notifications_email").MustString(gNotificationsEmail)
 
 	gSMTPHost := cfg.Section("").Key("smtp_host").MustString(SMTPHost)
-	ac.SMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(gSMTPHost)
+	ac.sMTPHost = cfg.Section("").Key(name + ".smtp_host").MustString(gSMTPHost)
 
 	gSMTPUsername := cfg.Section("").Key("smtp_username").MustString(SMTPUsername)
-	ac.SMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(gSMTPUsername)
+	ac.sMTPUsername = cfg.Section("").Key(name + ".smtp_username").MustString(gSMTPUsername)
 
 	gSMTPPassword := cfg.Section("").Key("smtp_password").MustString(SMTPPassword)
-	ac.SMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
+	ac.sMTPPassword = cfg.Section("").Key(name + ".smtp_password").MustString(gSMTPPassword)
 
-	ac.Domain = cfg.Section("").Key(name + ".domain").MustString(ServerDomain)
+	ac.domain = cfg.Section("").Key(name + ".domain").MustString(ServerDomain)
 
 	gErrorReporting := cfg.Section("").Key("error_reporting").MustBool(ErrorReporting)
-	ac.ErrorReporting = cfg.Section("").Key(name + ".error_reporting").MustBool(gErrorReporting)
+	ac.errorReporting = cfg.Section("").Key(name + ".error_reporting").MustBool(gErrorReporting)
 
 	c.cfgs[name] = ac
 	return ac

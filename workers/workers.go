@@ -31,9 +31,9 @@ var (
 
 // Config defines interface which we use to build workers struct
 type Config interface {
-	GetMaxAllowedWorkers() int
-	GetMaxAllowedQueueWorkers() int
-	GetWorkerOutputDir() string
+	MaxAllowedWorkers() int
+	MaxAllowedQueueWorkers() int
+	WorkerOutputDir() string
 	notifier.Config
 }
 
@@ -179,13 +179,13 @@ func (w Workers) listener() {
 func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
 	workers := Workers{
 		stack:            make(map[string]Worker),
-		allowedSize:      cfg.GetMaxAllowedWorkers(),
-		allowedQueueSize: cfg.GetMaxAllowedQueueWorkers(),
+		allowedSize:      cfg.MaxAllowedWorkers(),
+		allowedQueueSize: cfg.MaxAllowedQueueWorkers(),
 		Logs:             logs,
 		Context:          ctx,
 		DoneChan:         make(chan string),
 		ErrorChan:        make(chan Worker),
-		OutputDir:        cfg.GetWorkerOutputDir(),
+		OutputDir:        cfg.WorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
 		RWMutex:          new(sync.RWMutex),
 	}

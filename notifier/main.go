@@ -36,7 +36,7 @@ func New(cfg Config, log log.Logs) *Notifier {
 		Logs:    log,
 	}
 
-	if cfg.GetSMTPHost() != "" {
+	if cfg.SMTPHost() != "" {
 		n.Methods["mail"] = notis.NewEmail(cfg)
 	}
 

@@ -15,14 +15,14 @@ var (
 	cfg2    = cfgWrap.New("test", "../tests/configs/config_wrong_value.ini")
 	logger  = Logs{
 		Debug:    true,
-		ErrorLog: cfg.GetErrorLog(),
-		InfoLog:  cfg.GetInfoLog(),
+		ErrorLog: cfg.ErrorLog(),
+		InfoLog:  cfg.InfoLog(),
 	}
 
 	logger2 = Logs{
 		Debug:    true,
-		ErrorLog: cfg2.GetErrorLog(),
-		InfoLog:  cfg2.GetInfoLog(),
+		ErrorLog: cfg2.ErrorLog(),
+		InfoLog:  cfg2.InfoLog(),
 	}
 )
 
