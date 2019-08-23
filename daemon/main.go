@@ -79,15 +79,15 @@ func (d *Daemon) Run() {
 			case "info":
 				d.renderInfo()
 				break
-			case "kill":
-				d.killDaemon()
-				break
-			case "services":
-				d.daemonServices()
-				break
-			}
 
-			return
+				return
+			// case "kill":
+			// 	d.killDaemon()
+			// 	break
+			// case "services":
+			// 	d.daemonServices()
+			// 	break
+			}
 		}
 
 		api.Resolver(d.Cmd)

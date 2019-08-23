@@ -12,15 +12,14 @@ import (
 
 // WorkersList is default command for agents
 func (d *Default) WorkersList(w http.ResponseWriter, r *http.Request) {
-	resp := api.WorkersResponse{}
-
-	if d.NumOfWorkers() < 1 {
-		resp.Message = "No workers currently active!"
+	resp := api.TableResponse{
+		Header: []string{"Name", "Started at", "Working on"},
+		Columns: [][]string{},
 	}
 
 	for name, worker := range d.GetAllWorkers() {
 		startedAt := worker.StartedAt.Format(time.UnixDate)
-		resp.List = append(resp.List, []string{name, startedAt, worker.WorkingOn})
+		resp.Columns = append(resp.Columns, []string{name, startedAt, worker.WorkingOn})
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -35,14 +34,17 @@ func (d *Default) WorkersList(w http.ResponseWriter, r *http.Request) {
 
 // KillWorker kills worker by provided name
 func (d *Default) KillWorker(w http.ResponseWriter, r *http.Request) {
-	resp := api.WorkersResponse{}
+	resp := api.TableResponse{
+		Header: []string{"message"},
+		Columns: [][]string{},
+	}
 
-	worker, err := d.GetWorkerByName(r.URL.Query()["name"][0])
+	worker, err := d.GetWorkerByName(r.URL.Query()["args"][0])
 	if err != nil {
-		resp.Message = err.Error()
+		resp.Columns = append(resp.Columns, []string{err.Error()})
 	} else {
 		worker.Kill()
-		resp.Message = "Worker killed"
+		resp.Columns = append(resp.Columns, []string{"Worker killed"})
 	}
 
 	w.WriteHeader(http.StatusOK)

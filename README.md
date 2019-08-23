@@ -132,4 +132,4 @@ For cli tools take a look [here](https://github.com/Kilgaloon/Leprechaun/blob/ma
 
 # Testing
 
-To run tests with covarage `make test`, to run tests and generate reports run `make test-with-report` files will be generated in `coverprofile` dir
+To run tests with covarage `make test`, to run tests and generate reports run `make test-with-report` files will be generated in `coverprofile` dir. To test specific package run `make test-package package=[name]`

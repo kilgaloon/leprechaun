@@ -74,7 +74,7 @@ func TestGetterers(t *testing.T) {
 }
 
 func TestCommands(t *testing.T) {
-	req, err := http.NewRequest("GET", "/client/workers/list", nil)
+	req, err := http.NewRequest("GET", "/scheduler/workers/list", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,14 +96,14 @@ func TestCommands(t *testing.T) {
 	defaultAgent.WorkersList(rr, req)
 	// not existent worker
 
-	req, err = http.NewRequest("GET", "/client/workers/kill?name=schedule", nil)
+	req, err = http.NewRequest("GET", "/scheduler/workers/kill?args=schedule", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	defaultAgent.KillWorker(rr, req)
 
-	req, err = http.NewRequest("GET", "/client/workers/kill?name=jobber", nil)
+	req, err = http.NewRequest("GET", "/scheduler/workers/kill?args=jobber", nil)
 	if err != nil {
 		t.Fatal(err)
 	}

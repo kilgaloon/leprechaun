@@ -89,8 +89,6 @@ func TestRun(t *testing.T) {
 
 		Srv.GetInfo()
 		Srv.renderInfo()
-		Srv.killDaemon()
-		Srv.daemonServices()
 
 	}
 

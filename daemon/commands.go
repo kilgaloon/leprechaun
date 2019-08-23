@@ -37,28 +37,34 @@ func (d *Daemon) daemonInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Daemon) daemonKill(w http.ResponseWriter, r *http.Request) {
-	resp := api.MessageResponse{}
+	resp := api.TableResponse{
+		Header: []string{"Message"},
+		Columns: [][]string{},
+	}
 
 	d.Kill()
 	if api.IsAPIRunning() {
-		resp.Message = "Failed to kill daemon"
+		resp.Columns = append(resp.Columns, []string{"Failed to kill daemon"})
 	} else {
-		resp.Message = "Daemon killed"
+		resp.Columns = append(resp.Columns, []string{"Daemon killed"})
 	}
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		resp.Message = "Daemon killed"
+		resp.Columns = append(resp.Columns, []string{"Daemon killed"})
 	}
 
 	w.Write(j)
 }
 
 func (d *Daemon) servicesList(w http.ResponseWriter, r *http.Request) {
-	resp := ServicesListResponse{}
+	resp := api.TableResponse{
+		Header: []string{"Message"},
+		Columns: [][]string{},
+	}
 
 	for agent, service := range d.services {
-		resp.List = append(resp.List, []string{agent, service.GetStatus().String()})
+		resp.Columns = append(resp.Columns, []string{agent, service.GetStatus().String()})
 	}
 
 	w.WriteHeader(http.StatusOK)

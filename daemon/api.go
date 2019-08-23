@@ -61,29 +61,29 @@ func (d *Daemon) renderInfo() {
 	table.Render()
 }
 
-func (d *Daemon) killDaemon() {
-	api.HTTPClient.Get(api.RevealEndpoint("/{agent}/kill", api.Cmd("daemon")))
-}
+// func (d *Daemon) killDaemon() {
+// 	api.HTTPClient.Get(api.RevealEndpoint("/{agent}/kill", api.Cmd("daemon")))
+// }
 
-func (d *Daemon) daemonServices() {
-	table := tablewriter.NewWriter(os.Stdout)
-	r, err := api.HTTPClient.Get(api.RevealEndpoint("/{agent}/services", api.Cmd("daemon")))
-	if err != nil {
-		log.Fatal(err)
-	}
+// func (d *Daemon) daemonServices() {
+// 	table := tablewriter.NewWriter(os.Stdout)
+// 	r, err := api.HTTPClient.Get(api.RevealEndpoint("/{agent}/services", api.Cmd("daemon")))
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	defer r.Body.Close()
+// 	defer r.Body.Close()
 
-	resp := &ServicesListResponse{}
-	err = json.NewDecoder(r.Body).Decode(resp)
-	if err != nil {
-		log.Fatal(err)
-	}
+// 	resp := &ServicesListResponse{}
+// 	err = json.NewDecoder(r.Body).Decode(resp)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
 
-	table.SetHeader([]string{"Agent name", "Status"})
-	for _, l := range resp.List {
-		table.Append([]string{l[0], l[1]})
-	}
+// 	table.SetHeader([]string{"Agent name", "Status"})
+// 	for _, l := range resp.List {
+// 		table.Append([]string{l[0], l[1]})
+// 	}
 
-	table.Render()
-}
+// 	table.Render()
+// }

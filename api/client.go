@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -63,140 +65,55 @@ var (
 
 // Resolver has job to resolve which enpoint to ping and return information
 func Resolver(c Cmd) {
-	switch c.Command() {
-	case "info":
-		Info(c)
-		break
-	case "workers:list":
-		WorkersList(c)
-		break
-	case "workers:kill":
-		WorkersKill(c)
-		break
-	default:
-		Process(c)
-		break
+	e := host + "/" + c.Agent() + "/"
+	cmd := strings.Replace(c.Command(), ":", "/", -1)
+	endpoint, _ := url.Parse(e + cmd)
+
+	q := endpoint.Query()
+	if len(c.Args()) > 0 {
+		for _, arg := range c.Args() {
+			q.Add("args", arg)
+		}
 	}
+
+	fullEndpoint := endpoint.String()
+	if len(q) > 0 {
+		fullEndpoint += "?" + q.Encode()
+	}
+
+	r, err := HTTPClient.Get(fullEndpoint)
+	if err != nil && err != io.EOF {
+		raven.CaptureError(err, nil)
+		log.Fatal(err)
+	}
+
+	if r.StatusCode == 404 {
+		fmt.Println("No such command")
+		return
+	}
+
+	defer r.Body.Close()
+
+	resp := &TableResponse{}
+	err = json.NewDecoder(r.Body).Decode(resp)
+	if err != nil {
+		raven.CaptureError(err, nil)
+		log.Fatal(err)
+	}
+
+	table.SetHeader(resp.Header)
+
+	for _, col := range resp.Columns {
+		table.Append(col)
+	}
+
+	table.Render()
+
 }
 
 // RevealEndpoint formats endpoint to be used for interal http api
 func RevealEndpoint(e string, c Cmd) string {
 	return host + strings.Replace(e, "{agent}", c.Agent(), -1)
-}
-
-// Info display info for the agent
-func Info(c Cmd) {
-	r, err := HTTPClient.Get(RevealEndpoint(infoEndpoint, c))
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	if r.StatusCode != 200 {
-		fmt.Println("No such command")
-		return
-	}
-
-	defer r.Body.Close()
-
-	resp := &InfoResponse{}
-	err = json.NewDecoder(r.Body).Decode(resp)
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	table.SetHeader([]string{"Status", "Recipes in queue"})
-	table.Append([]string{resp.Status, resp.RecipesInQueue})
-
-	table.Render()
-}
-
-// Process command handles those endpoints that start, stop and pause
-func Process(c Cmd) {
-	r, err := HTTPClient.Get(RevealEndpoint(processCmds[c.Command()], c))
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	if r.StatusCode != 200 {
-		fmt.Println("Invalid command")
-		return
-	}
-
-	defer r.Body.Close()
-
-	resp := &WorkersResponse{}
-	err = json.NewDecoder(r.Body).Decode(resp)
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	table.Append([]string{resp.Message})
-	table.Render()
-}
-
-// WorkersList display info for the agent
-func WorkersList(c Cmd) {
-	r, err := HTTPClient.Get(RevealEndpoint(workersListEndpoint, c))
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	if r.StatusCode != 200 {
-		fmt.Println("No such command")
-		return
-	}
-
-	defer r.Body.Close()
-
-	resp := &WorkersResponse{}
-	err = json.NewDecoder(r.Body).Decode(resp)
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	if resp.Message == "" {
-		table.SetHeader([]string{"Name", "Started at", "Working on"})
-		for _, w := range resp.List {
-			table.Append(w)
-		}
-	} else {
-		table.Append([]string{resp.Message})
-	}
-
-	table.Render()
-}
-
-// WorkersKill display info for the agent
-func WorkersKill(c Cmd) {
-	r, err := HTTPClient.Get(RevealEndpoint(workersKillEndpoint, c) + "?name=" + c.Args()[0])
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	if r.StatusCode != 200 {
-		fmt.Println("No such command")
-		return
-	}
-
-	defer r.Body.Close()
-
-	resp := &WorkersResponse{}
-	err = json.NewDecoder(r.Body).Decode(resp)
-	if err != nil {
-		raven.CaptureError(err, nil)
-		log.Fatal(err)
-	}
-
-	table.Append([]string{resp.Message})
-
-	table.Render()
 }
 
 // IsAPIRunning checks is http api running

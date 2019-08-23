@@ -9,16 +9,18 @@ import (
 	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
-)
+) 
 
 // this section is used for command responders
 
 func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
 
-	resp := api.InfoResponse{
-		Status:         client.GetStatus().String(),
-		RecipesInQueue: recipeQueueNum,
+	resp := api.TableResponse{
+		Header: []string{"Status", "Recipes in queue"},
+		Columns: [][]string{
+			{client.GetStatus().String(), recipeQueueNum},
+		},
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -35,14 +37,15 @@ func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
-	var resp struct {
-		Message string
+	resp := api.TableResponse{
+		Header: []string{"Message"},
+		Columns: [][]string{},
 	}
 
 	client.Pause()
 	if client.GetStatus() == daemon.Paused {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client paused"
+		resp.Columns = append(resp.Columns, []string{"Paused"})
 	}
 
 	j, err := json.Marshal(resp)
@@ -55,19 +58,19 @@ func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 }
 
 func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
-	resp := api.MessageResponse{}
+	resp := api.TableResponse{
+		Header: []string{"Message"},
+		Columns: [][]string{},
+	}
 
 	if client.GetStatus() == daemon.Started {
 		w.WriteHeader(http.StatusExpectationFailed)
-		resp.Message = "Client already started"
-
-		return
-	}
-
-	go client.Start()
-	if client.GetStatus() == daemon.Started {
+		resp.Columns = append(resp.Columns, []string{"Client already started"})
+	} else {
+		go client.Start()
+		
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client started"
+		resp.Columns = append(resp.Columns, []string{"Client started"})
 	}
 
 	j, err := json.Marshal(resp)
@@ -80,12 +83,15 @@ func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 }
 
 func (client *Client) cmdstop(w http.ResponseWriter, r *http.Request) {
-	resp := api.MessageResponse{}
+	resp := api.TableResponse{
+		Header: []string{"Message"},
+		Columns: [][]string{},
+	}
 
 	client.Stop()
 	if client.GetStatus() == daemon.Stopped {
 		w.WriteHeader(http.StatusOK)
-		resp.Message = "Client stopped"
+		resp.Columns = append(resp.Columns, []string{"Client stopped"})
 	}
 
 	j, err := json.Marshal(resp)
