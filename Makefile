@@ -29,7 +29,7 @@ format:
 	gofmt -s -w .
 
 test-package:
-	RUN_MODE=test go test -race ./${package} -coverprofile coverprofile/${package}.out
+	RUN_MODE=test go test -race ./${package} -coverprofile coverprofile/${package}.out -v
 	go tool cover -html=coverprofile/${package}.out -o coverprofile/${package}.html
 
 test:

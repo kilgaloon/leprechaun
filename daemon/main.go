@@ -78,15 +78,7 @@ func (d *Daemon) Run() {
 			switch d.Cmd.Command() {
 			case "info":
 				d.renderInfo()
-				break
-
 				return
-			// case "kill":
-			// 	d.killDaemon()
-			// 	break
-			// case "services":
-			// 	d.daemonServices()
-			// 	break
 			}
 		}
 
@@ -172,7 +164,11 @@ func init() {
 	}
 
 	cmd := flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
-	flag.Parse()
+
+	// https://golang.org/doc/go1.13#testing
+	if os.Getenv("RUN_MODE") != "test" {
+		flag.Parse()
+	}
 
 	if *helpFlag {
 		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
