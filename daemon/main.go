@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"testing"
 
 	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
@@ -81,12 +82,12 @@ func (d *Daemon) Run() {
 				break
 
 				return
-			// case "kill":
-			// 	d.killDaemon()
-			// 	break
-			// case "services":
-			// 	d.daemonServices()
-			// 	break
+				// case "kill":
+				// 	d.killDaemon()
+				// 	break
+				// case "services":
+				// 	d.daemonServices()
+				// 	break
 			}
 		}
 
@@ -163,6 +164,8 @@ func init() {
 			pidPath = &pp
 			configPath = &cp
 			debug = &dbg
+
+			testing.Init()
 		} else {
 			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
 			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
