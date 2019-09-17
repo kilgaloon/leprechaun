@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -165,7 +166,9 @@ func init() {
 			configPath = &cp
 			debug = &dbg
 
-			testing.Init()
+			if (runtime.Version() == "go1.13") {
+				testing.Init()
+			}
 		} else {
 			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
 			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
