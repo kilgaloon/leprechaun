@@ -78,17 +78,8 @@ func (d *Daemon) Run() {
 			switch d.Cmd.Command() {
 			case "info":
 				d.renderInfo()
-				break
-
-				// case "kill":
-				// 	d.killDaemon()
-				// 	break
-				// case "services":
-				// 	d.daemonServices()
-				// 	break
+				return
 			}
-
-			return
 		}
 
 		api.Resolver(d.Cmd)
