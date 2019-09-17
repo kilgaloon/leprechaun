@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"testing"
 
 	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
@@ -81,7 +80,6 @@ func (d *Daemon) Run() {
 				d.renderInfo()
 				break
 
-				return
 				// case "kill":
 				// 	d.killDaemon()
 				// 	break
@@ -89,6 +87,8 @@ func (d *Daemon) Run() {
 				// 	d.daemonServices()
 				// 	break
 			}
+
+			return
 		}
 
 		api.Resolver(d.Cmd)
@@ -164,8 +164,6 @@ func init() {
 			pidPath = &pp
 			configPath = &cp
 			debug = &dbg
-
-			testing.Init()
 		} else {
 			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
 			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
@@ -175,7 +173,11 @@ func init() {
 	}
 
 	cmd := flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
-	flag.Parse()
+
+	// https://golang.org/doc/go1.13#testing
+	if os.Getenv("RUN_MODE") != "test" {
+		flag.Parse()
+	}
 
 	if *helpFlag {
 		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
