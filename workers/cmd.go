@@ -11,14 +11,16 @@ import (
 // from step command to another step command
 const PipeMarker = "}>"
 
-type cmd struct {
+// Cmd represents command that can be run
+type Cmd struct {
 	stdin  bytes.Buffer
 	cmd    *exec.Cmd
-	stdout bytes.Buffer
+	Stdout bytes.Buffer
 	pipe   bool
 }
 
-func (c *cmd) Run() error {
+// Run command and returns errors if any
+func (c *Cmd) Run() error {
 	if &c.stdin != nil {
 		in, err := c.cmd.StdinPipe()
 		if err != nil {
@@ -32,7 +34,7 @@ func (c *cmd) Run() error {
 	}
 
 	var stderr bytes.Buffer
-	c.cmd.Stdout = &c.stdout
+	c.cmd.Stdout = &c.Stdout
 	c.cmd.Stderr = &stderr
 
 	err := c.cmd.Run()
@@ -41,9 +43,9 @@ func (c *cmd) Run() error {
 }
 
 // NewCmd build new command and prepare it to be run
-func newCmd(step string, i bytes.Buffer) (*cmd, error) {
-	cmd := &cmd{
-		stdin: i,
+func NewCmd(step string, i *bytes.Buffer) (*Cmd, error) {
+	cmd := &Cmd{
+		stdin: *i,
 		pipe:  false,
 	}
 

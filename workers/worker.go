@@ -28,7 +28,7 @@ type Worker struct {
 	ErrorChan      chan Worker
 	TasksPerformed int
 	Cmd            map[string]*exec.Cmd
-	steps          []*cmd
+	steps          []*Cmd
 	Stdout         *os.File
 	Recipe         *recipe.Recipe
 	Err            error
@@ -63,11 +63,11 @@ func (w *Worker) workOnStep(i int, step string) {
 	if len(w.steps) > 0 {
 		ps := w.steps[i-1]
 		if ps.pipe {
-			in = ps.stdout
+			in = ps.Stdout
 		}
 	}
 
-	cmd, err := newCmd(step, in)
+	cmd, err := NewCmd(step, &in)
 	if err != nil {
 		w.Logs.Error(err.Error())
 	}

@@ -25,6 +25,8 @@ const (
 	SMTPPassword           = ""
 	ServerDomain           = "localhost"
 	ErrorReporting         = true
+	CertPemPath            = "/etc/leprechaun/certs/server.pem"
+	CertKeyPath            = "/etc/leprechaun/certs/server.key"
 )
 
 // Configs for different agents
@@ -65,6 +67,8 @@ type AgentConfig struct {
 	SMTPPassword           string
 	Domain                 string
 	ErrorReporting         bool
+	CertPemPath            string
+	CertKeyPath            string
 }
 
 // GetPath returns path of config file
@@ -179,6 +183,16 @@ func (ac AgentConfig) GetErrorReporting() bool {
 	return ac.ErrorReporting
 }
 
+// GetCertPemPath returns path to .pem file
+func (ac AgentConfig) GetCertPemPath() string {
+	return ac.CertPemPath
+}
+
+// GetCertKeyPath returns path to .key file
+func (ac AgentConfig) GetCertKeyPath() string {
+	return ac.CertKeyPath
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -241,6 +255,12 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	gErrorReporting := cfg.Section("").Key("error_reporting").MustBool(ErrorReporting)
 	ac.ErrorReporting = cfg.Section("").Key(name + ".error_reporting").MustBool(gErrorReporting)
+
+	gCertPemPath := cfg.Section("").Key("pem_file").MustString(CertPemPath)
+	ac.CertPemPath = cfg.Section("").Key(name + ".pem_file").MustString(gCertPemPath)
+
+	gCertKeyPath := cfg.Section("").Key("key_file").MustString(CertKeyPath)
+	ac.CertKeyPath = cfg.Section("").Key(name + ".key_file").MustString(gCertKeyPath)
 
 	c.cfgs[name] = ac
 	return ac

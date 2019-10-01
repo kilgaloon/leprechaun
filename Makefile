@@ -1,5 +1,8 @@
 export GO111MODULE=on
 
+debug:
+	go run cmd/leprechaun/main.go --pid=./var/run/leprechaun/.pid --ini=./dist/configs/config.ini --debug=true
+
 install:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
