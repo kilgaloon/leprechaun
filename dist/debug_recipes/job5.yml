@@ -1,0 +1,10 @@
+name: job5 # name of recipe
+definition: schedule
+schedule: 
+    min: 0
+    hour: 0
+    day: 0
+
+steps: # steps are done from first to last
+    - rmt:localhost echo "bro this is cool" }>
+    - cat > "file.txt"

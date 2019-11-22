@@ -24,7 +24,7 @@ type Recipe struct {
 }
 
 // GetName returns name of recipe
-func (r *Recipe) GetName() string {
+func (r Recipe) GetName() string {
 	return r.Name
 }
 
@@ -37,12 +37,12 @@ func (r *Recipe) SetStartAt(t time.Time) {
 }
 
 // GetStartAt get time when recipe will be started
-func (r *Recipe) GetStartAt() time.Time {
+func (r Recipe) GetStartAt() time.Time {
 	return r.StartAt
 }
 
 // GetSteps return array of steps that recipe needs to work on
-func (r *Recipe) GetSteps() []string {
+func (r Recipe) GetSteps() []string {
 	return r.Steps
 }
 

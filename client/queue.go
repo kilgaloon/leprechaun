@@ -98,7 +98,7 @@ func (client *Client) ProcessQueue() {
 				r.SetStartAt(schedule.ScheduleToTime(r.Schedule))
 			} else {
 				if compare.Equal(r.GetStartAt()) {
-					worker, err := client.CreateWorker(&r)
+					worker, err := client.CreateWorker(r)
 					if err == nil {
 						client.Info("%s file is in progress... \n", r.GetName())
 						// worker takeover steps and works on then

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/tls"
+	"fmt"
+	"io"
 	"net"
 	"net/http"
 
@@ -40,6 +42,18 @@ func (r *Remote) GetName() string {
 	return r.Name
 }
 
+func (r Remote) isCmdAllowed(cmd *workers.Cmd) bool {
+	cmds := r.GetConfig().Cfg.Section("remote").Key("allowed_commands").Strings(",")
+
+	for _, c := range cmds {
+		if c == cmd.Step.Name() {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Start remote service
 func (r *Remote) Start() {
 	r.SetStatus(daemon.Started)
@@ -49,7 +63,7 @@ func (r *Remote) Start() {
 			r.Error(err.Error())
 		}
 
-		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAnyClientCert}
+		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequestClientCert}
 		config.Rand = rand.Reader
 
 		ln, err := tls.Listen("tcp", ":11402", &config)
@@ -87,36 +101,74 @@ func (r *Remote) Start() {
 
 func (r *Remote) handleConnection(c net.Conn) {
 	r.Info("Client %v connected.", c.RemoteAddr())
+	bSize := 1024
+	// tell client that server is ready to read instructions
+	c.Write([]byte("ready"))
 
-	buffer := make([]byte, 256)
+	var input []byte
+	var n int
+	var cont string
+	var err error
 
-	for {
-		_, err := c.Read(buffer)
+	input = make([]byte, bSize)
+	n, err = c.Read(input)
+	cont += string(input)
+	// if buffer size and read size are equal
+	// that means that there is more to read from socket
+	for n == bSize {
+		input = make([]byte, bSize)
+		n, err = c.Read(input)
 		if err != nil {
 			c.Close()
+		}
+
+		if n == 0 {
 			break
 		}
 
-		var b bytes.Buffer
-		cmd, err := workers.NewCmd(string(bytes.Trim(buffer, "\x00")), &b)
-		if err != nil {
-			r.Error(err.Error())
-			_, err = c.Write([]byte("error"))
-		}
-
-		err = cmd.Run()
-		if err != nil {
-			r.Error(err.Error())
-			_, err = c.Write([]byte("error"))
-		}
-
-		_, err = c.Write(cmd.Stdout.Bytes())
-		if err != nil {
-			r.Error(err.Error())
-		}
+		cont += string(input)
 	}
 
+	var b bytes.Buffer
+	_, err = b.Write(bytes.Trim(input, "\x00"))
+	if err != nil && err != io.EOF {
+		c.Close()
+	}
+
+	_, err = c.Write([]byte(">"))
+	cmd := make([]byte, 256)
+
+	_, err = c.Read(cmd)
+	if err != nil {
+		c.Close()
+	}
+	
+	s := workers.Step(string(bytes.Trim(cmd, "\x00")))
+	if s.Validate() {
+		cmd, err := workers.NewCmd(s, &b)
+		if r.isCmdAllowed(cmd) {
+			if err != nil {
+				r.Error(err.Error())
+				_, err = c.Write([]byte("error"))
+			}
+
+			err = cmd.Run()
+			if err != nil {
+				r.Error(err.Error())
+				_, err = c.Write([]byte("error"))
+			}
+
+			_, err = c.Write(cmd.Stdout.Bytes())
+			if err != nil {
+				r.Error(err.Error())
+			}
+
+			fmt.Printf("Server returned: %s", cmd.Stdout.String())
+		}
+	}
+	
 	r.Info("Connection from %v closed.", c.RemoteAddr())
+	c.Close()
 }
 
 // RegisterAPIHandles to be used in http communication

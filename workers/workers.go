@@ -3,7 +3,6 @@ package workers
 import (
 	"errors"
 	"os"
-	"os/exec"
 	"sync"
 	"time"
 
@@ -34,6 +33,7 @@ type Config interface {
 	GetMaxAllowedWorkers() int
 	GetMaxAllowedQueueWorkers() int
 	GetWorkerOutputDir() string
+	GetRemoteHosts() map[string]string
 	notifier.Config
 }
 
@@ -44,6 +44,7 @@ type Workers struct {
 	allowedSize      int
 	allowedQueueSize int
 	OutputDir        string
+	remoteHosts      map[string]string
 	Context          *context.Context
 	Logs             log.Logs
 	DoneChan         chan string
@@ -100,9 +101,13 @@ func (w *Workers) DeleteWorkerByName(name string) {
 }
 
 // CreateWorker Create single worker if number is not exceeded and move it to stack
-func (w Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
+func (w Workers) CreateWorker(r recipe.Recipe) (*Worker, error) {
 	if _, ok := w.GetWorkerByName(r.GetName()); ok == nil {
 		return nil, ErrStillActive
+	}
+
+	for host, addr := range w.remoteHosts {
+		w.Context.DefineVar(host, addr)
 	}
 
 	worker := &Worker{
@@ -112,7 +117,7 @@ func (w Workers) CreateWorker(r *recipe.Recipe) (*Worker, error) {
 		DoneChan:  w.DoneChan,
 		ErrorChan: w.ErrorChan,
 		Recipe:    r,
-		Cmd:       make(map[string]*exec.Cmd),
+		Cmds:      make(map[string]*Cmd),
 		mu:        new(sync.RWMutex),
 	}
 
@@ -181,6 +186,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
 		allowedQueueSize: cfg.GetMaxAllowedQueueWorkers(),
+		remoteHosts:      cfg.GetRemoteHosts(),
 		Logs:             logs,
 		Context:          ctx,
 		DoneChan:         make(chan string),

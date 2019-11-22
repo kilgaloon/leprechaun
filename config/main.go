@@ -52,6 +52,7 @@ func (c *Configs) GetConfig(name string) *AgentConfig {
 
 // AgentConfig holds config for agents
 type AgentConfig struct {
+	Cfg                    *ini.File
 	Path                   string
 	ErrorLog               string
 	InfoLog                string
@@ -69,6 +70,7 @@ type AgentConfig struct {
 	ErrorReporting         bool
 	CertPemPath            string
 	CertKeyPath            string
+	RemoteHosts            map[string]string
 }
 
 // GetPath returns path of config file
@@ -193,6 +195,11 @@ func (ac AgentConfig) GetCertKeyPath() string {
 	return ac.CertKeyPath
 }
 
+// GetRemoteHosts returns maped remote hosts
+func (ac AgentConfig) GetRemoteHosts() map[string]string {
+	return ac.RemoteHosts
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -200,7 +207,10 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 		panic(err)
 	}
 
-	ac := &AgentConfig{}
+	ac := &AgentConfig{
+		Cfg: cfg,
+	}
+
 	ac.Path = path
 	gErrorLog := cfg.Section("").Key("error_log").MustString(ErrorLog)
 	ac.ErrorLog = cfg.Section("").Key(name + ".error_log").MustString(gErrorLog)
@@ -261,6 +271,12 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	gCertKeyPath := cfg.Section("").Key("key_file").MustString(CertKeyPath)
 	ac.CertKeyPath = cfg.Section("").Key(name + ".key_file").MustString(gCertKeyPath)
+
+	hosts := cfg.Section("remote_hosts").Keys()
+	ac.RemoteHosts = make(map[string]string)
+	for _, key := range hosts {
+		ac.RemoteHosts[key.Name()] = key.Value()
+	}
 
 	c.cfgs[name] = ac
 	return ac

@@ -19,7 +19,7 @@ var (
 		context.New(),
 	)
 	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
-	worker, errr = workers2.CreateWorker(&r)
+	worker, errr = workers2.CreateWorker(r)
 )
 
 func TestQueue(t *testing.T) {
@@ -37,6 +37,6 @@ func TestQueue(t *testing.T) {
 
 	w := workers2.Queue.pop()
 	if w == nil {
-		t.Fail()
+		t.Fatalf("No worker poped from queue")
 	}
 }

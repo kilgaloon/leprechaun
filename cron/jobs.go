@@ -23,7 +23,7 @@ func (c *Cron) buildJobs() {
 		// needs to be schedule by definition
 		if recipe.Definition == "cron" {
 			c.Service.AddFunc(recipe.Pattern, func() {
-				c.prepareAndRun(&recipe)
+				c.prepareAndRun(recipe)
 			})
 		}
 	}
@@ -31,7 +31,7 @@ func (c *Cron) buildJobs() {
 	c.Info("Cron buildJobs finished")
 }
 
-func (c *Cron) prepareAndRun(r *recipe.Recipe) {
+func (c *Cron) prepareAndRun(r recipe.Recipe) {
 	worker, err := c.CreateWorker(r)
 
 	if err == nil {

@@ -88,7 +88,7 @@ func TestCommands(t *testing.T) {
 		t.Fail()
 	}
 	// create worker
-	_, err = defaultAgent.CreateWorker(&r)
+	_, err = defaultAgent.CreateWorker(r)
 	if err != nil {
 		t.Fail()
 	}

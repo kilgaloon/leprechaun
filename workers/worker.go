@@ -3,8 +3,6 @@ package workers
 import (
 	"bytes"
 	"os"
-	"os/exec"
-	"strings"
 	"sync"
 	"time"
 
@@ -12,10 +10,6 @@ import (
 	"github.com/kilgaloon/leprechaun/log"
 	"github.com/kilgaloon/leprechaun/recipe"
 )
-
-// AsyncMarker is string in step that we use to know
-// does that command need to be done async
-const AsyncMarker = "->"
 
 // Worker is single worker and information about it
 // worker is processing all steps
@@ -27,10 +21,9 @@ type Worker struct {
 	DoneChan       chan string
 	ErrorChan      chan Worker
 	TasksPerformed int
-	Cmd            map[string]*exec.Cmd
-	steps          []*Cmd
+	Cmds           map[string]*Cmd
 	Stdout         *os.File
-	Recipe         *recipe.Recipe
+	Recipe         recipe.Recipe
 	Err            error
 	mu             *sync.RWMutex
 }
@@ -39,48 +32,51 @@ type Worker struct {
 func (w *Worker) Run() {
 	w.StartedAt = time.Now()
 
-	for i, step := range w.Recipe.GetSteps() {
+	steps := w.Recipe.GetSteps()
+	for i, step := range steps {
 		w.Logs.Info("Step %s is in progress... \n", step)
 
-		if len(step) < 1 {
-			continue
+		s := Step(step)
+		if !s.Validate() {
+			return
 		}
 
-		parts := strings.Fields(step)
-		if parts[0] == AsyncMarker {
-			step = w.Context.Transpile(strings.Join(parts[1:], " "))
-			go w.workOnStep(i, step)
+		step := s.Plain()
+		w.mu.Lock()
+		var in bytes.Buffer
+		if i > 0 {
+			prevStep := Step(steps[i-1])
+			if val, ok := w.Cmds[prevStep.Plain()]; ok {
+				if val.pipe {
+					in = val.Stdout
+				}
+			}
+		}
+
+		cmd, err := NewCmd(s, &in)
+		if err != nil {
+			w.Logs.Error(err.Error())
+		}
+
+		w.WorkingOn = step
+		w.Cmds[step] = cmd
+		w.mu.Unlock()
+
+		// Pipe override Async
+		// -> echo "Something" }>
+		// will not be executed async because we wan't to pass
+		// output to next step, if this task start async then next step
+		// will start and output won't be passed to it
+		if s.IsAsync() && !s.IsPipe() {
+			go w.workOnStep(cmd)
 		} else {
-			w.workOnStep(i, step)
+			w.workOnStep(cmd)
 		}
 	}
 }
 
-func (w *Worker) workOnStep(i int, step string) {
-	w.mu.Lock()
-
-	var in bytes.Buffer
-	if len(w.steps) > 0 {
-		ps := w.steps[i-1]
-		if ps.pipe {
-			in = ps.Stdout
-		}
-	}
-
-	cmd, err := NewCmd(step, &in)
-	if err != nil {
-		w.Logs.Error(err.Error())
-	}
-
-	w.WorkingOn = step
-	w.Cmd[step] = cmd.cmd
-	w.mu.Unlock()
-
-	err = cmd.Run()
-
-	w.mu.Lock()
-	w.steps = append(w.steps, cmd)
-	w.mu.Unlock()
+func (w *Worker) workOnStep(cmd *Cmd) {
+	err := cmd.Run()
 
 	if err != nil {
 		w.mu.Lock()
@@ -96,12 +92,7 @@ func (w *Worker) workOnStep(i int, step string) {
 		return
 	}
 
-	w.Logs.Info("Step %s finished... \n\n", step)
-	// command finished executing
-	// delete it, and let it rest in pepperonies
-	w.mu.Lock()
-	delete(w.Cmd, step)
-	w.mu.Unlock()
+	w.Logs.Info("Step %s finished... \n\n", cmd.Step.Plain())
 
 	w.Done()
 }
@@ -111,8 +102,8 @@ func (w *Worker) Kill() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	for step, cmd := range w.Cmd {
-		if err := cmd.Process.Kill(); err != nil {
+	for step, cmd := range w.Cmds {
+		if err := cmd.Cmd.Process.Kill(); err != nil {
 			w.Logs.Error("Failed to kill process on step %s: %s", step, err)
 			w.Err = err
 

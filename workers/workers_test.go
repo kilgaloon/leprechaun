@@ -40,12 +40,12 @@ func TestCreateWorker(t *testing.T) {
 		t.Fail()
 	}
 
-	_, err = workers.CreateWorker(&r)
+	_, err = workers.CreateWorker(r)
 	if err != nil {
 		t.Fail()
 	}
 
-	_, err = workers.CreateWorker(&r)
+	_, err = workers.CreateWorker(r)
 	if err == nil {
 		t.Fail()
 	}
@@ -57,7 +57,7 @@ func TestKillWorker(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	w, err := workers.CreateWorker(&r)
+	w, err := workers.CreateWorker(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,10 +71,10 @@ func TestCreateWorkerQueue(t *testing.T) {
 	r2, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.2.yml")
 	r3, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.3.yml")
 
-	workers3.CreateWorker(&r)
-	workers3.CreateWorker(&r2)
+	workers3.CreateWorker(r)
+	workers3.CreateWorker(r2)
 
-	_, err := workers3.CreateWorker(&r3)
+	_, err := workers3.CreateWorker(r3)
 	if err == nil {
 		t.Fail()
 	}
@@ -91,7 +91,7 @@ func TestGetWorkerByName(t *testing.T) {
 		t.Fail()
 	}
 
-	workers.CreateWorker(&r)
+	workers.CreateWorker(r)
 	_, err = workers.GetWorkerByName("schedule")
 	if err != nil {
 		t.Fail()
@@ -121,21 +121,21 @@ func TestWorkerIsDone(t *testing.T) {
 
 func TestWorkerError(t *testing.T) {
 	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/invalid.yml")
-	w, _ := workers.CreateWorker(&r)
+	w, _ := workers.CreateWorker(r)
 
 	go w.Run()
 }
 
 func TestWorkerAsyncTask(t *testing.T) {
 	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.3.yml")
-	w, _ := workers4.CreateWorker(&r)
+	w, _ := workers4.CreateWorker(r)
 
 	w.Run()
 }
 
 func TestWorkerPipeTask(t *testing.T) {
 	r, _ := recipe.Build("../tests/etc/leprechaun/recipes/schedule.4.yml")
-	w, _ := workers5.CreateWorker(&r)
+	w, _ := workers5.CreateWorker(r)
 
 	w.Run()
 }

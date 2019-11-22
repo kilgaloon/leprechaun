@@ -122,5 +122,5 @@ func TestPrepareAndRun(t *testing.T) {
 		t.Fail()
 	}
 
-	Agent.prepareAndRun(&r)
+	Agent.prepareAndRun(r)
 }
