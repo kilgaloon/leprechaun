@@ -3,7 +3,7 @@ export GO111MODULE=on
 debug:
 	go run cmd/leprechaun/main.go --pid=./var/run/leprechaun/.pid --ini=./dist/configs/config.ini --debug=true
 
-install:
+setup:
 	mkdir /etc/leprechaun
 	mkdir /etc/leprechaun/recipes
 	cp dist/configs/config.ini /etc/leprechaun
@@ -12,8 +12,15 @@ install:
 	mkdir /var/log/leprechaun/workers.output
 	touch /var/log/leprechaun/info.log
 	touch /var/log/leprechaun/error.log
-	go install ./cmd/leprechaun
-	go install ./cmd/lepretools
+
+install:
+	make setup
+	go build -o ./$GOPATH/bin/leprechaun ./cmd/leprechaun
+	go build -o ./$GOPATH/bin/lepretools ./cmd/lepretools
+
+install-remote-service:
+	make setup
+	go build -tags remote -o ./$GOPATH/bin/leprechaunrmt ./cmd/leprechaun
 
 uninstall:
 	rm -rf /etc/leprechaun
@@ -23,6 +30,9 @@ uninstall:
 build:
 	go build ./cmd/leprechaun
 	go build ./cmd/lepretools
+
+build-remote-service:
+	go build -tags remote -o ./leprechaunrmt ./cmd/leprechaun
 
 rebuild:
 	go clean

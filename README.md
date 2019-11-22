@@ -117,7 +117,16 @@ Although this is perfectly fine syntax for step `-> echo "Pipe this to next step
   
 ## Installation
 
-Go to `leprechaun` directory and run `make install`, you will need sudo privileges for this.
+Go to `leprechaun` directory and run `make install`, you will need sudo privileges for this. This will install scheduler, cron, and webhook services.
+
+To install remote service run `make install-remote-service`
+
+## Build
+
+Go to `leprechaun` directory and run `make build`. This will build scheduler, cron, and webhook services.
+
+To build remote service run `make build-remote-service`
+
 
 ## Starting/Stopping services
 
