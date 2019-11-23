@@ -38,7 +38,7 @@ func (c *Context) GetVars() []Variable {
 }
 
 // GetVar finds var by name and returns its value
-func (c *Context) GetVar(name string) Variable {
+func (c Context) GetVar(name string) Variable {
 	for _, value := range c.variables {
 		if value.name == name {
 			return value

@@ -34,6 +34,10 @@ build:
 build-remote-service:
 	go build -tags remote -o ./leprechaunrmt ./cmd/leprechaun
 
+#can be used to test secure connection between remote and client
+self-ca:
+	openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+
 rebuild:
 	go clean
 	make build

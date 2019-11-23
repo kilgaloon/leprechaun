@@ -33,7 +33,8 @@ type Config interface {
 	GetMaxAllowedWorkers() int
 	GetMaxAllowedQueueWorkers() int
 	GetWorkerOutputDir() string
-	GetRemoteHosts() map[string]string
+	GetCertPemPath() string
+	GetCertKeyPath() string
 	notifier.Config
 }
 
@@ -44,11 +45,11 @@ type Workers struct {
 	allowedSize      int
 	allowedQueueSize int
 	OutputDir        string
-	remoteHosts      map[string]string
 	Context          *context.Context
 	Logs             log.Logs
 	DoneChan         chan string
 	ErrorChan        chan Worker
+	Debug            bool
 	*notifier.Notifier
 	*sync.RWMutex
 }
@@ -106,10 +107,6 @@ func (w Workers) CreateWorker(r recipe.Recipe) (*Worker, error) {
 		return nil, ErrStillActive
 	}
 
-	for host, addr := range w.remoteHosts {
-		w.Context.DefineVar(host, addr)
-	}
-
 	worker := &Worker{
 		StartedAt: time.Now(),
 		Context:   w.Context,
@@ -119,6 +116,7 @@ func (w Workers) CreateWorker(r recipe.Recipe) (*Worker, error) {
 		Recipe:    r,
 		Cmds:      make(map[string]*Cmd),
 		mu:        new(sync.RWMutex),
+		Debug:     w.Debug,
 	}
 
 	var err error
@@ -147,14 +145,12 @@ func (w Workers) CreateWorker(r recipe.Recipe) (*Worker, error) {
 	return nil, ErrMaxReached
 }
 
-func (w Workers) listener() {
+func (w *Workers) listener() {
 	go func() {
 		for {
 			select {
 			case workerName := <-w.DoneChan:
 				// When worker is done, check in worker queue is there any to process
-				// ** TODO ** : Since we plan to introduce priority now everything is same priority,
-				// tasks in queue will need to wait in queue until all higher priority tasks are done
 				if !w.Queue.isEmpty() {
 					worker := w.Queue.pop()
 					w.PushToStack(worker)
@@ -181,12 +177,15 @@ func (w Workers) listener() {
 }
 
 // New create Workers struct instance
-func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
+func New(cfg Config, logs log.Logs, ctx *context.Context, debug bool) Workers {
+	// setup some variables for our context
+	ctx.DefineVar("pem_file_path", cfg.GetCertPemPath())
+	ctx.DefineVar("key_file_path", cfg.GetCertKeyPath())
+
 	workers := Workers{
 		stack:            make(map[string]Worker),
 		allowedSize:      cfg.GetMaxAllowedWorkers(),
 		allowedQueueSize: cfg.GetMaxAllowedQueueWorkers(),
-		remoteHosts:      cfg.GetRemoteHosts(),
 		Logs:             logs,
 		Context:          ctx,
 		DoneChan:         make(chan string),
@@ -194,6 +193,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context) Workers {
 		OutputDir:        cfg.GetWorkerOutputDir(),
 		Notifier:         notifier.New(cfg, logs),
 		RWMutex:          new(sync.RWMutex),
+		Debug:            debug,
 	}
 	// listener listens for varius events coming from workers, currently those are
 	// done and errors

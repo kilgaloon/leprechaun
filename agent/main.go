@@ -173,6 +173,7 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 		cfg,
 		agent.Logs,
 		agent.Context,
+		debug,
 	)
 
 	agent.Stdin = os.Stdin

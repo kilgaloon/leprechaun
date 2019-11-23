@@ -17,6 +17,7 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		true,
 	)
 	r, err       = recipe.Build("../tests/etc/leprechaun/recipes/schedule.yml")
 	worker, errr = workers2.CreateWorker(r)

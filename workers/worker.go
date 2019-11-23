@@ -26,6 +26,7 @@ type Worker struct {
 	Recipe         recipe.Recipe
 	Err            error
 	mu             *sync.RWMutex
+	Debug          bool
 }
 
 // Run starts worker
@@ -53,7 +54,14 @@ func (w *Worker) Run() {
 			}
 		}
 
-		cmd, err := NewCmd(s, &in)
+		var cmd *Cmd 
+		var err error
+		if s.IsRemote() {
+			cmd, err = NewRemoteCmd(s, &in, w.Context, w.Debug)
+		} else {
+			cmd, err = NewCmd(s, &in, nil, w.Debug)
+		}
+
 		if err != nil {
 			w.Logs.Error(err.Error())
 		}

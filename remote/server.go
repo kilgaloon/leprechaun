@@ -63,7 +63,7 @@ func (r *Remote) Start() {
 			r.Error(err.Error())
 		}
 
-		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequestClientCert}
+		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.NoClientCert}
 		config.Rand = rand.Reader
 
 		ln, err := tls.Listen("tcp", ":11402", &config)
@@ -145,7 +145,7 @@ func (r *Remote) handleConnection(c net.Conn) {
 	
 	s := workers.Step(string(bytes.Trim(cmd, "\x00")))
 	if s.Validate() {
-		cmd, err := workers.NewCmd(s, &b)
+		cmd, err := workers.NewCmd(s, &b, r.Context, r.Debug)
 		if r.isCmdAllowed(cmd) {
 			if err != nil {
 				r.Error(err.Error())

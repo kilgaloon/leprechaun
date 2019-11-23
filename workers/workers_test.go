@@ -13,24 +13,28 @@ var (
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		true,
 	)
 
 	workers5 = New(
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		true,
 	)
 
 	workers4 = New(
 		ConfigWithSettings,
 		log.Logs{},
 		context.New(),
+		true,
 	)
 
 	workers3 = New(
 		ConfigWithQueueSettings,
 		log.Logs{},
 		context.New(),
+		true,
 	)
 )
 

@@ -28,8 +28,7 @@ func (l Logs) Error(message string, v ...interface{}) {
 
 		log.SetOutput(file)
 	}
-
-	raven.CaptureError(fmt.Errorf(message, v...), nil)
+	
 	log.Printf(message, v...)
 
 	if l.Debug {

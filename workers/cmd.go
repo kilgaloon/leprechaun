@@ -2,21 +2,27 @@ package workers
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os/exec"
+
+	"github.com/kilgaloon/leprechaun/context"
 )
 
 // Cmd represents command that can be run
 type Cmd struct {
+	ctx    *context.Context
 	Stdin  bytes.Buffer
 	Cmd    *exec.Cmd
 	Stdout bytes.Buffer
 	Step   Step
 	Remote bool
 	pipe   bool
+	Debug  bool
 }
 
 // Run command and returns errors if any
@@ -49,9 +55,30 @@ func (c *Cmd) Run() error {
 
 func (c *Cmd) runRemote() (err error) {
 	host := net.JoinHostPort(c.Step.RemoteHost(), "11402")
-	conn, err := net.Dial("tcp", host)
-	if err != nil {
-		return
+	var conn net.Conn
+
+	if !c.Debug {
+		cert, err := tls.LoadX509KeyPair(
+			c.ctx.GetVar("pem_file_path").GetValue(),
+			c.ctx.GetVar("key_file_path").GetValue(),
+		)
+
+		if err != nil {
+			return err
+		}
+
+		config := tls.Config{Certificates: []tls.Certificate{cert}}
+		config.Rand = rand.Reader
+
+		conn, err = tls.Dial("tcp", host, &config)
+		if err != nil {
+			return err
+		}
+	} else {
+		conn, err = net.Dial("tcp", host)
+		if err != nil {
+			return err
+		}
 	}
 
 	message := make([]byte, 5)
@@ -113,19 +140,36 @@ func (c *Cmd) runRemote() (err error) {
 }
 
 // NewCmd build new command and prepare it to be run
-func NewCmd(step Step, i *bytes.Buffer) (*Cmd, error) {
+func NewCmd(step Step, i *bytes.Buffer, ctx *context.Context, debug bool) (*Cmd, error) {
 	cmd := &Cmd{
+		ctx:   ctx,
 		Stdin: *i,
 		Step:  step,
 		pipe:  false,
+		Debug: debug,
 	}
 
 	if cmd.Step.IsPipe() {
 		cmd.pipe = true
 	}
 
-	if !cmd.Step.IsRemote() {
-		cmd.Cmd = exec.Command("bash", "-c", cmd.Step.Plain())
+	cmd.Cmd = exec.Command("bash", "-c", cmd.Step.Plain())
+
+	return cmd, nil
+}
+
+// NewRemoteCmd creates new command to be executed remotely
+func NewRemoteCmd(step Step, i *bytes.Buffer, ctx *context.Context, debug bool) (*Cmd, error) {
+	cmd := &Cmd{
+		ctx:   ctx,
+		Stdin: *i,
+		Step:  step,
+		pipe:  false,
+		Debug: debug,
+	}
+
+	if cmd.Step.IsPipe() {
+		cmd.pipe = true
 	}
 
 	return cmd, nil
