@@ -35,6 +35,7 @@ type Config interface {
 	GetWorkerOutputDir() string
 	GetCertPemPath() string
 	GetCertKeyPath() string
+	GetRemoteServices() map[string]string
 	notifier.Config
 }
 
@@ -181,6 +182,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context, debug bool) Workers {
 	// setup some variables for our context
 	ctx.DefineVar("pem_file_path", cfg.GetCertPemPath())
 	ctx.DefineVar("key_file_path", cfg.GetCertKeyPath())
+	ctx.DefineVar("remote_services", cfg.GetRemoteServices())
 
 	workers := Workers{
 		stack:            make(map[string]Worker),

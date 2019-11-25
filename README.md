@@ -93,7 +93,27 @@ Output from one step can be passed to input of next step:
 		- cat > piped.txt
 
 As you see, first step is using syntax `}>` at the end, which tells that this command output will be passed to next command input, you can chain like this how much you want.
-Although this is perfectly fine syntax for step `-> echo "Pipe this to next step" }>` (we added async syntax), next step will start even before first step finished and basically nothing will be piped.
+
+## Remote step execution
+
+Steps can be handled by your local machine using regular syntax, if there is any need that you want specific step to be
+executed by some remote machine you can spoecify that in step provided in example under, syntax is `rmt:some_host`, leprechaun will try to communicate with remote service that is configured on provided host and will run this command at that host.
+
+	name: job1 // name of recipe
+	definition: schedule
+	schedule:
+		min: 0 // every min
+		hour: 0 // every hour
+		day: 0 // every day
+	steps: // steps are done from first to last
+		- rmt:some_host echo "Pipe this to next step"
+
+ Note that also as regular step this step also can pipe output to next step, so something like this is possible also:
+
+	steps: // steps are done from first to last
+		- rmt:some_host echo "Pipe this to next step" }>
+		- rmt:some_other_host grep -a "Pipe" }>
+		- cat > stored.txt
 
 ## Installation
 

@@ -13,7 +13,7 @@ type Context struct {
 // Variable is struct definition for variable
 type Variable struct {
 	name  string
-	value string
+	value interface{}
 }
 
 // GetName returns name of variable
@@ -22,12 +22,12 @@ func (v Variable) GetName() string {
 }
 
 // GetValue returns value of variable
-func (v Variable) GetValue() string {
+func (v Variable) GetValue() interface{} {
 	return v.value
 }
 
 // DefineVar defines variable and puts it in present context
-func (c *Context) DefineVar(variable string, value string) {
+func (c *Context) DefineVar(variable string, value interface{}) {
 	var v = Variable{name: variable, value: value}
 	c.variables = append(c.variables, v)
 }
@@ -54,7 +54,12 @@ func (c Context) GetVar(name string) Variable {
 // Transpile text change variables from context
 func (c *Context) Transpile(toCompile string) string {
 	for _, variable := range c.variables {
-		toCompile = strings.Replace(toCompile, "$"+variable.name, variable.value, -1)
+		str, ok := variable.value.(string)
+
+		if ok {
+			toCompile = strings.Replace(toCompile, "$"+variable.name, str, -1)
+		}
+		
 	}
 
 	return toCompile

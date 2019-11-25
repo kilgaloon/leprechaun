@@ -195,6 +195,18 @@ func (ac AgentConfig) GetCertKeyPath() string {
 	return ac.CertKeyPath
 }
 
+// GetRemoteServices map remote services with ports they are running on
+func (ac AgentConfig) GetRemoteServices() map[string]string {
+	mapped := make(map[string]string)
+	keys := ac.Cfg.Section("remote_services").Keys()
+
+	for _, key := range keys {
+		mapped[key.Name()] = key.Value()
+	}
+
+	return mapped
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)

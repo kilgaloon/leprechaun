@@ -53,13 +53,17 @@ func (c *Cmd) Run() error {
 }
 
 func (c *Cmd) runRemote() (err error) {
-	host := net.JoinHostPort(c.Step.RemoteHost(), "11402")
+	hostPorts := c.ctx.GetVar("remote_services").GetValue().(map[string]string)
+	host := net.JoinHostPort(c.Step.RemoteHost(), hostPorts[c.Step.RemoteHost()])
 	var conn net.Conn
 
 	if !c.Debug {
+		pemFile := c.ctx.GetVar("pem_file_path").GetValue()
+		keyFile := c.ctx.GetVar("key_file_path").GetValue()
+
 		cert, err := tls.LoadX509KeyPair(
-			c.ctx.GetVar("pem_file_path").GetValue(),
-			c.ctx.GetVar("key_file_path").GetValue(),
+			pemFile.(string),
+			keyFile.(string),
 		)
 
 		if err != nil {

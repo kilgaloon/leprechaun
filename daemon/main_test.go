@@ -49,7 +49,7 @@ func (fs *fakeService) IsDebug() bool {
 	return true
 }
 
-func (fs *fakeService) SetStatus(s int)         {}
+func (fs *fakeService) SetStatus(s int) {}
 func (fs *fakeService) Start()                  {}
 func (fs *fakeService) Stop()                   {}
 func (fs *fakeService) Pause()                  {}
