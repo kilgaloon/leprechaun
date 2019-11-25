@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/kilgaloon/leprechaun/agent"
 	"github.com/kilgaloon/leprechaun/config"
@@ -67,18 +68,22 @@ func (r *Remote) Start() {
 		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.NoClientCert}
 		config.Rand = rand.Reader
 
-		ln, err = tls.Listen("tcp", ":11402", &config)
+		port := strconv.Itoa(r.GetConfig().GetPort())
+		ln, err = tls.Listen("tcp", ":"+port, &config)
 		if err != nil {
 			r.Error(err.Error())
 		}
 
-		r.Info("Server(TLS) up and listening on port 11402")
+		r.Info("Server(TLS) up and listening on port " + port)
 
 	} else {
-		ln, err = net.Listen("tcp", ":11402")
+		port := strconv.Itoa(r.GetConfig().GetPort())
+		ln, err = net.Listen("tcp", ":"+port)
 		if err != nil {
 			r.Error(err.Error())
 		}
+
+		r.Info("Server up and listening on port " + port)
 	}
 
 	r.SetStatus(daemon.Started)
