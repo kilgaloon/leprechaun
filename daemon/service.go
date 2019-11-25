@@ -46,6 +46,7 @@ type Service interface {
 	api.Registrator
 	GetStatus() ServiceStatus
 	SetStatus(s int)
+	GetStatusChan() chan int
 	GetConfig() config.AgentConfig
 	StartStop
 	Pause

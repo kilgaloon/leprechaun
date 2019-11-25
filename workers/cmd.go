@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"os/exec"
@@ -133,8 +132,6 @@ func (c *Cmd) runRemote() (err error) {
 	}
 
 	_, err = c.Stdout.Write(message)
-
-	fmt.Printf("Server returned output: %s \n", message)
 
 	return
 }

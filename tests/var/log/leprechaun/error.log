@@ -1,0 +1,309 @@
+2019/09/17 18:39:19 Some error message
+2019/09/17 18:39:27 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/09/17 18:39:27 Worker hook: exit status 127
+2019/09/17 18:39:27 exit status 127
+2019/09/17 18:39:27 dial tcp: address smtp.host.com: missing port in address
+2019/09/17 18:39:27 Httpserver: ListenAndServe() error: http: Server closed
+2019/09/17 18:39:27 Worker hook: exit status 127
+2019/09/17 18:39:27 BuildPool started
+2019/09/17 18:39:27 dial tcp: address smtp.host.com: missing port in address
+2019/09/17 18:39:27 Httpserver: ListenAndServe() error: http: Server closed
+2019/09/17 18:39:27 exit status 127
+2019/09/17 18:39:27 Worker hook: exit status 127
+2019/09/17 18:39:27 dial tcp: address smtp.host.com: missing port in address
+2019/09/17 18:39:42 dial tcp: address smtp.host.com: missing port in address
+2019/09/25 15:17:43 Some error message
+2019/09/25 15:17:55 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/09/25 15:17:55 dial tcp: address smtp.host.com: missing port in address
+2019/09/25 15:17:55 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/09/25 15:17:55 exit status 127
+2019/09/25 15:17:55 Worker hook: exit status 127
+2019/09/25 15:17:55 dial tcp: address smtp.host.com: missing port in address
+2019/09/25 15:17:55 Worker hook: exit status 127
+2019/09/25 15:17:55 exit status 127
+2019/09/25 15:18:06 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:09 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:15 Some error message
+2019/10/07 15:25:25 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:25 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:25 exit status 127
+2019/10/07 15:25:25 Worker hook: exit status 127
+2019/10/07 15:25:25 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:25 Httpserver: ListenAndServe() error: http: Server closed
+2019/10/07 15:25:25 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:25 exit status 127
+2019/10/07 15:25:25 Worker hook: exit status 127
+2019/10/07 15:25:25 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:25:35 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:24 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:24 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:26:24 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:26:24 exit status 127
+2019/10/07 15:26:24 Worker invalid: exit status 127
+2019/10/07 15:26:42 Some error message
+2019/10/07 15:26:48 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:48 Worker hook: exit status 127
+2019/10/07 15:26:48 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:48 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:48 exit status 127
+2019/10/07 15:26:48 Worker hook: exit status 127
+2019/10/07 15:26:48 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:48 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:48 exit status 127
+2019/10/07 15:26:48 Worker hook: exit status 127
+2019/10/07 15:26:48 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:26:58 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:29:09 Some error message
+2019/10/07 15:35:47 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:35:52 Some error message
+2019/10/07 15:36:31 Some error message
+2019/10/07 15:37:06 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:37:11 Some error message
+2019/10/07 15:38:58 Some error message
+2019/10/07 15:39:47 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:39:47 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:39:47 exit status 127
+2019/10/07 15:39:47 Worker invalid: exit status 127
+2019/10/07 15:39:47 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:40:00 Some error message
+2019/10/07 15:40:22 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:40:22 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:40:22 Maximum allowed workers reached, worker moved to queue
+2019/10/07 15:40:22 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:40:22 exit status 127
+2019/10/07 15:40:22 dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:40:22 Worker invalid: exit status 127
+2019/10/07 15:40:40 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/07 15:40:47 Some error message
+2019/10/08 09:27:23 Some error message
+2019/10/08 09:27:29 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:27:29 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:27:29 exit status 127
+2019/10/08 09:27:29 Worker hook: exit status 127
+2019/10/08 09:27:29 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:27:29 Httpserver: ListenAndServe() error: http: Server closed
+2019/10/08 09:27:29 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:27:29 Worker hook: exit status 127
+2019/10/08 09:27:39 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:22 Some error message
+2019/10/08 09:31:28 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:28 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:28 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:28 exit status 127
+2019/10/08 09:31:28 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:28 Worker hook: exit status 127
+2019/10/08 09:31:28 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:28 exit status 127
+2019/10/08 09:31:28 Worker hook: exit status 127
+2019/10/08 09:31:28 dial tcp: address smtp.host.com: missing port in address
+2019/10/08 09:31:38 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 10:42:04 Some error message
+2019/10/09 10:42:10 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 10:42:10 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 10:42:10 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 10:42:10 Worker hook: exit status 127
+2019/10/09 10:42:10 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 10:42:10 exit status 127
+2019/10/09 10:42:10 Worker hook: exit status 127
+2019/10/09 10:42:20 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:43:53 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:43:53 exit status 127
+2019/10/09 12:43:53 Worker invalid: exit status 127
+2019/10/09 12:43:59 Some error message
+2019/10/09 12:44:05 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:05 Worker hook: exit status 127
+2019/10/09 12:44:05 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:05 exit status 127
+2019/10/09 12:44:05 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:05 Worker hook: exit status 127
+2019/10/09 12:44:05 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:05 exit status 127
+2019/10/09 12:44:05 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:05 Worker hook: exit status 127
+2019/10/09 12:44:05 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 12:44:15 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 15:03:59 Maximum allowed workers reached, worker moved to queue
+2019/10/09 15:03:59 Maximum allowed workers reached, worker moved to queue
+2019/10/09 15:04:05 Some error message
+2019/10/09 15:04:11 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 15:04:11 Worker hook: exit status 127
+2019/10/09 15:04:11 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 15:04:11 exit status 127
+2019/10/09 15:04:11 Worker hook: exit status 127
+2019/10/09 15:04:11 dial tcp: address smtp.host.com: missing port in address
+2019/10/09 15:04:11 Httpserver: ListenAndServe() error: http: Server closed
+2019/10/09 15:04:11 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/09 15:04:11 exit status 127
+2019/10/09 15:04:11 Worker hook: exit status 127
+2019/10/09 15:04:21 dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:04:52 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:04:52 Maximum allowed workers reached, worker moved to queue
+2019/10/10 13:04:52 exit status 127
+2019/10/10 13:07:32 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:07:38 Some error message
+2019/10/10 13:07:57 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:07:57 Worker invalid: exit status 127
+2019/10/10 13:07:57 dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:08:03 Some error message
+2019/10/10 13:11:44 Some error message
+2019/10/10 13:13:52 Some error message
+2019/10/10 13:15:30 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:15:36 Some error message
+2019/10/10 13:16:51 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:16:51 exit status 127
+2019/10/10 13:16:51 Worker invalid: exit status 127
+2019/10/10 13:16:56 Some error message
+2019/10/10 13:18:02 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:18:02 exit status 127
+2019/10/10 13:18:02 dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:18:02 Worker invalid: exit status 127
+2019/10/10 13:18:08 Some error message
+2019/10/10 13:20:44 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:20:49 Some error message
+2019/10/10 13:21:31 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:21:36 Some error message
+2019/10/10 13:22:59 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:23:05 Some error message
+2019/10/10 13:23:35 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:23:41 Some error message
+2019/10/10 13:28:05 Some error message
+2019/10/10 13:30:48 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:30:54 Some error message
+2019/10/10 13:31:00 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:31:00 dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:31:00 Httpserver: ListenAndServe() error: http: Server closed
+2019/10/10 13:31:00 exit status 127
+2019/10/10 13:31:00 Worker hook: exit status 127
+2019/10/10 13:31:00 dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:31:00 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/10/10 13:31:00 exit status 127
+2019/10/10 13:31:00 Worker hook: exit status 127
+2019/11/22 12:03:03 Some error message
+2019/11/22 12:03:14 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 12:03:14 Worker hook: exit status 127
+2019/11/22 12:03:14 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 12:03:14 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/22 12:03:14 exit status 127
+2019/11/22 12:03:14 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 12:03:14 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/22 12:03:15 exit status 127
+2019/11/22 12:03:15 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 12:03:15 Worker hook: exit status 127
+2019/11/22 12:03:26 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:06 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:06 exit status 127
+2019/11/22 13:46:06 Worker invalid: exit status 127
+2019/11/22 13:46:13 Some error message
+2019/11/22 13:46:20 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:20 Worker hook: exit status 127
+2019/11/22 13:46:20 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:20 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/22 13:46:20 exit status 127
+2019/11/22 13:46:20 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:20 Worker hook: exit status 127
+2019/11/22 13:46:20 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:20 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/22 13:46:20 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:20 exit status 127
+2019/11/22 13:46:20 Worker hook: exit status 127
+2019/11/22 13:46:20 dial tcp: address smtp.host.com: missing port in address
+2019/11/22 13:46:31 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:34:48 Maximum allowed workers reached, worker moved to queue
+2019/11/23 13:34:48 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:34:48 exit status 127
+2019/11/23 13:34:48 Worker invalid: exit status 127
+2019/11/23 13:34:48 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:34:59 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:34:59 exit status 127
+2019/11/23 13:34:59 Worker invalid: exit status 127
+2019/11/23 13:34:59 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:04 Some error message
+2019/11/23 13:35:12 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:12 Worker hook: exit status 127
+2019/11/23 13:35:12 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:12 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:12 Worker hook: exit status 127
+2019/11/23 13:35:12 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:12 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/23 13:35:12 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:12 Worker hook: exit status 127
+2019/11/23 13:35:12 exit status 127
+2019/11/23 13:35:12 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 13:35:23 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:30:57 Worker invalid: exit status 127
+2019/11/23 14:30:57 exit status 127
+2019/11/23 14:30:58 invalid file is in progress... 
+2019/11/23 14:30:58 Maximum allowed workers reached, worker moved to queue
+2019/11/23 14:30:58 Maximum allowed workers reached, worker moved to queue
+2019/11/23 14:30:58 Maximum allowed workers reached, worker moved to queue
+2019/11/23 14:30:58 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:30:58 exit status 127
+2019/11/23 14:30:58 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:04 Some error message
+2019/11/23 14:31:11 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:11 exit status 127
+2019/11/23 14:31:11 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:11 exit status 127
+2019/11/23 14:31:11 Worker hook: exit status 127
+2019/11/23 14:31:11 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:11 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/23 14:31:11 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:11 exit status 127
+2019/11/23 14:31:11 Worker hook: exit status 127
+2019/11/23 14:31:11 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:31:23 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:33:58 Some error message
+2019/11/23 14:34:05 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:34:05 Worker hook: exit status 127
+2019/11/23 14:34:05 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:34:05 hook file is in progress... 
+2019/11/23 14:34:05 exit status 127
+2019/11/23 14:34:05 Worker hook: exit status 127
+2019/11/23 14:34:05 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:34:05 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:34:05 exit status 127
+2019/11/23 14:34:05 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:34:16 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:35:38 Some error message
+2019/11/23 14:35:46 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:35:46 Worker hook: exit status 127
+2019/11/23 14:35:46 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:35:46 exit status 127
+2019/11/23 14:35:46 Worker hook: exit status 127
+2019/11/23 14:35:46 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:35:46 Httpserver: ListenAndServe() error: http: Server closed
+2019/11/23 14:35:46 smtp error: dial tcp: address smtp.host.com: missing port in address
+2019/11/23 14:35:46 exit status 127
+2019/11/23 14:35:46 Worker hook: exit status 127
+2019/11/23 14:35:56 dial tcp: address smtp.host.com: missing port in address
+2019/11/23 20:52:54 schedule file is in progress... 
+2019/11/23 20:52:54 Maximum allowed workers reached, worker moved to queue
+2019/11/23 20:52:54 Maximum allowed workers reached, worker moved to queue
+2019/11/23 20:52:54 Step echo "testing this recipe" > test.txt is in progress... 
+2019/11/23 21:05:09 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 21:06:02 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 21:08:06 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 21:12:04 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 21:13:24 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 21:13:45 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:06:52 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:11:50 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:16:40 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:18:54 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:20:53 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:21:43 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:22:27 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:29:30 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:36:25 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:37:02 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:45:10 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:46:20 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:48:57 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:52:16 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:56:51 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 22:58:14 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 23:00:24 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 23:00:41 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 23:00:53 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 23:01:27 open /etc/leprechaun/certs/server.pem: no such file or directory
+2019/11/23 23:02:32 open /etc/leprechaun/certs/server.pem: no such file or directory

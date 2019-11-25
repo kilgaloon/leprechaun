@@ -54,7 +54,7 @@ func (w *Worker) Run() {
 			}
 		}
 
-		var cmd *Cmd 
+		var cmd *Cmd
 		var err error
 		if s.IsRemote() {
 			cmd, err = NewRemoteCmd(s, &in, w.Context, w.Debug)

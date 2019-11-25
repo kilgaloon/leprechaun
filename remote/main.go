@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/tls"
-	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -43,7 +42,7 @@ func (r *Remote) GetName() string {
 }
 
 func (r Remote) isCmdAllowed(cmd *workers.Cmd) bool {
-	cmds := r.GetConfig().Cfg.Section("remote").Key("allowed_commands").Strings(",")
+	cmds := r.GetConfig().Cfg.Section("").Key(r.GetName() + ".allowed_commands").Strings(",")
 
 	for _, c := range cmds {
 		if c == cmd.Step.Name() {
@@ -56,7 +55,9 @@ func (r Remote) isCmdAllowed(cmd *workers.Cmd) bool {
 
 // Start remote service
 func (r *Remote) Start() {
-	r.SetStatus(daemon.Started)
+	var ln net.Listener
+	var err error
+
 	if !r.IsDebug() {
 		cert, err := tls.LoadX509KeyPair(r.GetConfig().GetCertPemPath(), r.GetConfig().GetCertKeyPath())
 		if err != nil {
@@ -66,35 +67,30 @@ func (r *Remote) Start() {
 		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.NoClientCert}
 		config.Rand = rand.Reader
 
-		ln, err := tls.Listen("tcp", ":11402", &config)
+		ln, err = tls.Listen("tcp", ":11402", &config)
 		if err != nil {
 			r.Error(err.Error())
 		}
 
 		r.Info("Server(TLS) up and listening on port 11402")
 
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				r.Error(err.Error())
-				continue
-			}
-			go r.handleConnection(conn)
-		}
 	} else {
-		ln, err := net.Listen("tcp", ":11402")
+		ln, err = net.Listen("tcp", ":11402")
 		if err != nil {
 			r.Error(err.Error())
 		}
+	}
 
-		for {
-			conn, err := ln.Accept()
-			if err != nil {
-				r.Error(err.Error())
-				continue
-			}
-			go r.handleConnection(conn)
+	r.SetStatus(daemon.Started)
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			r.Error(err.Error())
+			continue
 		}
+
+		go r.handleConnection(conn)
 	}
 
 }
@@ -142,7 +138,7 @@ func (r *Remote) handleConnection(c net.Conn) {
 	if err != nil {
 		c.Close()
 	}
-	
+
 	s := workers.Step(string(bytes.Trim(cmd, "\x00")))
 	if s.Validate() {
 		cmd, err := workers.NewCmd(s, &b, r.Context, r.Debug)
@@ -162,11 +158,12 @@ func (r *Remote) handleConnection(c net.Conn) {
 			if err != nil {
 				r.Error(err.Error())
 			}
-
-			fmt.Printf("Server returned: %s", cmd.Stdout.String())
+		} else {
+			r.Error("Command not allowed %s", s.Name())
+			_, err = c.Write([]byte("error"))
 		}
 	}
-	
+
 	r.Info("Connection from %v closed.", c.RemoteAddr())
 	c.Close()
 }

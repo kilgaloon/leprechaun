@@ -75,6 +75,7 @@ test:
 	RUN_MODE=test go test -race ./notifier -coverprofile=./notifier/coverage.txt -covermode=atomic -v
 	RUN_MODE=test go test -race ./notifier/notifications -coverprofile=./notifier/notifications/coverage.txt -v
 	RUN_MODE=test go test -race ./daemon -coverprofile=./daemon/coverage.txt -v
+	RUN_MODE=test go test -race ./remote -coverprofile=./remote/coverage.txt -v
 
 test-with-report:
 	go vet ./cmd/leprechaun
@@ -110,3 +111,5 @@ test-with-report:
 	go tool cover -html=coverprofile/notifications.out -o coverprofile/notifications.html
 	RUN_MODE=test go test -race ./daemon -coverprofile coverprofile/daemon.out
 	go tool cover -html=coverprofile/daemon.out -o coverprofile/daemon.html
+	RUN_MODE=test go test -race ./remote -coverprofile coverprofile/remote.out
+	go tool cover -html=coverprofile/remote.out -o coverprofile/remote.html

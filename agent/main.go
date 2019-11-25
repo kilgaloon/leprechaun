@@ -46,14 +46,15 @@ type StandardOutput interface {
 
 // Default represents default agent
 type Default struct {
-	Name     string
-	Config   *config.AgentConfig
-	Context  *context.Context
-	Stdin    io.Reader
-	Stdout   io.Writer
-	Debug    bool
-	Status   int
-	Pipeline chan string
+	Name       string
+	Config     *config.AgentConfig
+	Context    *context.Context
+	Stdin      io.Reader
+	Stdout     io.Writer
+	Debug      bool
+	Status     int
+	StatusChan chan int
+	Pipeline   chan string
 
 	*sync.RWMutex
 	log.Logs
@@ -111,7 +112,7 @@ func (d *Default) IsDebug() bool {
 // SetStatus set status of agent
 func (d *Default) SetStatus(s int) {
 	d.Lock()
-	d.Status = s
+	d.StatusChan <- s
 	d.Unlock()
 }
 
@@ -121,6 +122,14 @@ func (d *Default) GetStatus() daemon.ServiceStatus {
 	defer d.Unlock()
 
 	return daemon.ServiceStatus(d.Status)
+}
+
+// GetStatusChan returns status of agent
+func (d *Default) GetStatusChan() chan int {
+	d.Lock()
+	defer d.Unlock()
+
+	return d.StatusChan
 }
 
 // SetPipeline set pipeline create string channel that
@@ -142,6 +151,17 @@ func (d *Default) Pause() {
 // Unpause agent
 func (d *Default) Unpause() {
 	d.SetStatus(daemon.Started)
+}
+
+func (d *Default) listener() {
+	go func() {
+		for {
+			select {
+			case s := <- d.StatusChan:
+				d.Status = s
+			}
+		}
+	}()
 }
 
 // DefaultAPIHandles to be used in socket communication
@@ -179,7 +199,10 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
 	agent.Debug = debug
+	agent.StatusChan = make(chan int)
 	agent.Pipeline = make(chan string)
+
+	agent.listener()
 
 	return agent
 }
