@@ -3,13 +3,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fc86e14746f04abe966d3c771cfb41af)](https://app.codacy.com/app/kilgaloon/leprechaun?utm_source=github.com&utm_medium=referral&utm_content=kilgaloon/leprechaun&utm_campaign=Badge_Grade_Dashboard)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun) [![Build Status](https://travis-ci.com/kilgaloon/leprechaun.svg?branch=master)](https://travis-ci.com/kilgaloon/leprechaun) [![codecov](https://codecov.io/gh/Kilgaloon/Leprechaun/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilgaloon/Leprechaun)
 
-Current Version: **1.4.0**
-
 **Leprechaun** is tool where you can schedule your recurring tasks to be performed over and over.
 
 In **Leprechaun** tasks are **recipes**, lets observe simple recipe file which is written using **YAML** syntax.
   
-File is located in recipes directory which can be specified in `configs.ini` configurational file.
+File is located in recipes directory which can be specified in `configs.ini` configurational file. For all possible settings take a look [here](https://github.com/Kilgaloon/Leprechaun/blob/master/dist/configs/config.ini)
 
 By definition there are 3 types of recipes, the ones that can be scheduled, the others that can be hooked and last ones that use cron pattern for scheduling jobs, they are similiar regarding steps but have some difference in definition
 

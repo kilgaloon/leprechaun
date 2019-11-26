@@ -12,13 +12,10 @@ const (
 	ErrorLog               = "/var/log/leprechaun/error.log"
 	InfoLog                = "/var/log/leprechaun/info.log"
 	RecipesPath            = "/etc/leprechaun/recipes"
-	LockFile               = "/var/run/leprechaun/client.lock"
-	CommandSocket          = "/var/run/leprechaun/client.sock"
 	WorkerOutputDir        = "/var/log/leprechaun/workers.output"
 	NotificationsEmail     = ""
 	MaxAllowedWorkers      = 5
 	MaxAllowedQueueWorkers = 5
-	RetryRecipeAfter       = 10
 	ServerPort             = 11400
 	SMTPHost               = ""
 	SMTPUsername           = ""
@@ -106,11 +103,6 @@ func (ac AgentConfig) GetRecipesPathAbs() string {
 // GetRecipesPath returns path of config file
 func (ac AgentConfig) GetRecipesPath() string {
 	return ac.RecipesPath
-}
-
-// GetLockFile returns path of config file
-func (ac AgentConfig) GetLockFile() string {
-	return ac.LockFile
 }
 
 // GetPort returns path of config file
@@ -242,12 +234,7 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
 	}
-
-	ac.LockFile = cfg.Section("").Key(name + ".lock_file").MustString(LockFile)
-	if !IsFileValid(ac.LockFile, ".lock") {
-		ac.LockFile = LockFile
-	}
-
+	
 	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
 	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
 
