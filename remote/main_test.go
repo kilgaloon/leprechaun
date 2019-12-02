@@ -100,7 +100,6 @@ func TestMain(t *testing.T) {
 						break
 					}
 				}
-
 			} else {
 				t.Fatal("Start command not registered")
 			}
