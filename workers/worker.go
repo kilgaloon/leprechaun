@@ -59,7 +59,8 @@ func (w *Worker) Run() {
 		if s.IsRemote() {
 			cmd, err = NewRemoteCmd(s, &in, w.Context, w.Debug)
 		} else {
-			cmd, err = NewCmd(s, &in, nil, w.Debug)
+			shell := w.Context.GetVar("shell").GetValue().(string)
+			cmd, err = NewCmd(s, &in, nil, w.Debug, shell)
 		}
 
 		if err != nil {
@@ -100,7 +101,7 @@ func (w *Worker) workOnStep(cmd *Cmd) {
 		return
 	}
 
-	w.Logs.Info("Step %s finished... \n\n", cmd.Step.Plain())
+	w.Logs.Info("Step %s finished \n\n", cmd.Step.Plain())
 
 	w.Done()
 }

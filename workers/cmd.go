@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io"
 	"net"
+	"os"
 	"os/exec"
 
 	"github.com/kilgaloon/leprechaun/context"
@@ -72,6 +73,10 @@ func (c *Cmd) runRemote() (err error) {
 
 		config := tls.Config{Certificates: []tls.Certificate{cert}}
 		config.Rand = rand.Reader
+
+		if os.Getenv("RUN_MODE") == "test" {
+			config.InsecureSkipVerify = true
+		}
 
 		conn, err = tls.Dial("tcp", host, &config)
 		if err != nil {
@@ -141,7 +146,7 @@ func (c *Cmd) runRemote() (err error) {
 }
 
 // NewCmd build new command and prepare it to be run
-func NewCmd(step Step, i *bytes.Buffer, ctx *context.Context, debug bool) (*Cmd, error) {
+func NewCmd(step Step, i *bytes.Buffer, ctx *context.Context, debug bool, sh string) (*Cmd, error) {
 	cmd := &Cmd{
 		ctx:   ctx,
 		Stdin: *i,
@@ -154,7 +159,12 @@ func NewCmd(step Step, i *bytes.Buffer, ctx *context.Context, debug bool) (*Cmd,
 		cmd.pipe = true
 	}
 
-	cmd.Cmd = exec.Command("bash", "-c", cmd.Step.Plain())
+	switch sh {
+	case "bash":
+		cmd.Cmd = exec.Command("bash", "-c", step.Plain())
+	default:
+		cmd.Cmd = exec.Command(step.FullName(), step.Args()...)
+	}
 
 	return cmd, nil
 }

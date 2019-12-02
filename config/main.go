@@ -24,6 +24,7 @@ const (
 	ErrorReporting         = true
 	CertPemPath            = "/etc/leprechaun/certs/server.pem"
 	CertKeyPath            = "/etc/leprechaun/certs/server.key"
+	Shell                  = "native"
 )
 
 // Configs for different agents
@@ -68,6 +69,7 @@ type AgentConfig struct {
 	CertPemPath            string
 	CertKeyPath            string
 	RemoteHosts            map[string]string
+	Shell                  string
 }
 
 // GetPath returns path of config file
@@ -199,6 +201,11 @@ func (ac AgentConfig) GetRemoteServices() map[string]string {
 	return mapped
 }
 
+// GetShell which shell to use to run commands
+func (ac AgentConfig) GetShell() string {
+	return ac.Shell
+}
+
 // New Create new config
 func (c *Configs) New(name string, path string) *AgentConfig {
 	cfg, err := ini.Load(path)
@@ -234,7 +241,7 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 	if !IsDirValid(ac.WorkerOutputDir) {
 		ac.WorkerOutputDir = WorkerOutputDir
 	}
-	
+
 	gMaxAllowedWorkers := cfg.Section("").Key("max_allowed_workers").MustInt(MaxAllowedWorkers)
 	ac.MaxAllowedWorkers = cfg.Section("").Key(name + ".max_allowed_workers").MustInt(gMaxAllowedWorkers)
 
@@ -265,6 +272,9 @@ func (c *Configs) New(name string, path string) *AgentConfig {
 
 	gCertKeyPath := cfg.Section("").Key("key_file").MustString(CertKeyPath)
 	ac.CertKeyPath = cfg.Section("").Key(name + ".key_file").MustString(gCertKeyPath)
+
+	gShell := cfg.Section("").Key("shell").MustString(Shell)
+	ac.Shell = cfg.Section("").Key(name + ".shell").MustString(gShell)
 
 	c.cfgs[name] = ac
 	return ac

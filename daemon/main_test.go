@@ -15,6 +15,7 @@ var (
 	ConfigWithSettings = configs.New("test", "../tests/configs/config_regular.ini")
 )
 
+
 type fakeService struct {
 }
 
@@ -57,6 +58,11 @@ func (fs *fakeService) SetPipeline(chan string) {}
 func (fs *fakeService) New(name string, cfg *config.AgentConfig, debug bool) Service {
 	srv := &fakeService{}
 	return srv
+}
+
+func TestMain(t *testing.T) {
+	// init daemon
+	Init()
 }
 
 func TestAddService(t *testing.T) {

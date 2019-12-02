@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/getsentry/raven-go"
 )
 
 // Logs struct holds path to different logs
@@ -20,7 +18,6 @@ func (l Logs) Error(message string, v ...interface{}) {
 	if len(l.ErrorLog) > 0 {
 		file, err := os.OpenFile(l.ErrorLog, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 		if err != nil {
-			raven.CaptureErrorAndWait(err, nil)
 			panic(err)
 		}
 
@@ -28,7 +25,7 @@ func (l Logs) Error(message string, v ...interface{}) {
 
 		log.SetOutput(file)
 	}
-	
+
 	log.Printf(message, v...)
 
 	if l.Debug {

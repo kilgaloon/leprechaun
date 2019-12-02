@@ -44,7 +44,7 @@ func TestCreateWorker(t *testing.T) {
 		t.Fail()
 	}
 
-	_, err = workers.CreateWorker(r)
+	wr, err := workers.CreateWorker(r)
 	if err != nil {
 		t.Fail()
 	}
@@ -53,6 +53,8 @@ func TestCreateWorker(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+
+	wr.Run()
 }
 
 func TestKillWorker(t *testing.T) {
@@ -105,6 +107,7 @@ func TestGetWorkerByName(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+
 }
 
 func TestGetAll(t *testing.T) {

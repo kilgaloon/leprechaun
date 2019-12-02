@@ -7,6 +7,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/kilgaloon/leprechaun/agent"
@@ -22,6 +23,7 @@ var Agent *Remote
 type Remote struct {
 	Name string
 	*agent.Default
+	ln net.Listener
 }
 
 // New create remote as a service
@@ -30,6 +32,7 @@ func (r *Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Se
 	c := &Remote{
 		name,
 		a,
+		nil,
 	}
 
 	Agent = c
@@ -56,29 +59,34 @@ func (r Remote) isCmdAllowed(cmd *workers.Cmd) bool {
 
 // Start remote service
 func (r *Remote) Start() {
-	var ln net.Listener
 	var err error
 
 	if !r.IsDebug() {
 		cert, err := tls.LoadX509KeyPair(r.GetConfig().GetCertPemPath(), r.GetConfig().GetCertKeyPath())
 		if err != nil {
 			r.Error(err.Error())
+			return
 		}
 
-		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.NoClientCert}
+		config := tls.Config{Certificates: []tls.Certificate{cert}, ClientAuth: tls.RequireAndVerifyClientCert}
 		config.Rand = rand.Reader
 
+		if os.Getenv("RUN_MODE") == "test" {
+			config.ClientAuth = tls.NoClientCert
+		}
+
 		port := strconv.Itoa(r.GetConfig().GetPort())
-		ln, err = tls.Listen("tcp", ":"+port, &config)
+		r.ln, err = tls.Listen("tcp", ":"+port, &config)
 		if err != nil {
 			r.Error(err.Error())
+			return
 		}
 
 		r.Info("Server(TLS) up and listening on port " + port)
 
 	} else {
 		port := strconv.Itoa(r.GetConfig().GetPort())
-		ln, err = net.Listen("tcp", ":"+port)
+		r.ln, err = net.Listen("tcp", ":"+port)
 		if err != nil {
 			r.Error(err.Error())
 		}
@@ -89,10 +97,10 @@ func (r *Remote) Start() {
 	r.SetStatus(daemon.Started)
 
 	for {
-		conn, err := ln.Accept()
+		conn, err := r.ln.Accept()
 		if err != nil {
 			r.Error(err.Error())
-			continue
+			break
 		}
 
 		go r.handleConnection(conn)
@@ -104,15 +112,23 @@ func (r *Remote) handleConnection(c net.Conn) {
 	r.Info("Client %v connected.", c.RemoteAddr())
 	bSize := 1024
 	// tell client that server is ready to read instructions
-	c.Write([]byte("ready"))
+	_, err := c.Write([]byte("ready"))
+	if err != nil {
+		r.Error("Error writing to client: " + err.Error())
+		c.Close()
+	}
 
 	var input []byte
 	var n int
 	var cont string
-	var err error
 
 	input = make([]byte, bSize)
 	n, err = c.Read(input)
+	if err != nil {
+		r.Error("Error reading from client: " + err.Error())
+		c.Close()
+	}
+
 	cont += string(input)
 	// if buffer size and read size are equal
 	// that means that there is more to read from socket
@@ -120,6 +136,7 @@ func (r *Remote) handleConnection(c net.Conn) {
 		input = make([]byte, bSize)
 		n, err = c.Read(input)
 		if err != nil {
+			r.Error("Error requesting input from client" + err.Error())
 			c.Close()
 		}
 
@@ -127,32 +144,40 @@ func (r *Remote) handleConnection(c net.Conn) {
 			break
 		}
 
+		bytes.Trim(input, "\x00")
 		cont += string(input)
 	}
 
 	var b bytes.Buffer
-	_, err = b.Write(bytes.Trim(input, "\x00"))
+	_, err = b.Write([]byte(cont))
 	if err != nil && err != io.EOF {
+		r.Error("Error writing input to buffer: " + err.Error())
 		c.Close()
 	}
 
 	_, err = c.Write([]byte(">"))
+	if err != nil {
+		r.Error("Error requesting command from client: " + err.Error())
+		c.Close()
+	}
+
 	cmd := make([]byte, 256)
 
 	_, err = c.Read(cmd)
 	if err != nil {
+		r.Error("Error reading command from client: " + err.Error())
 		c.Close()
 	}
 
 	s := workers.Step(string(bytes.Trim(cmd, "\x00")))
 	if s.Validate() {
-		cmd, err := workers.NewCmd(s, &b, r.Context, r.Debug)
-		if r.isCmdAllowed(cmd) {
-			if err != nil {
-				r.Error(err.Error())
-				_, err = c.Write([]byte("error"))
-			}
+		cmd, err := workers.NewCmd(s, &b, r.Context, r.Debug, r.GetConfig().GetShell())
+		if err != nil {
+			r.Error(err.Error())
+			_, err = c.Write([]byte("error"))
+		}
 
+		if r.isCmdAllowed(cmd) {
 			err = cmd.Run()
 			if err != nil {
 				r.Error(err.Error())
@@ -178,6 +203,7 @@ func (r *Remote) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	cmds["start"] = r.cmdstart
+	cmds["stop"] = r.cmdstop
 
 	return cmds
 }

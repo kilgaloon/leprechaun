@@ -6,5 +6,5 @@ schedule:
     day: 0
 
 steps: # steps are done from first to last
-    - -> ping google.com
+    - -> ping google.com 
     - echo "Async task is pinging google, i will just do my job"

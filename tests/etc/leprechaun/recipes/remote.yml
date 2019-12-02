@@ -7,4 +7,7 @@ schedule:
 
 steps: # steps are done from first to last
     - rmt:localhost echo "testing this recipe" }>
-    - cat > remote.txt
+    - -> cat > remote.txt
+    - rmt:localhost touch test.txt
+    - cat ../tests/etc/leprechaun/buffer.txt }>
+    - rmt:localhost cat > buffer_test.txt

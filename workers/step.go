@@ -17,6 +17,9 @@ const PipeMarker = "}>"
 // RemoteMarker marks step to be executed on remote host
 const RemoteMarker = "rmt:([^\\s]+)"
 
+// ArgsExp is regex that match arguments for commands
+const ArgsExp = "(-[aA-zZ]+)|(--[aA-zZ]+-[aA-zZ]+=[\"]?[aA-zZ,.,]+[\"]?)|(\".*\")|([aA-zZ,.,]+)"
+
 // Step struct converts string to this struct
 type Step string
 
@@ -72,12 +75,31 @@ func (s Step) Plain() string {
 	return stepTrimmed
 }
 
+// TODO: This returns name of command not name of step, change name to something appropiate
+
 // Name returns name of command
 func (s Step) Name() string {
 	a := strings.Fields(s.Plain())
 	b := strings.Split(a[0], string(os.PathSeparator))
 
 	return b[len(b)-1]
+}
+
+// TODO: This returns name of command not name of step, change name to something appropiate
+
+// FullName to to command included with Path seperators
+func (s Step) FullName() string {
+	a := strings.Fields(s.Plain())
+
+	return a[0]
+}
+
+// Args extract arguments for command
+func (s Step) Args() []string {
+	r := regexp.MustCompile(ArgsExp)
+	b := r.FindAllString(s.Plain(), -1)
+
+	return b[1:]
 }
 
 // Validate check is step valid

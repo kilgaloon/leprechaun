@@ -1,3 +1,5 @@
+// +build go1.12
+
 package daemon
 
 import (
@@ -132,7 +134,8 @@ func (d *Daemon) Kill() {
 	d.shutdownChan <- true
 }
 
-func init() {
+//Init initialize daemon
+func Init() {
 	var configPath, pidPath *string
 	var debug, helpFlag *bool
 	var pid int
@@ -160,12 +163,10 @@ func init() {
 			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
 			debug = flag.Bool("debug", false, "Debug mode")
 		}
-
 	}
 
 	cmd := flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
 
-	// https://golang.org/doc/go1.13#testing
 	if os.Getenv("RUN_MODE") != "test" {
 		flag.Parse()
 	}

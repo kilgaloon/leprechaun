@@ -36,6 +36,7 @@ type Config interface {
 	GetCertPemPath() string
 	GetCertKeyPath() string
 	GetRemoteServices() map[string]string
+	GetShell() string
 	notifier.Config
 }
 
@@ -183,6 +184,7 @@ func New(cfg Config, logs log.Logs, ctx *context.Context, debug bool) Workers {
 	ctx.DefineVar("pem_file_path", cfg.GetCertPemPath())
 	ctx.DefineVar("key_file_path", cfg.GetCertKeyPath())
 	ctx.DefineVar("remote_services", cfg.GetRemoteServices())
+	ctx.DefineVar("shell", cfg.GetShell())
 
 	workers := Workers{
 		stack:            make(map[string]Worker),
