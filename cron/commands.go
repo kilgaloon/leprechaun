@@ -13,7 +13,7 @@ import (
 
 // this section is used for command responders
 
-func (c *Cron) cmdinfo(w http.ResponseWriter, r *http.Request) {
+func (c Cron) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	recipeQueueNum := strconv.Itoa(len(c.Service.Entries()))
 
 	resp := api.InfoResponse{
@@ -33,7 +33,7 @@ func (c *Cron) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (c *Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
+func (c Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
 	resp := api.MessageResponse{}
 
 	c.Pause()
@@ -50,7 +50,7 @@ func (c *Cron) cmdpause(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
+func (c Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := api.MessageResponse{}
 
 	if c.GetStatus() == daemon.Started {
@@ -80,7 +80,7 @@ func (c *Cron) cmdstart(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (c *Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
+func (c Cron) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := api.MessageResponse{}
 
 	c.Stop()

@@ -27,7 +27,7 @@ type Remote struct {
 }
 
 // New create remote as a service
-func (r *Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+func (r Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
 	a := agent.New(name, cfg, debug)
 	c := &Remote{
 		name,
@@ -41,7 +41,7 @@ func (r *Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Se
 }
 
 // GetName returns service name
-func (r *Remote) GetName() string {
+func (r Remote) GetName() string {
 	return r.Name
 }
 
@@ -199,7 +199,7 @@ func (r *Remote) handleConnection(c net.Conn) {
 }
 
 // RegisterAPIHandles to be used in http communication
-func (r *Remote) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+func (r Remote) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	cmds["start"] = r.cmdstart

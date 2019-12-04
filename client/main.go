@@ -23,7 +23,7 @@ type Client struct {
 }
 
 // New create client as a service
-func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+func (client Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
 	a := agent.New(name, cfg, debug)
 	c := &Client{
 		name,
@@ -37,7 +37,7 @@ func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daem
 }
 
 // GetName returns agent name
-func (client *Client) GetName() string {
+func (client Client) GetName() string {
 	return client.Name
 }
 
@@ -98,7 +98,7 @@ func (client *Client) Stop() {
 }
 
 // RegisterAPIHandles to be used in http communication
-func (client *Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+func (client Client) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	cmds["info"] = client.cmdinfo

@@ -26,7 +26,7 @@ type Server struct {
 // New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+func (server Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
 	s := &Server{
 		name,
 		agent.New(name, cfg, debug),
@@ -40,7 +40,7 @@ func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daem
 }
 
 //GetName returns server name
-func (server *Server) GetName() string {
+func (server Server) GetName() string {
 	return server.Name
 }
 
@@ -91,7 +91,7 @@ func (server *Server) Stop() {
 // RegisterAPIHandles to be used in socket communication
 // If you want to takeover default commands from agent
 // call DefaultCommands from Agent which is same command
-func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
+func (server Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter, r *http.Request) {
 	cmds := make(map[string]func(w http.ResponseWriter, r *http.Request))
 
 	cmds["info"] = server.cmdinfo
@@ -103,7 +103,7 @@ func (server *Server) RegisterAPIHandles() map[string]func(w http.ResponseWriter
 	return cmds
 }
 
-func (server *Server) isTLS() bool {
+func (server Server) isTLS() bool {
 	server.Lock()
 	defer server.Unlock()
 

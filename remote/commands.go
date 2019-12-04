@@ -8,7 +8,7 @@ import (
 	"github.com/kilgaloon/leprechaun/daemon"
 )
 
-func (rem *Remote) cmdstart(w http.ResponseWriter, r *http.Request) {
+func (rem Remote) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
 		Header:  []string{"Message"},
 		Columns: [][]string{},
@@ -32,7 +32,7 @@ func (rem *Remote) cmdstart(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (rem *Remote) cmdstop(w http.ResponseWriter, r *http.Request) {
+func (rem Remote) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
 		Header:  []string{"Message"},
 		Columns: [][]string{},

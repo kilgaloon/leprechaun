@@ -13,7 +13,7 @@ import (
 
 // this section is used for command responders
 
-func (server *Server) cmdinfo(w http.ResponseWriter, r *http.Request) {
+func (server Server) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	recipeQueueNum := strconv.Itoa(len(server.Pool.Stack))
 
 	resp := api.InfoResponse{
@@ -33,7 +33,7 @@ func (server *Server) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (server *Server) cmdpause(w http.ResponseWriter, r *http.Request) {
+func (server Server) cmdpause(w http.ResponseWriter, r *http.Request) {
 	resp := &api.MessageResponse{}
 
 	server.Pause()
@@ -50,7 +50,7 @@ func (server *Server) cmdpause(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (server *Server) cmdstart(w http.ResponseWriter, r *http.Request) {
+func (server Server) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := &api.MessageResponse{}
 
 	if server.GetStatus() == daemon.Started {
@@ -75,7 +75,7 @@ func (server *Server) cmdstart(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (server *Server) cmdstop(w http.ResponseWriter, r *http.Request) {
+func (server Server) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := &api.MessageResponse{}
 
 	server.Stop()

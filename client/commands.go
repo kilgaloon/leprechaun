@@ -13,7 +13,7 @@ import (
 
 // this section is used for command responders
 
-func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
+func (client Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	recipeQueueNum := strconv.Itoa(len(client.Queue.Stack))
 
 	resp := api.TableResponse{
@@ -36,7 +36,7 @@ func (client *Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
+func (client Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
 		Header: []string{"Message"},
 		Columns: [][]string{},
@@ -57,7 +57,7 @@ func (client *Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
+func (client Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
 		Header: []string{"Message"},
 		Columns: [][]string{},
@@ -82,7 +82,7 @@ func (client *Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
-func (client *Client) cmdstop(w http.ResponseWriter, r *http.Request) {
+func (client Client) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
 		Header: []string{"Message"},
 		Columns: [][]string{},
