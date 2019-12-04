@@ -50,6 +50,5 @@ type Service interface {
 	StartStop
 	Pause
 	IsDebug() bool
-	SetPipeline(chan string)
 	New(name string, cfg *config.AgentConfig, debug bool) Service
 }

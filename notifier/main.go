@@ -16,7 +16,7 @@ type Notifier struct {
 	log.Logs
 }
 
-// NotifyWithOptions users
+// NotifyWithOptions send notifications through provided methods
 func (n Notifier) NotifyWithOptions(o notis.Options) {
 	for _, notif := range n.Methods {
 		// send notifications

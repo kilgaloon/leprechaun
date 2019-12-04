@@ -12,9 +12,6 @@ import (
 	"github.com/mholt/certmagic"
 )
 
-// Agent holds instance of server client
-var Agent *Server
-
 // Server instance
 type Server struct {
 	Name string
@@ -26,17 +23,13 @@ type Server struct {
 // New create server
 // Creating new agent will enable usage of Agent variable globally for packages
 // that use this package
-func (server Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
-	s := &Server{
-		name,
-		agent.New(name, cfg, debug),
-		Pool{},
-		&http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())},
-	}
+func (server *Server) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	server.Name = name
+	server.Default = agent.New(name, cfg, debug)
+	server.Pool = Pool{}
+	server.HTTP = &http.Server{Addr: ":" + strconv.Itoa(cfg.GetPort())}
 
-	Agent = s
-
-	return s
+	return server
 }
 
 //GetName returns server name

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
 )
@@ -27,7 +26,6 @@ func (client Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -50,7 +48,6 @@ func (client Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -75,7 +72,6 @@ func (client Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 
@@ -101,7 +97,6 @@ func (client Client) cmdstop(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(resp)
 	if err != nil {
-		raven.CaptureError(err, nil)
 		log.Fatal(err)
 	}
 

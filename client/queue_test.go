@@ -7,53 +7,53 @@ import (
 )
 
 func TestBuildQueue(t *testing.T) {
-	Agent.BuildQueue()
+	def.BuildQueue()
 
-	Agent.Lock()
-	if len(Agent.Queue.Stack) != 7 {
-		t.Errorf("Queue stack length expected to be 7, got %d", len(Agent.Queue.Stack))
+	def.Lock()
+	if len(def.Queue.Stack) < 7 {
+		t.Errorf("Queue stack length expected to be 7, got %d", len(def.Queue.Stack))
 	}
-	Agent.Unlock()
+	def.Unlock()
 
 }
 
 func TestQueue(t *testing.T) {
 	// reset queue to 0 to test AddToQueue
-	Agent.Lock()
-	q := Agent.Queue
+	def.Lock()
+	q := def.Queue
 	q.Stack = q.Stack[:0]
-	Agent.Unlock()
+	def.Unlock()
 
-	Agent.AddToQueue(Agent.GetConfig().GetRecipesPath() + "/schedule.yml")
+	def.AddToQueue(def.GetConfig().GetRecipesPath() + "/schedule.yml")
 
-	Agent.Lock()
-	if len(Agent.Queue.Stack) != 1 {
-		t.Errorf("Queue stack length expected to be 1, got %d", len(Agent.Queue.Stack))
+	def.Lock()
+	if len(def.Queue.Stack) != 1 {
+		t.Errorf("Queue stack length expected to be 1, got %d", len(def.Queue.Stack))
 	}
-	Agent.Unlock()
+	def.Unlock()
 
-	Agent.AddToQueue(Agent.GetConfig().GetRecipesPath() + "/hook.yml")
+	def.AddToQueue(def.GetConfig().GetRecipesPath() + "/hook.yml")
 
-	Agent.Lock()
-	if len(Agent.Queue.Stack) != 1 {
-		t.Errorf("Queue stack length expected to be 0, got %d", len(Agent.Queue.Stack))
+	def.Lock()
+	if len(def.Queue.Stack) != 1 {
+		t.Errorf("Queue stack length expected to be 0, got %d", len(def.Queue.Stack))
 	}
-	Agent.Unlock()
+	def.Unlock()
 
-	Agent.Pause()
-	Agent.ProcessQueue()
+	def.Pause()
+	def.ProcessQueue()
 
-	Agent.SetStatus(daemon.Started)
-	Agent.ProcessQueue()
+	def.SetStatus(daemon.Started)
+	def.ProcessQueue()
 }
 
 func TestFindInRecipe(t *testing.T) {
 	// reset queue to 0 to test AddToQueue
-	if Agent.FindRecipe("schedule") == nil {
+	if def.FindRecipe("schedule") == nil {
 		t.Fatal("Schedule recipe doesn't exist")
 	}
 
-	if Agent.FindRecipe("random_name") != nil {
+	if def.FindRecipe("random_name") != nil {
 		t.Fatal("Random name recipe should not exist in recipe queue")
 	}
 }

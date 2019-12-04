@@ -24,7 +24,7 @@ func TestMain(t *testing.T) {
 	}
 }
 func TestBuildJobs(t *testing.T) {
-	Agent.buildJobs()
+	def.buildJobs()
 }
 
 func TestStartStop(t *testing.T) {
@@ -122,5 +122,5 @@ func TestPrepareAndRun(t *testing.T) {
 		t.Fail()
 	}
 
-	Agent.prepareAndRun(r)
+	def.prepareAndRun(r)
 }

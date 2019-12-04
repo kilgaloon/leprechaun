@@ -32,12 +32,7 @@ func (o Options) GetTitle() string {
 	return o.Title
 }
 
-// GetBody returns body if its specified otherwise panic
-// can't send without body
+// GetBody returns body
 func (o Options) GetBody() string {
-	if o.Body == "" {
-		panic("Body can't be empty")
-	}
-
 	return o.Body
 }

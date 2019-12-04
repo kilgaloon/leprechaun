@@ -16,9 +16,6 @@ import (
 	"github.com/kilgaloon/leprechaun/workers"
 )
 
-// Agent holds client instance
-var Agent *Remote
-
 // Remote settings and configurations
 type Remote struct {
 	Name string
@@ -27,17 +24,12 @@ type Remote struct {
 }
 
 // New create remote as a service
-func (r Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
-	a := agent.New(name, cfg, debug)
-	c := &Remote{
-		name,
-		a,
-		nil,
-	}
+func (r *Remote) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+	r.Name = name
+	r.Default = agent.New(name, cfg, debug)
+	r.ln = nil
 
-	Agent = c
-
-	return c
+	return r
 }
 
 // GetName returns service name

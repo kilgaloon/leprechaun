@@ -6,9 +6,9 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
-	"time"
 
 	"github.com/kilgaloon/leprechaun/config"
+	"github.com/kilgaloon/leprechaun/daemon"
 )
 
 var (
@@ -28,113 +28,109 @@ func TestStartStop(t *testing.T) {
 	go fakeServer.Start()
 	// retry 5 times before failing
 	// this means server failed to start
-	port := strconv.Itoa(fakeServer.GetConfig().GetPort())
-	for i := 0; i < 5; i++ {
-		_, err := http.Get("http://localhost" + ":" + port)
-		if err != nil {
-			// handle error
-			time.Sleep(2 * time.Second)
-			continue
-		}
+	for {
+		if fakeServer.GetStatus() == daemon.Started {
+			port := strconv.Itoa(fakeServer.GetConfig().GetPort())
 
-		TestFindInPool(t)
+			TestFindInPool(t)
 
-		_, err = http.Get("http://localhost" + ":" + port + "/ping")
-		if err != nil {
-			t.Fail()
-		}
-
-		_, err = http.Get("http://localhost" + ":" + port + "/hook?id=223344")
-		if err != nil {
-			t.Fail()
-		}
-
-		cmds := fakeServer.RegisterAPIHandles()
-
-		if foo, ok := cmds["info"]; ok {
-			req, err := http.NewRequest("GET", "/server/info", nil)
+			_, err := http.Get("http://localhost" + ":" + port + "/ping")
 			if err != nil {
-				t.Fatal(err)
+				t.Fail()
 			}
 
-			rr := httptest.NewRecorder()
-
-			foo(rr, req)
-		} else {
-			t.Fail()
-		}
-
-		if foo, ok := cmds["stop"]; ok {
-			req, err := http.NewRequest("GET", "/server/stop", nil)
+			_, err = http.Get("http://localhost" + ":" + port + "/hook?id=223344")
 			if err != nil {
-				t.Fatal(err)
+				t.Fail()
 			}
 
-			rr := httptest.NewRecorder()
+			cmds := fakeServer.RegisterAPIHandles()
 
-			foo(rr, req)
-		} else {
-			t.Fail()
-		}
+			if foo, ok := cmds["info"]; ok {
+				req, err := http.NewRequest("GET", "/server/info", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-		if foo, ok := cmds["pause"]; ok {
-			req, err := http.NewRequest("GET", "/server/pause", nil)
-			if err != nil {
-				t.Fatal(err)
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
 			}
 
-			rr := httptest.NewRecorder()
+			if foo, ok := cmds["stop"]; ok {
+				req, err := http.NewRequest("GET", "/server/stop", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			foo(rr, req)
-		} else {
-			t.Fail()
-		}
+				rr := httptest.NewRecorder()
 
-		if foo, ok := cmds["start"]; ok {
-			req, err := http.NewRequest("GET", "/server/start", nil)
-			if err != nil {
-				t.Fatal(err)
+				foo(rr, req)
+			} else {
+				t.Fail()
 			}
 
-			rr := httptest.NewRecorder()
+			if foo, ok := cmds["pause"]; ok {
+				req, err := http.NewRequest("GET", "/server/pause", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
 
-			foo(rr, req)
-		} else {
-			t.Fail()
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			if foo, ok := cmds["start"]; ok {
+				req, err := http.NewRequest("GET", "/server/start", nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				rr := httptest.NewRecorder()
+
+				foo(rr, req)
+			} else {
+				t.Fail()
+			}
+
+			fakeServer.Stop()
+			break
 		}
-
-		fakeServer.Stop()
-		break
 	}
 
-	// Agent.Lock()
+	// def.Lock()
 	// fakeServer2.GetConfig().Domain = "https://localhost"
-	// Agent.Unlock()
+	// def.Unlock()
 
 	go fakeServer2.Start()
 
 }
 
 func TestFindInPool(t *testing.T) {
-	Agent.BuildPool()
-	Agent.FindInPool("223344")
+	def.BuildPool()
+	def.FindInPool("223344")
 
-	Agent.Lock()
-	recipe := Agent.Pool.Stack["223344"]
+	def.Lock()
+	recipe := def.Pool.Stack["223344"]
 	recipe.Err = errors.New("Some random error")
-	Agent.Unlock()
+	def.Unlock()
 
-	Agent.FindInPool("223344")
+	def.FindInPool("223344")
 
-	Agent.BuildPool()
+	def.BuildPool()
 }
 
 func TestIsTLS(t *testing.T) {
-	// Agent.Lock()
+	// def.Lock()
 	// fakeServer2.GetConfig().Domain = "localhost"
-	// Agent.Unlock()
+	// def.Unlock()
 
-	if Agent.isTLS() {
+	if def.isTLS() {
 		t.Fail()
 	}
 }

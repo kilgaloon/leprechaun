@@ -49,8 +49,6 @@ func TestGetterers(t *testing.T) {
 		t.Fail()
 	}
 
-	defaultAgent.SetPipeline(make(chan string))
-
 	defaultAgent.Stop()
 	if defaultAgent.GetStatus() != daemon.Stopped {
 		t.Fail()

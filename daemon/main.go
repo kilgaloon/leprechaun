@@ -2,7 +2,6 @@ package daemon
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,15 +22,11 @@ type Daemon struct {
 	services     map[string]Service
 	Configs      *config.Configs
 	ConfigPath   string
-	Pipeline     chan string
 	Cmd          api.Cmd
 	Debug        bool
 	API          *api.API
 	shutdownChan chan bool
 }
-
-// Srv is long living process that manages other clients
-var Srv *Daemon
 
 // GetPID gets current PID of client
 func (d *Daemon) GetPID() int {
@@ -63,7 +58,6 @@ func (d *Daemon) AddService(s Service) {
 	name := s.GetName()
 	cfg := d.Configs.New(name, d.GetConfigPath())
 	a := s.New(name, cfg, d.Debug)
-	a.SetPipeline(d.Pipeline)
 
 	d.API.Register(a)
 
@@ -71,7 +65,7 @@ func (d *Daemon) AddService(s Service) {
 }
 
 // Run starts daemon and long living process
-func (d *Daemon) Run() {
+func (d *Daemon) Run(cb func()) {
 	if api.IsAPIRunning() {
 		// more commands can/will be used here
 		if d.Cmd.Agent() == "daemon" {
@@ -89,28 +83,28 @@ func (d *Daemon) Run() {
 			servicesToStart = strings.Split(d.Cmd.Command(), ",")
 		}
 
-		go func() {
-			for _, s := range d.services {
-				for _, srv := range servicesToStart {
-					if srv == s.GetName() {
-						log.Printf("Starting service %s", s.GetName())
-						go s.Start()
+		for _, s := range d.services {
+			for _, srv := range servicesToStart {
+				if srv == s.GetName() {
+					log.Printf("Starting service %s", s.GetName())
+					go s.Start()
 
-						break
-					}
+					break
 				}
 			}
+		}
 
-			d.API.RegisterHandle("daemon/info", d.daemonInfo)
-			d.API.RegisterHandle("daemon/kill", d.daemonKill)
-			d.API.RegisterHandle("daemon/services", d.servicesList)
-			d.API.Start()
-		}()
+		d.API.RegisterHandle("daemon/info", d.daemonInfo)
+		d.API.RegisterHandle("daemon/kill", d.daemonKill)
+		d.API.RegisterHandle("daemon/services", d.servicesList)
+		d.API.Start()
+
+		if cb != nil {
+			cb()
+		}
 
 		for {
 			select {
-			case info := <-d.Pipeline:
-				log.Print(info)
 			case <-d.shutdownChan:
 				if os.Getenv("RUN_MODE") != "test" {
 					os.Exit(1)
@@ -136,46 +130,36 @@ func (d *Daemon) Kill() {
 }
 
 //Init initialize daemon
-func Init() {
+func Init() *Daemon {
 	var configPath, pidPath, cmd *string
 	var debug, hf *bool
 	var pid int
 
 	if api.IsAPIRunning() {
-		resp := Srv.GetInfo()
+		d := &Daemon{}
+		resp := d.GetInfo()
 
 		configPath = &resp.ConfigPath
 		pidPath = &resp.PidPath
 		debug = &resp.Debug
 		pid = resp.PID
 	} else {
-		hf = flag.Bool("commands", false, "Display helpful info")
-		cmd = flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
-		configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
-		pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
-		debug = flag.Bool("debug", false, "Debug mode")
+		if !flag.Parsed() {
+			hf = flag.Bool("commands", false, "Display helpful info")
+			cmd = flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
+			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
+			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
+			debug = flag.Bool("debug", false, "Debug mode")
 
-		flag.Parse()
+			flag.Parse()
+		}
 	}
 
 	if hf != nil {
 		if *hf {
-			help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
-				"====== \n" +
-				"daemon info - Display basic informations about daemon. \n" +
-				"daemon services - List all services with their names and status. \n" +
-				"daemon kill - Kills process. \n" +
-				"====== \n" +
-				"{agent} info - Display basic info about agent.\n" +
-				"{agent} start - Start agent if its stopped/paused.\n" +
-				"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
-				"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
-				"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
-				"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+			helpCommands()
 
-			fmt.Println(help)
-
-			return
+			return nil
 		}
 	}
 
@@ -210,7 +194,6 @@ func Init() {
 	d.services = make(map[string]Service)
 	d.ConfigPath = *configPath
 	d.Configs = config.NewConfigs()
-	d.Pipeline = make(chan string)
 	d.Debug = *debug
 	d.Cmd = api.Cmd(*cmd)
 	d.API = api.New()
@@ -221,5 +204,5 @@ func Init() {
 		raven.SetDSN("https://63f6916e9a4f4ae08853f5b1fe5eabda:a2abd1e7a4f944dca632f875279197f7@sentry.io/1422644")
 	}
 
-	Srv = d
+	return d
 }

@@ -35,6 +35,11 @@ func TestBuildWithoutSettings(t *testing.T) {
 	assert.Equal(t, "", cfg.GetSMTPUsername())
 	assert.Equal(t, "", cfg.GetSMTPPassword())
 	assert.Equal(t, []string([]string{"localhost", "www.localhost"}), cfg.GetServerDomain())
+	assert.Equal(t, ErrorReporting, cfg.GetErrorReporting())
+	assert.Equal(t, "", cfg.GetCertPemPath())
+	assert.Equal(t, "", cfg.GetCertKeyPath())
+	assert.Equal(t, make(map[string]string), cfg.GetRemoteServices())
+	assert.Equal(t, "native", cfg.GetShell())
 }
 
 func TestBuildGlobalFallback(t *testing.T) {
@@ -54,6 +59,17 @@ func TestBuildGlobalFallback(t *testing.T) {
 	assert.Equal(t, "smtp.host.com", cfg.GetSMTPHost())
 	assert.Equal(t, "smtp_user", cfg.GetSMTPUsername())
 	assert.Equal(t, "smtp_pass", cfg.GetSMTPPassword())
+	assert.Equal(t, false, cfg.GetErrorReporting())
+	assert.Equal(t, "cert.pem", cfg.GetCertPemPath())
+	assert.Equal(t, "key.pem", cfg.GetCertKeyPath())
+
+	rs := make(map[string]string)
+	rs["localhost"] = "11000"
+	rs["digioc"] = "11001"
+
+	assert.Equal(t, rs, cfg.GetRemoteServices())
+	assert.Equal(t, "bash", cfg.GetShell())
+	
 }
 
 func TestBuildWithSettings(t *testing.T) {
@@ -74,6 +90,15 @@ func TestBuildWithSettings(t *testing.T) {
 	assert.Equal(t, "smtp_user", cfg.GetSMTPUsername())
 	assert.Equal(t, "smtp_pass", cfg.GetSMTPPassword())
 	assert.Equal(t, []string{"example.com", "www.example.com"}, cfg.GetServerDomain())
+	assert.Equal(t, true, cfg.GetErrorReporting())
+	assert.Equal(t, "../tests/crts/certificate.pem", cfg.GetCertPemPath())
+	assert.Equal(t, "../tests/crts/key.pem", cfg.GetCertKeyPath())
+
+	rs := make(map[string]string)
+	rs["localhost"] = "11400"
+
+	assert.Equal(t, rs, cfg.GetRemoteServices())
+	assert.Equal(t, "bash", cfg.GetShell())
 }
 
 func TestBuildWithInvalidValues(t *testing.T) {
