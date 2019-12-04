@@ -72,12 +72,10 @@ func (e Email) Send() error {
 // NewEmail create new email notification
 // params from this function is used to build smtp.Client
 func NewEmail(cfg EmailConfig) *Email {
-	e := &Email{
+	return &Email{
 		host:              cfg.GetSMTPHost(),
 		username:          cfg.GetSMTPUsername(),
 		password:          cfg.GetSMTPPassword(),
 		notificationEmail: cfg.GetNotificationsEmail(),
 	}
-
-	return e
 }

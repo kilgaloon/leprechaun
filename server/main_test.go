@@ -107,34 +107,34 @@ func TestStartStop(t *testing.T) {
 		break
 	}
 
-	// Agent.Lock()
+	// def.Lock()
 	// fakeServer2.GetConfig().Domain = "https://localhost"
-	// Agent.Unlock()
+	// def.Unlock()
 
 	go fakeServer2.Start()
 
 }
 
 func TestFindInPool(t *testing.T) {
-	Agent.BuildPool()
-	Agent.FindInPool("223344")
+	def.BuildPool()
+	def.FindInPool("223344")
 
-	Agent.Lock()
-	recipe := Agent.Pool.Stack["223344"]
+	def.Lock()
+	recipe := def.Pool.Stack["223344"]
 	recipe.Err = errors.New("Some random error")
-	Agent.Unlock()
+	def.Unlock()
 
-	Agent.FindInPool("223344")
+	def.FindInPool("223344")
 
-	Agent.BuildPool()
+	def.BuildPool()
 }
 
 func TestIsTLS(t *testing.T) {
-	// Agent.Lock()
+	// def.Lock()
 	// fakeServer2.GetConfig().Domain = "localhost"
-	// Agent.Unlock()
+	// def.Unlock()
 
-	if Agent.isTLS() {
+	if def.isTLS() {
 		t.Fail()
 	}
 }

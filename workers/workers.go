@@ -163,7 +163,7 @@ func (w *Workers) listener() {
 				w.Logs.Info("Worker with NAME: %s cleaned", workerName)
 			case worker := <-w.ErrorChan:
 				// send notifications
-				go w.NotifyWithOptions(notifications.Options{
+				w.NotifyWithOptions(notifications.Options{
 					Body: "Your recipe '" + worker.Recipe.GetName() +
 						"' failed on step '" + worker.WorkingOn +
 						"' because of error '" + worker.Err.Error() + "'",

@@ -22,8 +22,8 @@ const (
 	SMTPPassword           = ""
 	ServerDomain           = "localhost"
 	ErrorReporting         = true
-	CertPemPath            = "/etc/leprechaun/certs/server.pem"
-	CertKeyPath            = "/etc/leprechaun/certs/server.key"
+	CertPemPath            = ""
+	CertKeyPath            = ""
 	Shell                  = "native"
 )
 

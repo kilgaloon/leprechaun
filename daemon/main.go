@@ -2,7 +2,6 @@ package daemon
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -29,9 +28,6 @@ type Daemon struct {
 	API          *api.API
 	shutdownChan chan bool
 }
-
-// Srv is long living process that manages other clients
-var Srv *Daemon
 
 // GetPID gets current PID of client
 func (d *Daemon) GetPID() int {
@@ -136,46 +132,36 @@ func (d *Daemon) Kill() {
 }
 
 //Init initialize daemon
-func Init() {
+func Init() *Daemon {
 	var configPath, pidPath, cmd *string
 	var debug, hf *bool
 	var pid int
 
 	if api.IsAPIRunning() {
-		resp := Srv.GetInfo()
+		d := &Daemon{}
+		resp := d.GetInfo()
 
 		configPath = &resp.ConfigPath
 		pidPath = &resp.PidPath
 		debug = &resp.Debug
 		pid = resp.PID
 	} else {
-		hf = flag.Bool("commands", false, "Display helpful info")
-		cmd = flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
-		configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
-		pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
-		debug = flag.Bool("debug", false, "Debug mode")
+		if !flag.Parsed() {
+			hf = flag.Bool("commands", false, "Display helpful info")
+			cmd = flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
+			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
+			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
+			debug = flag.Bool("debug", false, "Debug mode")
 
-		flag.Parse()
+			flag.Parse()
+		}
 	}
 
 	if hf != nil {
 		if *hf {
-			help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
-				"====== \n" +
-				"daemon info - Display basic informations about daemon. \n" +
-				"daemon services - List all services with their names and status. \n" +
-				"daemon kill - Kills process. \n" +
-				"====== \n" +
-				"{agent} info - Display basic info about agent.\n" +
-				"{agent} start - Start agent if its stopped/paused.\n" +
-				"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
-				"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
-				"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
-				"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+			helpCommands()
 
-			fmt.Println(help)
-
-			return
+			return nil
 		}
 	}
 
@@ -221,5 +207,5 @@ func Init() {
 		raven.SetDSN("https://63f6916e9a4f4ae08853f5b1fe5eabda:a2abd1e7a4f944dca632f875279197f7@sentry.io/1422644")
 	}
 
-	Srv = d
+	return d
 }

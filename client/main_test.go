@@ -3,7 +3,6 @@ package client
 import (
 	"net/http"
 	"net/http/httptest"
-	"sync"
 	"testing"
 
 	"github.com/kilgaloon/leprechaun/config"
@@ -16,7 +15,6 @@ var (
 	cfgWrap    = config.NewConfigs()
 	def        = &Client{}
 	fakeClient = def.New("test", cfgWrap.New("test", *path), false)
-	mu         = new(sync.Mutex)
 )
 
 func TestMain(t *testing.T) {
@@ -24,7 +22,7 @@ func TestMain(t *testing.T) {
 
 	for {
 		if fakeClient.GetStatus() == daemon.Started {
-			if Agent.GetName() != "test" {
+			if def.GetName() != "test" {
 				t.Fatal("Agent name needs to be test")
 			}
 
@@ -51,8 +49,12 @@ func TestMain(t *testing.T) {
 			// 	}
 
 			// 	lookup++
-			// 	if Agent.FindRecipe("test") == nil {
-			// 		dat, _ := ioutil.ReadFile(fakeClient.GetConfig().GetRecipesPathAbs() + "/../recipe.test")
+			// 	if def.FindRecipe("test") == nil {
+			// 		dat, err := ioutil.ReadFile(fakeClient.GetConfig().GetRecipesPathAbs() + "/../recipe.test")
+			// 		if err != nil {
+			// 			t.Fatal(err)
+			// 		}
+
 			// 		ioutil.WriteFile(fakeClient.GetConfig().GetRecipesPathAbs()+"/test.yml", dat, 0777)
 			// 	} else {
 			// 		os.Remove(fakeClient.GetConfig().GetRecipesPathAbs() + "/test.yml")
@@ -76,7 +78,7 @@ func TestMain(t *testing.T) {
 					t.Fatal("Expected code is 200")
 				}
 
-				if len(Agent.Queue.Stack) > 0 {
+				if len(def.Queue.Stack) > 0 {
 					t.Fatal("Agent queue stack still populated")
 				}
 

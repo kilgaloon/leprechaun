@@ -10,11 +10,13 @@ import (
 )
 
 func main() {
-	daemon.Init()
+	daemon := daemon.Init()
 
-	daemon.Srv.AddService(&client.Client{Name: "scheduler"})
-	daemon.Srv.AddService(&server.Server{Name: "server"})
-	daemon.Srv.AddService(&cron.Cron{Name: "cron"})
+	if daemon != nil {
+		daemon.AddService(&client.Client{Name: "scheduler"})
+		daemon.AddService(&server.Server{Name: "server"})
+		daemon.AddService(&cron.Cron{Name: "cron"})
 
-	daemon.Srv.Run()
+		daemon.Run()
+	}
 }

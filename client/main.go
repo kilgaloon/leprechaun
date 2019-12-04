@@ -12,9 +12,6 @@ import (
 	"github.com/kilgaloon/leprechaun/config"
 )
 
-// Agent holds client instance
-var Agent *Client
-
 // Client settings and configurations
 type Client struct {
 	Name string
@@ -23,17 +20,14 @@ type Client struct {
 }
 
 // New create client as a service
-func (client Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
+func (client *Client) New(name string, cfg *config.AgentConfig, debug bool) daemon.Service {
 	a := agent.New(name, cfg, debug)
-	c := &Client{
-		name,
-		a,
-		&Queue{},
-	}
 
-	Agent = c
+	client.Name = name
+	client.Default = a
+	client.Queue = &Queue{}
 
-	return c
+	return client
 }
 
 // GetName returns agent name

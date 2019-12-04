@@ -65,13 +65,19 @@ func TestMain(t *testing.T) {
 }
 
 func TestAddService(t *testing.T) {
-	Srv.AddService(&fakeService{})
+	d := Init()
+
+	d.Cmd = "run fake_service"
+	d.AddService(&fakeService{})
+
+	go d.Run()
 }
 
 func TestRun(t *testing.T) {
-	go Srv.Run()
+	d := Init()
+	go d.Run()
 
-	if Srv.GetPID() != os.Getpid() {
+	if d.GetPID() != os.Getpid() {
 		t.Fatal("PID NOT MATCHED")
 	}
 
@@ -82,7 +88,7 @@ func TestRun(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	Srv.daemonInfo(rr, req)
+	d.daemonInfo(rr, req)
 
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost:11401")
@@ -92,20 +98,22 @@ func TestRun(t *testing.T) {
 			continue
 		}
 
-		Srv.GetInfo()
-		Srv.renderInfo()
+		d.GetInfo()
+		d.renderInfo()
 
 	}
 }
 
 func TestRunningDaemonInfo(t *testing.T) {
-	Srv.Cmd = "daemon info"
-	Srv.Run()
+	d := Init()
+
+	d.Cmd = "daemon info"
+	d.Run()
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost:11401")
 		if err != nil {
 			// handle error
-			Srv.API.Start()
+			d.API.Start()
 			time.Sleep(2 * time.Second)
 			continue
 		}
@@ -115,13 +123,15 @@ func TestRunningDaemonInfo(t *testing.T) {
 }
 
 func TestRunningDaemonServices(t *testing.T) {
-	Srv.Cmd = "daemon services"
-	Srv.Run()
+	d := Init()
+
+	d.Cmd = "daemon services"
+	d.Run()
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost:11401")
 		if err != nil {
 			// handle error
-			Srv.API.Start()
+			d.API.Start()
 			time.Sleep(2 * time.Second)
 			continue
 		}
@@ -131,13 +141,15 @@ func TestRunningDaemonServices(t *testing.T) {
 }
 
 func TestRunningDaemonKill(t *testing.T) {
-	Srv.Cmd = "daemon kill"
-	Srv.Run()
+	d := Init()
+
+	d.Cmd = "daemon kill"
+	d.Run()
 	for i := 0; i < 5; i++ {
 		_, err := http.Get("http://localhost:11401")
 		if err != nil {
 			// handle error
-			Srv.API.Start()
+			d.API.Start()
 			time.Sleep(2 * time.Second)
 			continue
 		}
@@ -149,10 +161,16 @@ func TestRunningDaemonKill(t *testing.T) {
 func TestAPIRunning(t *testing.T) {
 	os.Setenv("RUN_MODE", "test")
 
-	Srv.Cmd = ""
-	Srv.Run()
+	d := Init()
 
-	Init()
+	d.Cmd = ""
+	d.Run()
 
-	Srv.Kill()
+	d = Init()
+
+	d.Kill()
+}
+
+func TestHelpFlag(t *testing.T) {
+	helpCommands()
 }

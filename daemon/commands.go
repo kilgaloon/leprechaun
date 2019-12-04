@@ -2,6 +2,7 @@ package daemon
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"runtime"
@@ -38,7 +39,7 @@ func (d *Daemon) daemonInfo(w http.ResponseWriter, r *http.Request) {
 
 func (d *Daemon) daemonKill(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
-		Header: []string{"Message"},
+		Header:  []string{"Message"},
 		Columns: [][]string{},
 	}
 
@@ -59,7 +60,7 @@ func (d *Daemon) daemonKill(w http.ResponseWriter, r *http.Request) {
 
 func (d *Daemon) servicesList(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
-		Header: []string{"Message"},
+		Header:  []string{"Message"},
 		Columns: [][]string{},
 	}
 
@@ -77,4 +78,21 @@ func (d *Daemon) servicesList(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 
 	return
+}
+
+func helpCommands() {
+	help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
+		"====== \n" +
+		"daemon info - Display basic informations about daemon. \n" +
+		"daemon services - List all services with their names and status. \n" +
+		"daemon kill - Kills process. \n" +
+		"====== \n" +
+		"{agent} info - Display basic info about agent.\n" +
+		"{agent} start - Start agent if its stopped/paused.\n" +
+		"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
+		"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
+		"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
+		"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+
+	fmt.Println(help)
 }

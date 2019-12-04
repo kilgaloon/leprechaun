@@ -8,8 +8,11 @@ import (
 )
 
 func main() {
-	daemon.Init()
+	daemon := daemon.Init()
 	
-	daemon.Srv.AddService(&remote.Remote{Name: "remote"})
-	daemon.Srv.Run()
+	if daemon != nil {
+		daemon.AddService(&remote.Remote{Name: "remote"})
+		daemon.Run()
+	}
+	
 }

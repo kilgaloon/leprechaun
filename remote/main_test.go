@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/kilgaloon/leprechaun/config"
 	"github.com/kilgaloon/leprechaun/context"
@@ -193,7 +194,11 @@ func TestNotDebug(t *testing.T) {
 
 		conn, err := tls.Dial("tcp", host, &config)
 		if err != nil {
-			t.Fatal(err)
+			lookup++
+
+			time.Sleep(5 * time.Second)
+
+			continue
 		}
 
 		message := make([]byte, 5)
