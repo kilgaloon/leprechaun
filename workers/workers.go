@@ -52,7 +52,7 @@ type Workers struct {
 	DoneChan         chan string
 	ErrorChan        chan Worker
 	Debug            bool
-	*notifier.Notifier
+	notifier.Notifier
 	*sync.RWMutex
 }
 

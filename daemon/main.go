@@ -115,6 +115,9 @@ func (d *Daemon) Run() {
 				if os.Getenv("RUN_MODE") != "test" {
 					os.Exit(1)
 				}
+
+				d.API.Stop()
+
 				break
 			}
 		}
@@ -134,11 +137,9 @@ func (d *Daemon) Kill() {
 
 //Init initialize daemon
 func Init() {
-	var configPath, pidPath *string
-	var debug, helpFlag *bool
+	var configPath, pidPath, cmd *string
+	var debug, hf *bool
 	var pid int
-
-	helpFlag = flag.Bool("commands", false, "Display helpful info")
 
 	if api.IsAPIRunning() {
 		resp := Srv.GetInfo()
@@ -148,44 +149,45 @@ func Init() {
 		debug = &resp.Debug
 		pid = resp.PID
 	} else {
-		if os.Getenv("RUN_MODE") == "test" {
-			pp := "../tests/var/run/leprechaun/.pid"
-			cp := "../tests/configs/config_regular.ini"
-			dbg := true
+		hf = flag.Bool("commands", false, "Display helpful info")
+		cmd = flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
+		configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
+		pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
+		debug = flag.Bool("debug", false, "Debug mode")
 
-			pidPath = &pp
-			configPath = &cp
-			debug = &dbg
-		} else {
-			configPath = flag.String("ini", "/etc/leprechaun/config.ini", "Path to .ini configuration")
-			pidPath = flag.String("pid", "/var/run/leprechaun/.pid", "PID file of process")
-			debug = flag.Bool("debug", false, "Debug mode")
-		}
-	}
-
-	cmd := flag.String("cmd", "run scheduler,server,cron", "Send commands to agents and they will respond (default command is to run all services)")
-
-	if os.Getenv("RUN_MODE") != "test" {
 		flag.Parse()
 	}
 
-	if *helpFlag {
-		help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
-			"====== \n" +
-			"daemon info - Display basic informations about daemon. \n" +
-			"daemon services - List all services with their names and status. \n" +
-			"daemon kill - Kills process. \n" +
-			"====== \n" +
-			"{agent} info - Display basic info about agent.\n" +
-			"{agent} start - Start agent if its stopped/paused.\n" +
-			"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
-			"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
-			"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
-			"{agent} workers:kill {name} - Kill worker that match name provided.\n"
+	if hf != nil {
+		if *hf {
+			help := "\nAvailable commands for leprechaun --cmd='{agent} {command} {args}' \n" +
+				"====== \n" +
+				"daemon info - Display basic informations about daemon. \n" +
+				"daemon services - List all services with their names and status. \n" +
+				"daemon kill - Kills process. \n" +
+				"====== \n" +
+				"{agent} info - Display basic info about agent.\n" +
+				"{agent} start - Start agent if its stopped/paused.\n" +
+				"{agent} stop - Stop agent, note that this will remove everything from memory and starting will rebuild agent from scratch.\n" +
+				"{agent} pause - Pause agent will not remove everything from memory and if started again it will just continue.\n" +
+				"{agent} workers:list - Show list of currently active workers for agent and some basic info.\n" +
+				"{agent} workers:kill {name} - Kill worker that match name provided.\n"
 
-		fmt.Println(help)
+			fmt.Println(help)
 
-		os.Exit(1)
+			return
+		}
+	}
+
+	if os.Getenv("RUN_MODE") == "test" {
+		pp := "../tests/var/run/leprechaun/.pid"
+		cp := "../tests/configs/config_regular.ini"
+		dbg := true
+		cmd = new(string)
+
+		pidPath = &pp
+		configPath = &cp
+		debug = &dbg
 	}
 
 	d := new(Daemon)

@@ -5,7 +5,7 @@ import (
 	notis "github.com/kilgaloon/leprechaun/notifier/notifications"
 )
 
-//Config interface specifis what methods we need to build Notifier struct
+// Config interface specifis what methods we need to build Notifier struct
 type Config interface {
 	notis.EmailConfig
 }
@@ -30,8 +30,8 @@ func (n Notifier) NotifyWithOptions(o notis.Options) {
 }
 
 // New create new notifier to send notifications about workers and jobs
-func New(cfg Config, log log.Logs) *Notifier {
-	n := &Notifier{
+func New(cfg Config, log log.Logs) Notifier {
+	n := Notifier{
 		Methods: make(map[string]notis.Notification),
 		Logs:    log,
 	}

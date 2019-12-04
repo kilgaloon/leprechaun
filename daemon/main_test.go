@@ -15,7 +15,6 @@ var (
 	ConfigWithSettings = configs.New("test", "../tests/configs/config_regular.ini")
 )
 
-
 type fakeService struct {
 }
 
@@ -50,7 +49,7 @@ func (fs *fakeService) IsDebug() bool {
 	return true
 }
 
-func (fs *fakeService) SetStatus(s int) {}
+func (fs *fakeService) SetStatus(s int)         {}
 func (fs *fakeService) Start()                  {}
 func (fs *fakeService) Stop()                   {}
 func (fs *fakeService) Pause()                  {}
@@ -97,8 +96,6 @@ func TestRun(t *testing.T) {
 		Srv.renderInfo()
 
 	}
-
-	//Srv.Kill()
 }
 
 func TestRunningDaemonInfo(t *testing.T) {
@@ -147,4 +144,15 @@ func TestRunningDaemonKill(t *testing.T) {
 
 		break
 	}
+}
+
+func TestAPIRunning(t *testing.T) {
+	os.Setenv("RUN_MODE", "test")
+
+	Srv.Cmd = ""
+	Srv.Run()
+
+	Init()
+
+	Srv.Kill()
 }

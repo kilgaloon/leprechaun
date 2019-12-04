@@ -21,7 +21,12 @@ type Cmd string
 // Agent returns to which agent is command refered to
 func (c Cmd) Agent() string {
 	s := strings.Fields(string(c))
-	return s[0]
+
+	if len(s) > 0 {
+		return s[0]
+	}
+
+	return ""
 }
 
 // Command is what command agent needs to execute
