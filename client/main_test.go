@@ -25,7 +25,7 @@ func TestMain(t *testing.T) {
 	for {
 		if fakeClient.GetStatus() == daemon.Started {
 			if Agent.GetName() != "test" {
-				t.Fail()
+				t.Fatal("Agent name needs to be test")
 			}
 
 			cmds := fakeClient.RegisterAPIHandles()
@@ -40,16 +40,7 @@ func TestMain(t *testing.T) {
 
 				foo(rr, req)
 			} else {
-				t.Fail()
-			}
-
-			fakeClient.Stop()
-			if fakeClient.GetStatus() != daemon.Stopped {
-				t.Fail()
-			}
-
-			if len(Agent.Queue.Stack) > 0 {
-				t.Fail()
+				t.Fatal("Info command doesnt exist")
 			}
 
 			// lookup := 0
@@ -80,6 +71,26 @@ func TestMain(t *testing.T) {
 				rr := httptest.NewRecorder()
 
 				foo(rr, req)
+
+				if rr.Code != http.StatusOK {
+					t.Fatal("Expected code is 200")
+				}
+
+				if len(Agent.Queue.Stack) > 0 {
+					t.Fatal("Agent queue stack still populated")
+				}
+
+				for {
+					if fakeClient.GetStatus() == daemon.Stopped {
+						rr := httptest.NewRecorder()
+						foo(rr, req)
+						if rr.Code == http.StatusOK {
+							t.Fatal("Client is already stopped, status code 512 is expected")
+						}
+
+						break
+					}
+				}
 			} else {
 				t.Fail()
 			}

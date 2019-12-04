@@ -9,7 +9,7 @@ import (
 	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
 	"github.com/kilgaloon/leprechaun/daemon"
-) 
+)
 
 // this section is used for command responders
 
@@ -38,7 +38,7 @@ func (client Client) cmdinfo(w http.ResponseWriter, r *http.Request) {
 
 func (client Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
-		Header: []string{"Message"},
+		Header:  []string{"Message"},
 		Columns: [][]string{},
 	}
 
@@ -59,7 +59,7 @@ func (client Client) cmdpause(w http.ResponseWriter, r *http.Request) {
 
 func (client Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
-		Header: []string{"Message"},
+		Header:  []string{"Message"},
 		Columns: [][]string{},
 	}
 
@@ -68,7 +68,7 @@ func (client Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 		resp.Columns = append(resp.Columns, []string{"Client already started"})
 	} else {
 		go client.Start()
-		
+
 		w.WriteHeader(http.StatusOK)
 		resp.Columns = append(resp.Columns, []string{"Client started"})
 	}
@@ -84,14 +84,19 @@ func (client Client) cmdstart(w http.ResponseWriter, r *http.Request) {
 
 func (client Client) cmdstop(w http.ResponseWriter, r *http.Request) {
 	resp := api.TableResponse{
-		Header: []string{"Message"},
+		Header:  []string{"Message"},
 		Columns: [][]string{},
 	}
 
-	client.Stop()
-	if client.GetStatus() == daemon.Stopped {
-		w.WriteHeader(http.StatusOK)
-		resp.Columns = append(resp.Columns, []string{"Client stopped"})
+	if client.GetStatus() == daemon.Started {
+		client.Stop()
+		if client.GetStatus() == daemon.Stopped {
+			w.WriteHeader(http.StatusOK)
+			resp.Columns = append(resp.Columns, []string{"Client stopped"})
+		}
+	} else {
+		w.WriteHeader(http.StatusExpectationFailed)
+		resp.Columns = append(resp.Columns, []string{"Client already stopped"})
 	}
 
 	j, err := json.Marshal(resp)

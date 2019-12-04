@@ -20,7 +20,7 @@ func TestBuildQueue(t *testing.T) {
 func TestQueue(t *testing.T) {
 	// reset queue to 0 to test AddToQueue
 	Agent.Lock()
-	q := &Agent.Queue
+	q := Agent.Queue
 	q.Stack = q.Stack[:0]
 	Agent.Unlock()
 
@@ -50,10 +50,10 @@ func TestQueue(t *testing.T) {
 func TestFindInRecipe(t *testing.T) {
 	// reset queue to 0 to test AddToQueue
 	if Agent.FindRecipe("schedule") == nil {
-		t.Fail()
+		t.Fatal("Schedule recipe doesn't exist")
 	}
 
 	if Agent.FindRecipe("random_name") != nil {
-		t.Fail()
+		t.Fatal("Random name recipe should not exist in recipe queue")
 	}
 }

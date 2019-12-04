@@ -19,7 +19,7 @@ var Agent *Client
 type Client struct {
 	Name string
 	*agent.Default
-	Queue
+	*Queue
 }
 
 // New create client as a service
@@ -28,7 +28,7 @@ func (client Client) New(name string, cfg *config.AgentConfig, debug bool) daemo
 	c := &Client{
 		name,
 		a,
-		Queue{},
+		&Queue{},
 	}
 
 	Agent = c
