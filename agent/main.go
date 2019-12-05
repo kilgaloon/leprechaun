@@ -46,14 +46,13 @@ type StandardOutput interface {
 
 // Default represents default agent
 type Default struct {
-	Name       string
-	Config     *config.AgentConfig
-	Context    *context.Context
-	Stdin      io.Reader
-	Stdout     io.Writer
-	Debug      bool
-	Status     int
-	Pipeline   chan string
+	Name    string
+	Config  *config.AgentConfig
+	Context *context.Context
+	Stdin   io.Reader
+	Stdout  io.Writer
+	Debug   bool
+	Status  int
 
 	*sync.RWMutex
 	log.Logs
@@ -123,12 +122,6 @@ func (d *Default) GetStatus() daemon.ServiceStatus {
 	return daemon.ServiceStatus(d.Status)
 }
 
-// SetPipeline set pipeline create string channel that
-// agent will use to send through
-func (d *Default) SetPipeline(pipe chan string) {
-	d.Pipeline = pipe
-}
-
 // Stop agent
 func (d *Default) Stop() {
 	d.SetStatus(daemon.Stopped)
@@ -179,7 +172,6 @@ func New(name string, cfg *config.AgentConfig, debug bool) *Default {
 	agent.Stdin = os.Stdin
 	agent.Stdout = os.Stdout
 	agent.Debug = debug
-	agent.Pipeline = make(chan string)
 
 	return agent
 }

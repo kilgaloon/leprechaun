@@ -12,7 +12,7 @@ func main() {
 	
 	if daemon != nil {
 		daemon.AddService(&remote.Remote{Name: "remote"})
-		daemon.Run()
+		daemon.Run(nil)
 	}
 	
 }

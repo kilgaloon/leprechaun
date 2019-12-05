@@ -17,6 +17,6 @@ func main() {
 		daemon.AddService(&server.Server{Name: "server"})
 		daemon.AddService(&cron.Cron{Name: "cron"})
 
-		daemon.Run()
+		daemon.Run(nil)
 	}
 }

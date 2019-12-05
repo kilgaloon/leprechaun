@@ -56,6 +56,7 @@ func (fs *fakeService) Pause()                  {}
 func (fs *fakeService) SetPipeline(chan string) {}
 func (fs *fakeService) New(name string, cfg *config.AgentConfig, debug bool) Service {
 	srv := &fakeService{}
+
 	return srv
 }
 
@@ -70,92 +71,97 @@ func TestAddService(t *testing.T) {
 	d.Cmd = "run fake_service"
 	d.AddService(&fakeService{})
 
-	go d.Run()
+	go d.Run(nil)
 }
 
 func TestRun(t *testing.T) {
 	d := Init()
-	go d.Run()
-
-	if d.GetPID() != os.Getpid() {
-		t.Fatal("PID NOT MATCHED")
-	}
-
-	req, err := http.NewRequest("GET", "/daemon/info", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	d.daemonInfo(rr, req)
-
-	for i := 0; i < 5; i++ {
-		_, err := http.Get("http://localhost:11401")
-		if err != nil {
-			// handle error
-			time.Sleep(2 * time.Second)
-			continue
+	d.Run(func() {
+		if d.GetPID() != os.Getpid() {
+			t.Fatal("PID NOT MATCHED")
 		}
-
-		d.GetInfo()
-		d.renderInfo()
-
-	}
+	
+		req, err := http.NewRequest("GET", "/daemon/info", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	
+		rr := httptest.NewRecorder()
+	
+		d.daemonInfo(rr, req)
+	
+		for i := 0; i < 5; i++ {
+			_, err := http.Get("http://localhost:11401")
+			if err != nil {
+				// handle error
+				time.Sleep(2 * time.Second)
+				continue
+			}
+	
+			d.GetInfo()
+			d.renderInfo()
+	
+		}
+	})
 }
 
 func TestRunningDaemonInfo(t *testing.T) {
 	d := Init()
 
 	d.Cmd = "daemon info"
-	d.Run()
-	for i := 0; i < 5; i++ {
-		_, err := http.Get("http://localhost:11401")
-		if err != nil {
-			// handle error
-			d.API.Start()
-			time.Sleep(2 * time.Second)
-			continue
+	d.Run(func() {
+		for i := 0; i < 5; i++ {
+			_, err := http.Get("http://localhost:11401")
+			if err != nil {
+				// handle error
+				d.API.Start()
+				time.Sleep(2 * time.Second)
+				continue
+			}
+	
+			break
 		}
-
-		break
-	}
+	})
 }
 
 func TestRunningDaemonServices(t *testing.T) {
 	d := Init()
 
 	d.Cmd = "daemon services"
-	d.Run()
-	for i := 0; i < 5; i++ {
-		_, err := http.Get("http://localhost:11401")
-		if err != nil {
-			// handle error
-			d.API.Start()
-			time.Sleep(2 * time.Second)
-			continue
+	d.Run(func() {
+		for i := 0; i < 5; i++ {
+			_, err := http.Get("http://localhost:11401")
+			if err != nil {
+				// handle error
+				d.API.Start()
+				time.Sleep(2 * time.Second)
+				continue
+			}
+	
+			break
 		}
-
-		break
-	}
+	})
+	
 }
 
 func TestRunningDaemonKill(t *testing.T) {
 	d := Init()
 
 	d.Cmd = "daemon kill"
-	d.Run()
-	for i := 0; i < 5; i++ {
-		_, err := http.Get("http://localhost:11401")
-		if err != nil {
-			// handle error
-			d.API.Start()
-			time.Sleep(2 * time.Second)
-			continue
+	d.Run(func () {
+		for i := 0; i < 5; i++ {
+			_, err := http.Get("http://localhost:11401")
+			if err != nil {
+				// handle error
+				d.API.Start()
+				time.Sleep(2 * time.Second)
+				continue
+			}
+	
+			break
 		}
-
-		break
-	}
+	})
+	
 }
 
 func TestAPIRunning(t *testing.T) {
@@ -164,7 +170,7 @@ func TestAPIRunning(t *testing.T) {
 	d := Init()
 
 	d.Cmd = ""
-	d.Run()
+	d.Run(nil)
 
 	d = Init()
 

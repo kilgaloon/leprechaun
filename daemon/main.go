@@ -22,7 +22,6 @@ type Daemon struct {
 	services     map[string]Service
 	Configs      *config.Configs
 	ConfigPath   string
-	Pipeline     chan string
 	Cmd          api.Cmd
 	Debug        bool
 	API          *api.API
@@ -59,7 +58,6 @@ func (d *Daemon) AddService(s Service) {
 	name := s.GetName()
 	cfg := d.Configs.New(name, d.GetConfigPath())
 	a := s.New(name, cfg, d.Debug)
-	a.SetPipeline(d.Pipeline)
 
 	d.API.Register(a)
 
@@ -67,7 +65,7 @@ func (d *Daemon) AddService(s Service) {
 }
 
 // Run starts daemon and long living process
-func (d *Daemon) Run() {
+func (d *Daemon) Run(cb func()) {
 	if api.IsAPIRunning() {
 		// more commands can/will be used here
 		if d.Cmd.Agent() == "daemon" {
@@ -85,28 +83,28 @@ func (d *Daemon) Run() {
 			servicesToStart = strings.Split(d.Cmd.Command(), ",")
 		}
 
-		go func() {
-			for _, s := range d.services {
-				for _, srv := range servicesToStart {
-					if srv == s.GetName() {
-						log.Printf("Starting service %s", s.GetName())
-						go s.Start()
+		for _, s := range d.services {
+			for _, srv := range servicesToStart {
+				if srv == s.GetName() {
+					log.Printf("Starting service %s", s.GetName())
+					go s.Start()
 
-						break
-					}
+					break
 				}
 			}
+		}
 
-			d.API.RegisterHandle("daemon/info", d.daemonInfo)
-			d.API.RegisterHandle("daemon/kill", d.daemonKill)
-			d.API.RegisterHandle("daemon/services", d.servicesList)
-			d.API.Start()
-		}()
+		d.API.RegisterHandle("daemon/info", d.daemonInfo)
+		d.API.RegisterHandle("daemon/kill", d.daemonKill)
+		d.API.RegisterHandle("daemon/services", d.servicesList)
+		d.API.Start()
+
+		if cb != nil {
+			cb()
+		}
 
 		for {
 			select {
-			case info := <-d.Pipeline:
-				log.Print(info)
 			case <-d.shutdownChan:
 				if os.Getenv("RUN_MODE") != "test" {
 					os.Exit(1)
@@ -196,7 +194,6 @@ func Init() *Daemon {
 	d.services = make(map[string]Service)
 	d.ConfigPath = *configPath
 	d.Configs = config.NewConfigs()
-	d.Pipeline = make(chan string)
 	d.Debug = *debug
 	d.Cmd = api.Cmd(*cmd)
 	d.API = api.New()
