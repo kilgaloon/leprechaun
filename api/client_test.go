@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -142,6 +143,8 @@ func TestMain(t *testing.T) {
 	})
 
 	go a.Register(rm).Start()
+	// give api time to start
+	time.Sleep(5 * time.Second)
 	assert.Equal(t, IsAPIRunning(), true)
 }
 func TestCmd(t *testing.T) {
