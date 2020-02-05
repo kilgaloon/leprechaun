@@ -14,24 +14,37 @@ const AsyncMarker = "->"
 // from step command to another step command
 const PipeMarker = "}>"
 
+// ErrorMarker is symbol that points out that if steps fails recipe will error
+// and will not proceed to next step
+const ErrorMarker = "!"
+
 // RemoteMarker marks step to be executed on remote host
 const RemoteMarker = "rmt:([^\\s]+)"
 
 // ArgsExp is regex that match arguments for commands
-const ArgsExp = "(-[aA-zZ]+)|(--[aA-zZ]+-[aA-zZ]+=[\"]?[aA-zZ,.,]+[\"]?)|(\".*\")|([aA-zZ,.,]+)"
+const ArgsExp = "(-[aA-zZ]+)|(--[aA-zZ]=)|([aA-zZ,.,\\/]+)"
 
 // Step struct converts string to this struct
 type Step string
 
+func (s Step) String() string {
+	return strings.Replace(string(s), `\\"`, "", -1)
+}
 //IsAsync check is step executed async
+// Async is highest priority so adding "! ->" to step will ignore "!"
 func (s Step) IsAsync() bool {
-	parts := strings.Fields(string(s))
+	parts := strings.Fields(s.String())
+
+	if (len(parts) > 1) {
+		return parts[0] == AsyncMarker || parts[1] == AsyncMarker
+	}
+
 	return parts[0] == AsyncMarker
 }
 
 //IsPipe check does step passed output to next step
 func (s Step) IsPipe() bool {
-	parts := strings.Fields(string(s))
+	parts := strings.Fields(s.String())
 	return parts[len(parts)-1] == PipeMarker
 }
 
@@ -39,6 +52,12 @@ func (s Step) IsPipe() bool {
 func (s Step) IsRemote() bool {
 	m, _ := regexp.Match(RemoteMarker, []byte(s))
 	return m
+}
+
+// CanError check does stap can error or not
+func (s Step) CanError() bool {
+	parts := strings.Fields(s.String())
+	return parts[0] != ErrorMarker
 }
 
 // RemoteHost extracts name of host from step "rmt:host"
@@ -53,7 +72,7 @@ func (s Step) RemoteHost() string {
 // Plain return command without markers and our syntax
 // ex: -> echo "Test" }> will result in echo "Test"
 func (s Step) Plain() string {
-	step := strings.Fields(string(s))
+	step := strings.Fields(s.String())
 	var a, b int
 
 	if step[0] == AsyncMarker {
@@ -96,15 +115,17 @@ func (s Step) FullName() string {
 
 // Args extract arguments for command
 func (s Step) Args() []string {
+	a := strings.Fields(s.Plain())
+	stepWithoutCmd := strings.Join(a[1:], " ")
 	r := regexp.MustCompile(ArgsExp)
-	b := r.FindAllString(s.Plain(), -1)
+	b := r.FindAllString(stepWithoutCmd, -1)
 
-	return b[1:]
+	return b
 }
 
 // Validate check is step valid
 func (s Step) Validate() bool {
-	if len(string(s)) < 1 {
+	if len(s.String()) < 1 {
 		return false
 	}
 
