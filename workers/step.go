@@ -79,6 +79,11 @@ func (s Step) Plain() string {
 		a = 1
 	}
 
+	if step[0] == ErrorMarker {
+		a = 1
+	}
+
+
 	b = len(step)
 	if step[b-1] == PipeMarker {
 		b = len(step) - 1
