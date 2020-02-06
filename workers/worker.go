@@ -76,16 +76,21 @@ func (w *Worker) Run() {
 		// will not be executed async because we wan't to pass
 		// output to next step, if this task start async then next step
 		// will start and output won't be passed to it
-		if s.IsAsync() && !s.IsPipe() {
+		if s.IsAsync() && !s.IsPipe() && s.CanError() {
 			go w.workOnStep(cmd)
 		} else {
-			w.workOnStep(cmd)
+			err = w.workOnStep(cmd)
+			// there was error with step and step can't error
+			// we break loop of step linear execution
+			if err != nil && !s.CanError() {
+				break;
+			}
 		}
 	}
 }
 
-func (w *Worker) workOnStep(cmd *Cmd) {
-	err := cmd.Run()
+func (w *Worker) workOnStep(cmd *Cmd) (err error) {
+	err = cmd.Run()
 
 	if err != nil {
 		w.mu.Lock()
@@ -104,6 +109,8 @@ func (w *Worker) workOnStep(cmd *Cmd) {
 	w.Logs.Info("Step %s finished \n\n", cmd.Step.Plain())
 
 	w.Done()
+
+	return
 }
 
 // Kill all commands that worker is working on
