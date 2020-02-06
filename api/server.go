@@ -47,8 +47,6 @@ func (a *API) Start() {
 			}
 
 			a.Start()
-		} else {
-			panic(err)
 		}
 	}
 }
