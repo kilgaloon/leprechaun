@@ -39,15 +39,17 @@ func (a *API) RegisterHandle(e string, h func(w http.ResponseWriter, r *http.Req
 
 // Start api server
 func (a *API) Start() {
-	a.HTTP.Handler = mux
-	if err := a.HTTP.ListenAndServe(); err == http.ErrServerClosed {
-		a.HTTP = &http.Server{
-			Addr: ":11401",
-		}
+	if !IsAPIRunning() {
+		a.HTTP.Handler = mux
+		if err := a.HTTP.ListenAndServe(); err == http.ErrServerClosed {
+			a.HTTP = &http.Server{
+				Addr: ":11401",
+			}
 
-		a.Start()
-	} else {
-		panic(err)
+			a.Start()
+		} else {
+			panic(err)
+		}
 	}
 }
 

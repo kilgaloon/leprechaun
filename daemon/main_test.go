@@ -71,7 +71,9 @@ func TestAddService(t *testing.T) {
 	d.Cmd = "run fake_service"
 	d.AddService(&fakeService{})
 
-	go d.Run(nil)
+	go d.Run(func() {
+		d.Kill()
+	})
 }
 
 func TestRun(t *testing.T) {
