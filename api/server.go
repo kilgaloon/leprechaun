@@ -10,6 +10,7 @@ var mux = http.NewServeMux()
 // API defines socket on which we listen for commands
 type API struct {
 	HTTP *http.Server
+	registeredHandles map[string]func(w http.ResponseWriter, r *http.Request)
 }
 
 // Registrator defines interface that help us to register http handler
@@ -22,11 +23,11 @@ type Registrator interface {
 // Register all available http handles
 func (a *API) Register(r Registrator) *API {
 	for p, f := range r.RegisterAPIHandles() {
-		mux.HandleFunc("/"+r.GetName()+"/"+p, f)
+		a.RegisterHandle(r.GetName()+"/"+p, f)
 	}
 
 	for p, f := range r.DefaultAPIHandles() {
-		mux.HandleFunc("/"+r.GetName()+"/"+p, f)
+		a.RegisterHandle(r.GetName()+"/"+p, f)
 	}
 
 	return a
@@ -34,20 +35,25 @@ func (a *API) Register(r Registrator) *API {
 
 // RegisterHandle append handle before server is started
 func (a *API) RegisterHandle(e string, h func(w http.ResponseWriter, r *http.Request)) {
-	mux.HandleFunc("/"+e, h)
+	pattern := "/" + e;
+
+	if _, exist := a.registeredHandles[pattern]; !exist {
+		mux.HandleFunc(pattern, h)
+		a.registeredHandles[pattern] = h
+	}
 }
 
 // Start api server
 func (a *API) Start() {
-	a.HTTP.Handler = mux
-	if err := a.HTTP.ListenAndServe(); err == http.ErrServerClosed {
-		a.HTTP = &http.Server{
-			Addr: ":11401",
-		}
+	if !IsAPIRunning() {
+		a.HTTP.Handler = mux
+		if err := a.HTTP.ListenAndServe(); err == http.ErrServerClosed {
+			a.HTTP = &http.Server{
+				Addr: ":11401",
+			}
 
-		a.Start()
-	} else {
-		panic(err)
+			a.Start()
+		}
 	}
 }
 
@@ -62,6 +68,7 @@ func New() *API {
 		&http.Server{
 			Addr: ":11401",
 		},
+		make(map[string]func(w http.ResponseWriter, r *http.Request)),
 	}
 
 	return api
