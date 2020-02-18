@@ -99,7 +99,7 @@ func (d *Daemon) Run(cb func()) {
 		d.API.RegisterHandle("daemon/info", d.daemonInfo)
 		d.API.RegisterHandle("daemon/kill", d.daemonKill)
 		d.API.RegisterHandle("daemon/services", d.servicesList)
-		d.API.Start()
+		go d.API.Start()
 
 		if cb != nil {
 			cb()
