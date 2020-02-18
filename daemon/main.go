@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/getsentry/raven-go"
 	"github.com/kilgaloon/leprechaun/api"
@@ -28,6 +29,7 @@ type Daemon struct {
 	Debug        bool
 	API          *api.API
 	shutdownChan chan bool
+	*sync.RWMutex
 }
 
 // GetPID gets current PID of client
@@ -57,6 +59,9 @@ func (d *Daemon) GetPidPath() string {
 
 // AddService push agent as a service to list of services
 func (d *Daemon) AddService(s Service) {
+	d.Lock()
+	defer d.Unlock()
+	
 	name := s.GetName()
 	cfg := d.Configs.New(name, d.GetConfigPath())
 	a := s.New(name, cfg, d.Debug)
@@ -66,8 +71,18 @@ func (d *Daemon) AddService(s Service) {
 	d.services[name] = a
 }
 
+// SetCommand sets command for daemon to be executed
+func (d *Daemon) SetCommand(cmd api.Cmd) {
+	d.Lock()
+	d.Cmd = cmd
+	d.Unlock()
+}
+
 // Run starts daemon and long living process
 func (d *Daemon) Run(cb func()) {
+	d.Lock()
+	defer d.Unlock()
+
 	if api.IsAPIRunning() {
 		// more commands can/will be used here
 		if d.Cmd.Agent() == "daemon" {
@@ -205,6 +220,7 @@ func Init() *Daemon {
 	d.Cmd = api.Cmd(*cmd)
 	d.API = api.New()
 	d.shutdownChan = make(chan bool, 1)
+	d.RWMutex = new(sync.RWMutex)
 
 	cfg := d.Configs.New("daemon", d.ConfigPath)
 	if cfg.GetErrorReporting() && os.Getenv("RUN_MODE") != "test" {

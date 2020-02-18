@@ -67,7 +67,6 @@ func TestMain(t *testing.T) {
 
 func TestAddService(t *testing.T) {
 	d := Init()
-
 	d.Cmd = "run fake_service"
 	d.AddService(&fakeService{})
 
@@ -75,9 +74,9 @@ func TestAddService(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	p := Init()
-	go p.Run(func() {
-		if p.GetPID() != os.Getpid() {
+	d := Init()
+	go d.Run(func() {
+		if d.GetPID() != os.Getpid() {
 			t.Fatal("PID NOT MATCHED")
 		}
 
@@ -88,7 +87,7 @@ func TestRun(t *testing.T) {
 
 		rr := httptest.NewRecorder()
 
-		p.daemonInfo(rr, req)
+		d.daemonInfo(rr, req)
 
 		for i := 0; i < 5; i++ {
 			_, err := http.Get("http://localhost:11401")
@@ -98,15 +97,14 @@ func TestRun(t *testing.T) {
 				continue
 			}
 
-			p.GetInfo()
-			p.renderInfo()
+			d.GetInfo()
+			d.renderInfo()
 		}
 	})
 }
 
 func TestRunningDaemonInfo(t *testing.T) {
 	d := Init()
-
 	d.Cmd = "daemon info"
 	d.Run(func() {
 		for i := 0; i < 5; i++ {
@@ -125,7 +123,6 @@ func TestRunningDaemonInfo(t *testing.T) {
 
 func TestRunningDaemonServices(t *testing.T) {
 	d := Init()
-
 	d.Cmd = "daemon services"
 	d.Run(func() {
 		for i := 0; i < 5; i++ {
@@ -145,7 +142,6 @@ func TestRunningDaemonServices(t *testing.T) {
 
 func TestRunningDaemonKill(t *testing.T) {
 	d := Init()
-
 	d.Cmd = "daemon kill"
 	d.Run(func() {
 		for i := 0; i < 5; i++ {
@@ -169,7 +165,7 @@ func TestAPIRunning(t *testing.T) {
 	d := Init()
 
 	d.Cmd = ""
-	d.Run(nil)
+	go d.Run(nil)
 
 	d = Init()
 
