@@ -5,8 +5,6 @@ import (
 	"net/http"
 )
 
-var mux = http.NewServeMux()
-
 // API defines socket on which we listen for commands
 type API struct {
 	HTTP *http.Server
@@ -38,7 +36,6 @@ func (a *API) RegisterHandle(e string, h func(w http.ResponseWriter, r *http.Req
 	pattern := "/" + e;
 
 	if _, exist := a.registeredHandles[pattern]; !exist {
-		mux.HandleFunc(pattern, h)
 		a.registeredHandles[pattern] = h
 	}
 }
@@ -46,6 +43,11 @@ func (a *API) RegisterHandle(e string, h func(w http.ResponseWriter, r *http.Req
 // Start api server
 func (a *API) Start() {
 	if !IsAPIRunning() {
+		mux := http.NewServeMux()
+		for pattern, handler := range a.registeredHandles {
+			mux.HandleFunc(pattern, handler)
+		}
+
 		a.HTTP.Handler = mux
 		if err := a.HTTP.ListenAndServe(); err == http.ErrServerClosed {
 			a.HTTP = &http.Server{
