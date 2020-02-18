@@ -92,6 +92,22 @@ Output from one step can be passed to input of next step:
 
 As you see, first step is using syntax `}>` at the end, which tells that this command output will be passed to next command input, you can chain like this how much you want.
 
+## Step Failure
+
+Since steps are executed linear workers doesn't care if some of the commands fail, they continue with execution, but you get notifications if you did setup those configurations. If you want that workers stop execution of next steps if some command failes you can specifify it with `!` like in example:
+
+	name: job1 // name of recipe
+	definition: schedule
+	schedule:
+		min: 0 // every min
+		hour: 0 // every hour
+		day: 0 // every day
+	steps: // steps are done from first to last
+		- ! echo "Pipe this to next step" }>
+		- cat > piped.txt
+		
+If first step fails, recipe will fail and all other steps wont be executed
+
 ## Remote step execution
 
 Steps can be handled by your local machine using regular syntax, if there is any need that you want specific step to be
