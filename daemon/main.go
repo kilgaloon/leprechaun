@@ -13,6 +13,8 @@ import (
 	"github.com/kilgaloon/leprechaun/config"
 )
 
+var instance *Daemon
+
 // Daemon is long living process that serves as middleware
 // and access to multiple agents
 type Daemon struct {
@@ -97,7 +99,7 @@ func (d *Daemon) Run(cb func()) {
 		d.API.RegisterHandle("daemon/info", d.daemonInfo)
 		d.API.RegisterHandle("daemon/kill", d.daemonKill)
 		d.API.RegisterHandle("daemon/services", d.servicesList)
-		d.API.Start()
+		go d.API.Start()
 
 		if cb != nil {
 			cb()
@@ -131,6 +133,11 @@ func (d *Daemon) Kill() {
 
 //Init initialize daemon
 func Init() *Daemon {
+	// Make sure only one instance of Daemon is possible
+	if instance != nil {
+		return instance
+	}
+
 	var configPath, pidPath, cmd *string
 	var debug, hf *bool
 	var pid int

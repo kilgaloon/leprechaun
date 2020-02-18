@@ -75,21 +75,21 @@ func TestAddService(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
-	d := Init()
-	d.Run(func() {
-		if d.GetPID() != os.Getpid() {
+	p := Init()
+	go p.Run(func() {
+		if p.GetPID() != os.Getpid() {
 			t.Fatal("PID NOT MATCHED")
 		}
-	
+
 		req, err := http.NewRequest("GET", "/daemon/info", nil)
 		if err != nil {
 			t.Fatal(err)
 		}
-	
+
 		rr := httptest.NewRecorder()
-	
-		d.daemonInfo(rr, req)
-	
+
+		p.daemonInfo(rr, req)
+
 		for i := 0; i < 5; i++ {
 			_, err := http.Get("http://localhost:11401")
 			if err != nil {
@@ -97,10 +97,9 @@ func TestRun(t *testing.T) {
 				time.Sleep(2 * time.Second)
 				continue
 			}
-	
-			d.GetInfo()
-			d.renderInfo()
-	
+
+			p.GetInfo()
+			p.renderInfo()
 		}
 	})
 }
@@ -118,7 +117,7 @@ func TestRunningDaemonInfo(t *testing.T) {
 				time.Sleep(2 * time.Second)
 				continue
 			}
-	
+
 			break
 		}
 	})
@@ -137,18 +136,18 @@ func TestRunningDaemonServices(t *testing.T) {
 				time.Sleep(2 * time.Second)
 				continue
 			}
-	
+
 			break
 		}
 	})
-	
+
 }
 
 func TestRunningDaemonKill(t *testing.T) {
 	d := Init()
 
 	d.Cmd = "daemon kill"
-	d.Run(func () {
+	d.Run(func() {
 		for i := 0; i < 5; i++ {
 			_, err := http.Get("http://localhost:11401")
 			if err != nil {
@@ -157,11 +156,11 @@ func TestRunningDaemonKill(t *testing.T) {
 				time.Sleep(2 * time.Second)
 				continue
 			}
-	
+
 			break
 		}
 	})
-	
+
 }
 
 func TestAPIRunning(t *testing.T) {
