@@ -15,6 +15,7 @@ setup:
 
 install:
 	make setup
+	go mod vendor
 	go build -o $(GOPATH)/bin/leprechaun ./cmd/leprechaun
 	go build -o $(GOPATH)/bin/lepretools ./cmd/lepretools
 
