@@ -15,12 +15,12 @@ setup:
 
 install:
 	make setup
-	go build -o ./$GOPATH/bin/leprechaun ./cmd/leprechaun
-	go build -o ./$GOPATH/bin/lepretools ./cmd/lepretools
+	go build -o $(GOPATH)/bin/leprechaun ./cmd/leprechaun
+	go build -o $(GOPATH)/bin/lepretools ./cmd/lepretools
 
 install-remote-service:
 	make setup
-	go build -tags remote -o ./$GOPATH/bin/leprechaunrmt ./cmd/leprechaun
+	go build -tags remote -o $(GOPATH)/bin/leprechaunrmt ./cmd/leprechaun
 
 uninstall:
 	rm -rf /etc/leprechaun
