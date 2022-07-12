@@ -1,7 +1,7 @@
 # Leprechaun
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b5252a28362743fa8bd94f56e5637c1c)](https://www.codacy.com/gh/kilgaloon/leprechaun/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=kilgaloon/leprechaun&amp;utm_campaign=Badge_Grade)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun) [![Build Status](https://travis-ci.com/kilgaloon/leprechaun.svg?branch=master)](https://travis-ci.com/kilgaloon/leprechaun) [![codecov](https://codecov.io/gh/Kilgaloon/Leprechaun/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilgaloon/Leprechaun)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Kilgaloon/Leprechaun)](https://goreportcard.com/report/github.com/Kilgaloon/Leprechaun) [![codecov](https://codecov.io/gh/Kilgaloon/Leprechaun/branch/master/graph/badge.svg)](https://codecov.io/gh/Kilgaloon/Leprechaun)
 
 **Leprechaun** is tool where you can schedule your recurring tasks to be performed over and over.
 
